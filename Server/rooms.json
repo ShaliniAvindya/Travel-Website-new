@@ -1,0 +1,109 @@
+[
+    {
+        "name": "Deluxe Room",
+        "maxCount": 3,
+        "phoneNumber": 2345678901,
+        "rentPerDay": 100,
+        "imageUrls": [
+            "https://firebasestorage.googleapis.com/v0/b/hotel-booking-system-35f4a.appspot.com/o/Public%20Folder%2Froom6.png?alt=media&token=1bf0b63d-e3f3-4341-8890-1549e07835db"
+        ],
+        "currentBookings": [],
+        "type": "Deluxe",
+        "description": "Spacious and comfortable rooms with modern amenities.",
+        "roomSize": "46 SQM",
+        "occupancy": "3 (with an extra bed)",
+        "facilities": [
+            "Free Wi-Fi",
+            "Minibar",
+            "Shower WC",
+            "Bathrobe",
+            "In-room Digital Safe",
+            "Iron and Iron Board"
+        ]
+    },
+    {
+        "name": "Executive Suite",
+        "maxCount": 2,
+        "phoneNumber": 5678901234,
+        "rentPerDay": 170,
+        "imageUrls": [
+            "https://firebasestorage.googleapis.com/v0/b/hotel-booking-system-35f4a.appspot.com/o/Public%20Folder%2Froom2.png?alt=media&token=641287f2-762c-4217-8a2f-281a8253b180"
+        ],
+        "currentBookings": [],
+        "type": "Suite",
+        "description": "Elegant suites with stunning views and personalized service.",
+        "roomSize": "N/A",
+        "occupancy": "2",
+        "facilities": [
+            "Free Wi-Fi"
+        ]
+    },
+    {
+        "name": "Luxury Penthouse",
+        "maxCount": 3,
+        "phoneNumber": 6789012345,
+        "rentPerDay": 110,
+        "imageUrls": [
+            "https://firebasestorage.googleapis.com/v0/b/hotel-booking-system-35f4a.appspot.com/o/Public%20Folder%2Froom4.png?alt=media&token=c5093034-0775-41df-9772-e468479f14da"
+        ],
+        "currentBookings": [],
+        "type": "Penthouse",
+        "description": "Unmatched luxury and style in our exclusive penthouse.",
+        "roomSize": "N/A",
+        "occupancy": "2",
+        "facilities": [
+            "Free Wi-Fi"
+        ]
+    },
+    {
+        "name": "Family Room",
+        "maxCount": 4,
+        "phoneNumber": 8901234567,
+        "rentPerDay": 130,
+        "imageUrls": [
+            "https://firebasestorage.googleapis.com/v0/b/hotel-booking-system-35f4a.appspot.com/o/Public%20Folder%2Froom3.png?alt=media&token=910b9e2a-54b5-436a-8c8c-1fba99b19a3d"
+        ],
+        "currentBookings": [],
+        "type": "Family",
+        "description": "A family room designed to accommodate families and includes multiple beds.",
+        "roomSize": "N/A",
+        "occupancy": "4",
+        "facilities": [
+            "Free Wi-Fi"
+        ]
+    },
+    {
+        "name": "Standard Room",
+        "maxCount": 2,
+        "phoneNumber": 9012345678,
+        "rentPerDay": 190,
+        "imageUrls": [
+            "https://firebasestorage.googleapis.com/v0/b/hotel-booking-system-35f4a.appspot.com/o/Public%20Folder%2Froom1.png?alt=media&token=89633f0a-554e-4481-b71a-5b54415d658a"
+        ],
+        "currentBookings": [],
+        "type": "Standard",
+        "description": "This is the most basic type of hotel room. It typically includes essential amenities.",
+        "roomSize": "N/A",
+        "occupancy": "2",
+        "facilities": [
+            "Free Wi-Fi"
+        ]
+    },
+    {
+        "name": "Accessible Room",
+        "maxCount": 4,
+        "phoneNumber": 3450987654,
+        "rentPerDay": 150,
+        "imageUrls": [
+            "https://firebasestorage.googleapis.com/v0/b/hotel-booking-system-35f4a.appspot.com/o/Public%20Folder%2Froom5.png?alt=media&token=4a7fadfe-bea2-4dfb-afe2-5ce30573e848"
+        ],
+        "currentBookings": [],
+        "type": "Accessible",
+        "description": "Also known as \"disabled-accessible\" rooms, designed to accommodate guests with disabilities.",
+        "roomSize": "N/A",
+        "occupancy": "2",
+        "facilities": [
+            "Free Wi-Fi"
+        ]
+    }
+]
