@@ -205,9 +205,11 @@ const Navigation = () => {
 
   return (
     <div>
-      <AppBar position="fixed" style={{ backgroundColor: navBackground, boxShadow: 'none', height: '100px', font: 'Playfair Display' }}>
-        <Toolbar style={{ display: 'flex', justifyContent: 'space-around', height: '100%' }}>
-          <div style={{ display: 'flex', alignItems: 'center' }}>
+      <AppBar 
+        position="fixed" 
+        className={`transition-all duration-300 ${navBackground === 'transparent' ? 'bg-transparent' : 'bg-blue-400'} shadow-none h-[100px] font-serif`}>
+        <Toolbar className="flex justify-around items-center h-full px-6">
+          <div className="flex items-center">
             <Tabs
               value={value}
               onChange={handleChange}
