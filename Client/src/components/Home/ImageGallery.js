@@ -73,7 +73,7 @@ const ImageGallery = () => {
                 </Box>
                 <Box >
                   <Typography
-                    variant="h6"
+                    variant="body1" 
                     sx={{
                       color: 'text.primary',
                       fontWeight: 'bold',
@@ -81,16 +81,16 @@ const ImageGallery = () => {
                     gutterBottom
                     display="flex" justifyContent="space-between" mb={1}
                   >
-                    LKR {item.price.toLocaleString()} {' '}
+                    USD {item.price.toLocaleString()} {' '}
                     <Typography
                       component="span"
-                      variant="body2"
+                      variant="body1"
                       sx={{ textDecoration: 'line-through', marginLeft: 1, color: 'text.secondary' }}
                     >
-                      LKR {(item.price + 64185).toLocaleString()}
+                      USD {(item.price + 500).toLocaleString()}
                     </Typography>{' '}
                     <Typography component="span" variant="body2" color="error" fontWeight="bold" backgroundColor="rgba(76, 175, 80, 0.1)" padding={0.5}> 
-                      SAVE LKR 64,185
+                      SAVE USD 500
                     </Typography>
                   </Typography>
                 </Box>

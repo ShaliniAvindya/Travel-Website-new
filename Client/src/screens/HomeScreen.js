@@ -60,8 +60,7 @@ const HomeScreen = () => {
           >
             <h2
               style={{
-                fontFamily: 'Menlo',
-                fontStyle: 'italic',
+                fontFamily: 'Dancing Script',
                 color: '#0A369D',
                 textAlign: 'center',
                 fontSize: '40px',

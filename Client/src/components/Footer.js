@@ -266,7 +266,7 @@ const Footer = () => {
             variant="body2"
             style={{ color: '#fff', fontSize: '14px' }}
           >
-            &copy; {new Date().getFullYear()} The LUXURY Hotel. All Rights Reserved.
+            &copy; {new Date().getFullYear()} The Holiday Life. All Rights Reserved.
           </Typography>
         </Box>
       </Container>

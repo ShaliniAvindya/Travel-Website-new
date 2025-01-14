@@ -90,9 +90,10 @@ const HomeTabContent = () => {
 
       <div
         style={{
+          alignContent: "center",
           position: "absolute",
-          top: "20%",
-          left: "28%",
+          top: "35%",
+          left: "50%",
           transform: "translateX(-50%)",
         }}
       >
@@ -102,9 +103,10 @@ const HomeTabContent = () => {
             component="div"
             style={{
               fontFamily: "Playfair Display",
-              color: "White",
+              color: "white",
               fontWeight: "bolder",
-              fontSize: "60px",
+              fontSize: "50px",
+              textShadow: "0 8px 15px rgba(0, 0, 50, 0.8)",
             }}
           >
             Welcome to Your
@@ -114,44 +116,72 @@ const HomeTabContent = () => {
             component="div"
             style={{
               fontFamily: "Playfair Display",
-              color: "White",
+              color: "white",
               fontWeight: "bolder",
-              fontSize: "130px",
+              fontSize: "110px",
               marginTop: "-20px",
+              textShadow: "0 8px 15px rgba(0, 0, 50, 0.8)",
             }}
           >
             Dream Holiday
           </Typography>
+          <button
+            style={{
+              marginTop: "30px",
+              padding: "5px 15px",
+              fontSize: "18px",
+              fontFamily: "Playfair Display, serif",
+              color: "#fff",
+              backgroundColor: "rgba(0, 62, 138, 0.9)",
+              border: "none",
+              borderRadius: "30px",
+              cursor: "pointer",
+              boxShadow: "0 8px 15px rgba(0, 0, 0, 0.2)",
+              transition: "all 0.3s ease",
+              position: "relative",
+              top: "-6vh",
+              left: "49%",
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.transform = "scale(1.05)";
+              e.target.style.boxShadow = "0 12px 20px rgba(0, 0, 0, 0.3)";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.transform = "scale(1)";
+              e.target.style.boxShadow = "0 8px 15px rgba(0, 0, 0, 0.2)";
+            }}
+          >
+            Connect with US
+          </button>
+          <button
+            style={{
+              marginTop: "30px",
+              padding: "5px 15px",
+              fontSize: "18px",
+              fontFamily: "Playfair Display, serif",
+              color: "rgba(0, 62, 138, 0.9)",
+              backgroundColor: "rgba(222, 222, 255, 0.3)",
+              border: "1px solid rgba(0, 62, 138, 0.9)",
+              borderRadius: "30px",
+              cursor: "pointer",
+              boxShadow: "0 8px 15px rgba(0, 0, 0, 0.2)",
+              transition: "all 0.3s ease",
+              position: "relative",
+              top: "-6vh",
+              left: "50%",
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.transform = "scale(1.05)";
+              e.target.style.boxShadow = "0 12px 20px rgba(0, 0, 0, 0.3)";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.transform = "scale(1)";
+              e.target.style.boxShadow = "0 8px 15px rgba(0, 0, 0, 0.2)";
+            }}
+          >
+            Learn More...
+          </button>
         </AnimatedText>
-
-        <button
-          style={{
-            marginTop: "30px",
-            padding: "15px 30px",
-            fontSize: "18px",
-            fontFamily: "Playfair Display, serif",
-            color: "#fff",
-            backgroundColor: "rgb(0, 62, 138)",
-            border: "none",
-            borderRadius: "30px",
-            cursor: "pointer",
-            boxShadow: "0 8px 15px rgba(0, 0, 0, 0.2)",
-            transition: "all 0.3s ease",
-            position: "relative",
-            top: "-45px",
-            left: "63%",
-          }}
-          onMouseEnter={(e) => {
-            e.target.style.transform = "scale(1.05)";
-            e.target.style.boxShadow = "0 12px 20px rgba(0, 0, 0, 0.3)";
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.transform = "scale(1)";
-            e.target.style.boxShadow = "0 8px 15px rgba(0, 0, 0, 0.2)";
-          }}
-        >
-          Connect with an Expert
-        </button>
       </div>
 
     </div>
@@ -312,7 +342,7 @@ const Navigation = () => {
           backgroundColor,
           transition: 'background-color 0.3s ease-in-out',
           boxShadow: 'none',
-          height: '100px',
+          height: '80px',
           backdropFilter: 'blur(10px)',
       }}>
         <Toolbar className="flex justify-start items-center h-full px-6">
@@ -320,32 +350,29 @@ const Navigation = () => {
             <Tabs
               value={value}
               onChange={handleChange}
-              TabIndicatorProps={{ style: { backgroundColor: "rgba(255,255,255,0.9)", height: "4px", marginBottom: "10px" } }}
+              TabIndicatorProps={{ style: { backgroundColor: "rgba(255,255,255,0.9)", height: "2px", marginBottom: "15px" } }}
               textColor="white"
-              style={{ marginLeft: '0px', marginRight: '0px', marginLeft: '170px' }}
+              style={{ marginLeft: '0px', marginRight: '2vw', marginLeft: '9vw'}}
             >
               <Tab
                 label="Home"
                 component={Link}
                 to="/"
-                style={{ fontWeight: 'bold', fontSize: '1.01rem',marginRight: '35px', color: 'rgba(255,255,255,0.9)' }}
-                className=" hover:text-gray-300"
+                style={{ ontSize: '1rem',marginRight: '2vw', color: 'rgba(255,255,255,0.9)' }}  
               />
               <Tab
                 label="Tours"
                 component={Link}
                 to="/tours"
-                style={{ fontWeight: 'bold', fontSize: '1.01rem',marginRight: '35px', color: 'rgba(255,255,255,0.9)' }}
-                className="hover:text-gray-300"
+                style={{ fontSize: '1rem',marginRight: '2vw', color: 'rgba(255,255,255,0.9)' }}
               />
               <Tab
                 label="Contact"
                 component={Link}
                 to="/contact"
-                style={{ fontWeight: 'bold', fontSize: '1.01rem',marginRight: '35px', color: 'rgba(255,255,255,0.9)' }}
-                className="hover:text-gray-300"
+                style={{ ffontSize: '1rem', color: 'rgba(255,255,255,0.9)' }}
               />
-              <div style={{ marginLeft: '170px', marginRight: '170px' }}>
+              <div style={{ marginLeft: '8vw', marginRight: '8vw', padding: '0 3.5vw' }}>
                 <img
                   src="https://i.postimg.cc/6Q1tcM0S/HL1.png" 
                   alt="Holiday Life Logo"
@@ -353,7 +380,7 @@ const Navigation = () => {
                 />
               </div>
               {!user && (
-                <div style={{ marginRight: '65px', flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                <div style={{ marginRight: '1vw', flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                 <form
                   onSubmit={handleSearchSubmit}
                   style={{
@@ -364,7 +391,7 @@ const Navigation = () => {
                     border: "1.5px solid rgba(255,255,255,0.7)",
                     padding: '0px 10px',
                     boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
-                    transition: 'all 0.3s ease-in-out', // Smooth transition for hover effect
+                    transition: 'all 0.3s ease-in-out', 
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)';
@@ -385,7 +412,7 @@ const Navigation = () => {
                       backgroundColor: 'transparent',
                       borderRadius: '25px',
                       padding: '0px 10px',
-                      width: '250px',
+                      width: '13vw',
                       color: 'white',
                       outline: 'none',
                     }}
@@ -398,7 +425,7 @@ const Navigation = () => {
               
               )}
               {!user && (
-                <div style={{ marginRight: '0px', display: 'flex', alignItems: 'center', backgroundColor: 'transparent', padding: '0px 10px' }}>
+                <div style={{ marginRight: '', display: 'flex', alignItems: 'center', backgroundColor: 'transparent', padding: '0px 10px' }}>
                 <Select
                   value={currency}
                   onChange={handleCurrencyChange}
