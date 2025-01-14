@@ -88,13 +88,72 @@ const HomeTabContent = () => {
         </div>
       </Slider>
 
-      <div style={{ position: 'absolute', top: '40%', left: '50%', transform: 'translateX(-50%)' }}>
+      <div
+        style={{
+          position: "absolute",
+          top: "20%",
+          left: "28%",
+          transform: "translateX(-50%)",
+        }}
+      >
         <AnimatedText>
-          <Typography variant="h1" component="div" style={{ textAlign: 'center', textShadow: '1px 1px 0 white, -1px 1px 0 white, 1px -1px 0 white, -1px -1px 0 white' }} fontFamily={'Playfair Display'} color="black">
-            Welcome To<br/>Holiday Life
+          <Typography
+            variant="h1"
+            component="div"
+            style={{
+              fontFamily: "Playfair Display",
+              color: "White",
+              fontWeight: "bolder",
+              fontSize: "60px",
+            }}
+          >
+            Welcome to Your
+          </Typography>
+          <Typography
+            variant="h1"
+            component="div"
+            style={{
+              fontFamily: "Playfair Display",
+              color: "White",
+              fontWeight: "bolder",
+              fontSize: "130px",
+              marginTop: "-20px",
+            }}
+          >
+            Dream Holiday
           </Typography>
         </AnimatedText>
+
+        <button
+          style={{
+            marginTop: "30px",
+            padding: "15px 30px",
+            fontSize: "18px",
+            fontFamily: "Playfair Display, serif",
+            color: "#fff",
+            backgroundColor: "rgb(0, 62, 138)",
+            border: "none",
+            borderRadius: "30px",
+            cursor: "pointer",
+            boxShadow: "0 8px 15px rgba(0, 0, 0, 0.2)",
+            transition: "all 0.3s ease",
+            position: "relative",
+            top: "-45px",
+            left: "63%",
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.transform = "scale(1.05)";
+            e.target.style.boxShadow = "0 12px 20px rgba(0, 0, 0, 0.3)";
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.transform = "scale(1)";
+            e.target.style.boxShadow = "0 8px 15px rgba(0, 0, 0, 0.2)";
+          }}
+        >
+          Connect with an Expert
+        </button>
       </div>
+
     </div>
   );
 };
@@ -294,7 +353,7 @@ const Navigation = () => {
                 />
               </div>
               {!user && (
-                <div style={{ marginRight: '70px', flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                <div style={{ marginRight: '65px', flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                 <form
                   onSubmit={handleSearchSubmit}
                   style={{
