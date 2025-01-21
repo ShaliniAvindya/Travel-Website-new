@@ -15,7 +15,8 @@ import {
   Select,
   MenuItem,
   useMediaQuery,
-  useTheme
+  useTheme,
+  Divider
 } from '@mui/material';
 import { Link, useLocation } from 'react-router-dom';
 import { animated, useSpring } from 'react-spring';
@@ -24,7 +25,7 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import MenuIcon from '@mui/icons-material/Menu';
 import SearchIcon from '@mui/icons-material/Search';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle'; // if needed
+
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -39,7 +40,6 @@ function useIsMobile() {
 
   return isMobile;
 }
-
 
 // ----------------------- AnimatedText -----------------------
 const AnimatedText = ({ children }) => {
@@ -210,7 +210,7 @@ const HomeTabContent = () => {
               transition: "all 0.3s ease",
               position: "relative",
               top: isMobile? "-9vh" : "-6vh",
-              left: isMobile? "0vw" : "49%",
+              left: isMobile? "0vw" : "45%",
             }}
             onMouseEnter={(e) => {
               e.target.style.transform = "scale(1.05)";
@@ -239,7 +239,7 @@ const HomeTabContent = () => {
               transition: "all 0.3s ease",
               position: "relative",
               top: isMobile? "-11vh" :  "-6vh",
-              left: isMobile? "0vh" :  "-40vh",
+              left: isMobile? "0vh" :  "42vh",
             }}
             onMouseEnter={(e) => {
               e.target.style.transform = "scale(1.05)";
@@ -454,43 +454,57 @@ const Navigation = () => {
         <ListItemButton component={Link} to="/" onClick={() => setDrawerOpen(false)}>
           <ListItemText primary="Home" />
         </ListItemButton>
+        <Divider />
 
         <ListItemButton component={Link} to="/tours" onClick={() => setDrawerOpen(false)}>
           <ListItemText primary="Tours" />
         </ListItemButton>
+        <Divider />
 
         <ListItemButton component={Link} to="/contact" onClick={() => setDrawerOpen(false)}>
           <ListItemText primary="Contact" />
         </ListItemButton>
+        <Divider />
 
         {!user && (
           <>
             <ListItemButton component={Link} to="/login" onClick={() => setDrawerOpen(false)}>
               <ListItemText primary="Login" />
             </ListItemButton>
+            <Divider />
             <ListItemButton component={Link} to="/register" onClick={() => setDrawerOpen(false)}>
               <ListItemText primary="Register" />
             </ListItemButton>
+            <Divider />
           </>
         )}
 
         {/* If user is logged in */}
         {user && !user.isAdmin && (
-          <ListItemButton component={Link} to="/account" onClick={() => setDrawerOpen(false)}>
-            <ListItemText primary="Account" />
-          </ListItemButton>
+          <>
+            <ListItemButton component={Link} to="/account" onClick={() => setDrawerOpen(false)}>
+              <ListItemText primary="Account" />
+            </ListItemButton>
+            <Divider />
+          </>
         )}
 
         {user && user.isAdmin && (
-          <ListItemButton component={Link} to="/admin" onClick={() => setDrawerOpen(false)}>
-            <ListItemText primary="Admin Panel" />
-          </ListItemButton>
+          <>
+            <ListItemButton component={Link} to="/admin" onClick={() => setDrawerOpen(false)}>
+              <ListItemText primary="Admin Panel" />
+            </ListItemButton>
+            <Divider />
+          </>
         )}
 
         {user && (
-          <ListItemButton onClick={handleLogout}>
-            <ListItemText primary="Logout" />
-          </ListItemButton>
+          <>
+            <ListItemButton onClick={handleLogout}>
+              <ListItemText primary="Logout" />
+            </ListItemButton>
+            <Divider />
+          </>
         )}
 
         {/* SEARCH BAR (for mobile) */}
@@ -522,10 +536,10 @@ const Navigation = () => {
         </ListItemButton>
       </List>
 
-      {/* COMPANY IMAGE at the bottom */}
+      {/* COMPANY IMAGE at the bottom */}}
       <div
         style={{
-          padding: '10px',
+          padding: '3vh 15vw',
           borderTop: '1px solid #ccc',
           textAlign: 'center'
         }}
@@ -749,7 +763,7 @@ const Navigation = () => {
                     color="inherit"
                     aria-label="menu"
                     onClick={toggleDrawer}
-                    style={{ marginLeft: 'auto' }}
+                    style={{ marginLeft: '5vw' }}
                   >
                     <MenuIcon />
                   </IconButton>

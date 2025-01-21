@@ -11,17 +11,30 @@ import LiveChat from '../components/Home/LiveChat';
 import Experience from '../components/Home/Experience';
 import HomeExperience from '../components/Home/HomeExperience';
 import OffersSection from '../components/Home/OffersSection';
-// import Slider from '../components/Home/Slider';
+import { useEffect, useState } from 'react';
 
-<LiveChat />
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  return isMobile;
+}
 
 const HomeScreen = () => {
+  const isMobile = useIsMobile();
   return (
     <div style={{ backgroundColor: '#caf0f8' }}>
       <LiveChat />
 
-      <Box bgcolor="#ffffff" padding="35px" mt="30px" minWidth='100vw' marginTop={'1px'}><br></br>
-        <div style={{ display: 'flex', marginBottom: '30px' }}>
+      <Box bgcolor="#ffffff" padding={isMobile ? '10px' : '35px'} mt="30px" minWidth='100vw' marginTop={'1px'}><br></br>
+        <div style={{ display: 'flex', flexDirection: isMobile? 'column' : 'row' , marginBottom: '30px' }}>
           {/* Left Block: Image */}
           <div
             style={{
@@ -30,7 +43,8 @@ const HomeScreen = () => {
               backgroundSize: 'cover',
               backgroundPosition: 'center',
               height: '550px',
-              marginLeft: '10px',
+              minHeight: '550px',
+              marginLeft: isMobile? '0' : '10px',
               transition: 'transform 0.3s ease, background-color 0.3s ease, opacity 0.8s ease', 
               cursor: 'pointer', 
             }}
@@ -54,7 +68,7 @@ const HomeScreen = () => {
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              marginLeft: '20px',
+              marginLeft: isMobile? '0' : '20px',
               justifyContent: 'center',
               border: '1px solid rgba(54, 160, 226, 0.71)',
             }}
@@ -96,7 +110,7 @@ const HomeScreen = () => {
                 border: 'solid 1px',
                 borderRadius: '10px',
                 borderColor: '#0A369D',
-                marginTop: '20px',
+                margin: isMobile? '20px 0' : '20px 0 0 0',
               }}
               onMouseEnter={(e) => {
                 e.target.style.transform = 'scale(1.04)'; 
@@ -121,12 +135,12 @@ const HomeScreen = () => {
         </Typography><br />
         <Grid container spacing={4}>
           <Grid item xs={12} md={6}>
-            <Typography variant="body1" color="#4472CA" marginBottom={3} align="justify" fontFamily='Domine' fontSize={18}>
+            <Typography variant="body1" color="#4472CA" marginBottom={3} align="justify" fontFamily='Domine' fontSize={18} padding='0 10px'>
             The Maldives, with its turquoise waters, pristine beaches, and vibrant marine life, is a dream destination for travelers seeking a slice of tropical paradise. This archipelago in the Indian Ocean offers more than just breathtaking views; it provides a plethora of unique experiences that cater to adventure seekers, relaxation enthusiasts, and nature lovers alike. Here's a guide to the top activities to experience in the Maldives.
             </Typography>
           </Grid>
           <Grid item xs={12} md={6}>
-            <Typography variant="body1" color="#4472CA" marginBottom={3} align="justify" fontFamily='Domine' fontSize={18}>
+            <Typography variant="body1" color="#4472CA" marginBottom={3} align="justify" fontFamily='Domine' fontSize={18} padding='0 10px'>
             The Maldives is more than just a destination; it’s an experience. From its stunning natural beauty to its luxurious offerings and rich culture, there’s something for everyone in this tropical paradise. Whether you’re seeking adventure, romance, or tranquility, the Maldives promises memories that will last a lifetime. So, pack your sunscreen, grab your snorkeling gear, and get ready to immerse yourself in the wonders of the Maldives!
             </Typography>
           </Grid>
