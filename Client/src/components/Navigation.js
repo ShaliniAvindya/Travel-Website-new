@@ -1,17 +1,47 @@
 import React, { useState, useEffect } from 'react';
-import { AppBar, Toolbar, Typography, Tabs, Tab } from '@mui/material';
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Tabs,
+  Tab,
+  Drawer,
+  List,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  IconButton,
+  InputBase,
+  Select,
+  MenuItem,
+  useMediaQuery,
+  useTheme
+} from '@mui/material';
 import { Link, useLocation } from 'react-router-dom';
 import { animated, useSpring } from 'react-spring';
-import Slider from "react-slick";  
+import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import MenuIcon from '@mui/icons-material/Menu';
 import SearchIcon from '@mui/icons-material/Search';
-import InputBase from '@mui/material/InputBase';
-import IconButton from '@mui/material/IconButton';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import { Select, MenuItem } from '@mui/material';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle'; // if needed
+
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  return isMobile;
+}
 
 
+// ----------------------- AnimatedText -----------------------
 const AnimatedText = ({ children }) => {
   const [prevScrollPos, setPrevScrollPos] = useState(0);
   const [visible, setVisible] = useState(true);
@@ -38,7 +68,7 @@ const AnimatedText = ({ children }) => {
   return <animated.div style={props}>{children}</animated.div>;
 };
 
-// Image Slider for Home Tab
+// ----------------------- Home Tab Content (Slider) -----------------------
 const HomeTabContent = () => {
   const settings = {
     dots: true,
@@ -46,54 +76,76 @@ const HomeTabContent = () => {
     speed: 500,
     slidesToShow: 1,
     slidesToScroll: 1,
-    autoplay: true, 
-    autoplaySpeed: 3000, 
+    autoplay: true,
+    autoplaySpeed: 3000,
   };
-  
+
+  const isMobile = useIsMobile()
 
   return (
     <div style={{ position: 'relative', minHeight: '98vh', opacity: '0.9' }}>
       <Slider {...settings} dots={false}>
-      <div style={{ position: 'relative' }}>
-        <img
-          src="https://i.postimg.cc/8CYsNjcV/pexels-asadphoto-3426880.jpg"
-          alt="ocean"
-          style={{ width: '100%', height: '100vh', objectFit: 'cover' }}
-        />
-        <div
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.5), transparent 30%, transparent 70%, rgba(0, 0, 0, 0.5))',
-          }}
-        ></div>
+        <div style={{ position: 'relative' }}>
+          <img
+            src="https://i.postimg.cc/8CYsNjcV/pexels-asadphoto-3426880.jpg"
+            alt="ocean"
+            style={{ width: '100%', height: isMobile ? '50vh' : '100vh', objectFit: 'cover' }}
+          />
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              background: isMobile? 'none' : 'linear-gradient(to bottom, rgba(0, 0, 0, 0.5), transparent 30%, transparent 70%, rgba(0, 0, 0, 0.5))',
+            }}
+          ></div>
         </div>
         <div>
-          <img src="https://i.postimg.cc/yY3gdh9r/maldives-2299563-1280.jpg" alt="sea boat" style={{ width: '100%', height: '100vh' }} />
+          <img
+            src="https://i.postimg.cc/yY3gdh9r/maldives-2299563-1280.jpg"
+            alt="sea boat"
+            style={{ width: '100%', height: isMobile ? '50vh' : '100vh' }}
+          />
         </div>
         <div>
-          <img src="https://i.postimg.cc/3RXf6xpz/Untitled-design-1.jpg" alt="events" style={{ width: '100%', height: '100vh' }} />
+          <img
+            src="https://i.postimg.cc/3RXf6xpz/Untitled-design-1.jpg"
+            alt="events"
+            style={{ width: '100%', height:isMobile ? '50vh' : '100vh' }}
+          />
         </div>
         <div>
-          <img src="https://i.postimg.cc/3w8xg24h/pexels-asadphoto-3601440.jpg" alt="ocean view" style={{ width: '100%', height: '100vh' }} />
+          <img
+            src="https://i.postimg.cc/3w8xg24h/pexels-asadphoto-3601440.jpg"
+            alt="ocean view"
+            style={{ width: '100%', height:isMobile ? '50vh' :  '100vh' }}
+          />
         </div>
         <div>
-          <img src="https://i.postimg.cc/NfqxcS6C/ray-954355-1280.jpg" alt="diving" style={{ width: '100%', height: '100vh' }} />
+          <img
+            src="https://i.postimg.cc/NfqxcS6C/ray-954355-1280.jpg"
+            alt="diving"
+            style={{ width: '100%', height:isMobile ? '50vh' :  '100vh' }}
+          />
         </div>
         <div>
-          <img src="https://i.postimg.cc/2jhtt2mg/Untitled-design.jpg" alt="Luxury hotel" style={{ width: '100%', height: '100vh' }} />
+          <img
+            src="https://i.postimg.cc/2jhtt2mg/Untitled-design.jpg"
+            alt="Luxury hotel"
+            style={{ width: '100%', height:isMobile ? '50vh' :  '100vh' }}
+          />
         </div>
       </Slider>
 
       <div
         style={{
           alignContent: "center",
+          textAlign: isMobile?  'center' : 'left',
           position: "absolute",
-          top: "35%",
-          left: "50%",
+          top: isMobile? '52%' : "35%",
+          left: isMobile? '50%' : "50%",
           transform: "translateX(-50%)",
         }}
       >
@@ -105,42 +157,60 @@ const HomeTabContent = () => {
               fontFamily: "Playfair Display",
               color: "white",
               fontWeight: "bolder",
-              fontSize: "50px",
-              textShadow: "0 8px 15px rgba(0, 0, 50, 0.8)",
+              fontSize: isMobile? '30px' : "50px",
+              textShadow: isMobile? 'none' : "0 8px 15px rgba(0, 0, 50, 0.8)",
+              backgroundColor: isMobile? 'rgba(0, 62, 138,1)' : 'none',
+              padding: isMobile? '7px 0' : '0' ,
             }}
           >
             Welcome to Your
           </Typography>
-          <Typography
+          {!isMobile && (<Typography
             variant="h1"
             component="div"
             style={{
               fontFamily: "Playfair Display",
               color: "white",
               fontWeight: "bolder",
-              fontSize: "110px",
+              fontSize:  "110px",
               marginTop: "-20px",
               textShadow: "0 8px 15px rgba(0, 0, 50, 0.8)",
             }}
           >
             Dream Holiday
-          </Typography>
+            </Typography>)}
+           {isMobile && (<Typography
+              variant="h1"
+              component="div"
+              style={{
+                fontFamily: "Playfair Display",
+                color: "white",
+                fontWeight: "bolder",
+                fontSize:  '90px' ,
+                marginTop: "-40px",
+                textShadow: isMobile? 'none' : "0 8px 15px rgba(0, 0, 50, 0.8)",
+              }}
+            >
+              Dream 
+              <span style={{ position: 'relative', top: '-40px', fontSize: '120px'}}> Holiday</span>
+            </Typography>)}
           <button
             style={{
               marginTop: "30px",
-              padding: "5px 15px",
-              fontSize: "18px",
+              padding: isMobile? "10px 15px" : "5px 15px",
+              width: isMobile? '50vw' : 'auto',
+              fontSize: "20px",
               fontFamily: "Playfair Display, serif",
               color: "#fff",
               backgroundColor: "rgba(0, 62, 138, 0.9)",
-              border: "none",
-              borderRadius: "30px",
+              border: isMobile? '1px solid white' : "none",
+              borderRadius:  "30px",
               cursor: "pointer",
               boxShadow: "0 8px 15px rgba(0, 0, 0, 0.2)",
               transition: "all 0.3s ease",
               position: "relative",
-              top: "-6vh",
-              left: "49%",
+              top: isMobile? "-9vh" : "-6vh",
+              left: isMobile? "0vw" : "49%",
             }}
             onMouseEnter={(e) => {
               e.target.style.transform = "scale(1.05)";
@@ -156,19 +226,20 @@ const HomeTabContent = () => {
           <button
             style={{
               marginTop: "30px",
-              padding: "5px 15px",
-              fontSize: "18px",
+              padding: isMobile? "10px 15px" : "5px 15px",
+              width: isMobile? '50vw' : 'auto',
+              fontSize: "20px",
               fontFamily: "Playfair Display, serif",
-              color: "rgba(0, 62, 138, 0.9)",
-              backgroundColor: "rgba(222, 222, 255, 0.3)",
-              border: "1px solid rgba(0, 62, 138, 0.9)",
+              color: isMobile? 'white' : "rgba(0, 62, 138, 0.9)",
+              backgroundColor: isMobile? 'none' : "rgba(222, 222, 255, 0.3)",
+              border: isMobile? '1px solid rgba(255, 255, 255, 0.9)' : "1px solid rgba(0, 62, 138, 0.9)",
               borderRadius: "30px",
               cursor: "pointer",
               boxShadow: "0 8px 15px rgba(0, 0, 0, 0.2)",
               transition: "all 0.3s ease",
               position: "relative",
-              top: "-6vh",
-              left: "50%",
+              top: isMobile? "-11vh" :  "-6vh",
+              left: isMobile? "0vh" :  "-40vh",
             }}
             onMouseEnter={(e) => {
               e.target.style.transform = "scale(1.05)";
@@ -188,7 +259,7 @@ const HomeTabContent = () => {
   );
 };
 
-// Tab Content Component to be used for Rooms, Facilities, Contact, Login, etc.
+// ----------------------- Reusable TabContent for other pages -----------------------
 const TabContent = ({ title, backgroundImage }) => (
   <div
     style={{
@@ -204,34 +275,54 @@ const TabContent = ({ title, backgroundImage }) => (
     }}
   >
     <AnimatedText>
-      <Typography variant="h1" component="div" style={{ textAlign: 'center' }} marginTop={11} fontFamily={'Playfair Display'}>
+      <Typography
+        variant="h1"
+        component="div"
+        style={{ textAlign: 'center' }}
+        marginTop={11}
+        fontFamily={'Playfair Display'}
+      >
         {title}
       </Typography>
     </AnimatedText>
   </div>
 );
 
+// ----------------------- Other Pages/Tab contents -----------------------
 export const ToursTabContent = () => (
-  <TabContent title="Explore Tours" backgroundImage="https://i.postimg.cc/Wb5WNvG7/pexels-asadphoto-1483053.jpg" />
+  <TabContent
+    title="Explore Tours"
+    backgroundImage="https://i.postimg.cc/Wb5WNvG7/pexels-asadphoto-1483053.jpg"
+  />
 );
 
 export const FacilitiesTabContent = () => (
-  <TabContent title="Facilities we offer" backgroundImage="https://firebasestorage.googleapis.com/v0/b/hotel-booking-system-35f4a.appspot.com/o/Public%20Folder%2FSwimming.png?alt=media&token=a8b2c994-cf8e-429c-b874-fd01b633a44e" />
+  <TabContent
+    title="Facilities we offer"
+    backgroundImage="https://firebasestorage.googleapis.com/v0/b/hotel-booking-system-35f4a.appspot.com/o/Public%20Folder%2FSwimming.png?alt=media&token=a8b2c994-cf8e-429c-b874-fd01b633a44e"
+  />
 );
 
 export const ContactTabContent = () => (
-  <TabContent title="Contact us" backgroundImage="https://i.postimg.cc/Wb5WNvG7/pexels-asadphoto-1483053.jpg" />
+  <TabContent
+    title="Contact us"
+    backgroundImage="https://i.postimg.cc/Wb5WNvG7/pexels-asadphoto-1483053.jpg"
+  />
 );
 
 export const LoginTabContent = () => (
-  <TabContent title="Login with us" backgroundImage="https://firebasestorage.googleapis.com/v0/b/hotel-booking-system-35f4a.appspot.com/o/Public%20Folder%2Flogin.jpg?alt=media&token=a810ff0a-6305-4be3-8a40-d0abbb0b8875" />
+  <TabContent
+    title="Login with us"
+    backgroundImage="https://firebasestorage.googleapis.com/v0/b/hotel-booking-system-35f4a.appspot.com/o/Public%20Folder%2Flogin.jpg?alt=media&token=a810ff0a-6305-4be3-8a40-d0abbb0b8875"
+  />
 );
 
 export const RegisterTabContent = () => (
-  <TabContent title="Register with us" backgroundImage="https://firebasestorage.googleapis.com/v0/b/hotel-booking-system-35f4a.appspot.com/o/Public%20Folder%2Flogin.jpg?alt=media&token=a810ff0a-6305-4be3-8a40-d0abbb0b8875" />
+  <TabContent
+    title="Register with us"
+    backgroundImage="https://firebasestorage.googleapis.com/v0/b/hotel-booking-system-35f4a.appspot.com/o/Public%20Folder%2Flogin.jpg?alt=media&token=a810ff0a-6305-4be3-8a40-d0abbb0b8875"
+  />
 );
-
-
 
 export const AccountTabContent = () => {
   const [user, setUser] = useState();
@@ -242,13 +333,15 @@ export const AccountTabContent = () => {
   }, []);
 
   return (
-    <div style={{ 
-      position: 'relative', 
-      backgroundImage: `url('https://firebasestorage.googleapis.com/v0/b/hotel-booking-system-35f4a.appspot.com/o/Public%20Folder%2FSpa.png?alt=media&token=f0e89146-dbfe-4a98-9eae-a1243bfb8de3')`,
-      backgroundSize: 'cover',
-      height: '100vh', 
-      opacity: 0.86  
-    }}>
+    <div
+      style={{
+        position: 'relative',
+        backgroundImage: `url('https://firebasestorage.googleapis.com/v0/b/hotel-booking-system-35f4a.appspot.com/o/Public%20Folder%2FSpa.png?alt=media&token=f0e89146-dbfe-4a98-9eae-a1243bfb8de3')`,
+        backgroundSize: 'cover',
+        height: '100vh',
+        opacity: 0.86
+      }}
+    >
       <TabContent
         title={user ? (user.isAdmin ? "Admin Dashboard" : "My Account") : "My Account"}
       />
@@ -256,6 +349,7 @@ export const AccountTabContent = () => {
   );
 };
 
+// ----------------------- Main Navigation Component -----------------------
 const Navigation = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [value, setValue] = useState(0);
@@ -263,12 +357,21 @@ const Navigation = () => {
   const location = useLocation();
   const [currency, setCurrency] = useState("LKR");
 
+  // Drawer open state
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  // For controlling the background color of the navbar on scroll
+  const [scrollPosition, setScrollPosition] = useState(0);
+
+  const isMobile = useIsMobile()
+
   useEffect(() => {
     const currentUser = JSON.parse(localStorage.getItem('currentUser'));
     setUser(currentUser);
   }, []);
 
   useEffect(() => {
+    // Highlight the correct tab depending on route
     if (location.pathname === '/tours') {
       setValue(1);
     } else if (location.pathname === '/contact') {
@@ -279,34 +382,24 @@ const Navigation = () => {
       setValue(4);
     } else if (location.pathname === '/account') {
       setValue(5);
-    }else if (location.pathname === '/facilities') {
+    } else if (location.pathname === '/facilities') {
       setValue(6);
     } else {
       setValue(0);
     }
   }, [location]);
 
-  const [scrollPosition, setScrollPosition] = useState(0);
-
+  // Handle scroll changes to set top bar background opacity
   useEffect(() => {
     const handleScroll = () => {
       setScrollPosition(window.scrollY);
     };
-
     window.addEventListener('scroll', handleScroll);
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
 
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
-  };
-
-  const handleCurrencyChange = (event) => {
-    setCurrency(event.target.value);
-    console.log("Currency changed to:", event.target.value);
   };
 
   const handleSearchSubmit = (event) => {
@@ -324,7 +417,13 @@ const Navigation = () => {
     window.location.href = '/';
   };
 
-  const opacity = Math.min(1, (scrollPosition / 400)); 
+  const handleCurrencyChange = (event) => {
+    setCurrency(event.target.value);
+    console.log("Currency changed to:", event.target.value);
+  };
+
+  // Calculate dynamic background color based on scroll
+  const opacity = Math.min(1, scrollPosition / 400);
   const backgroundColor = `rgba(0, 62, 138, ${opacity})`;
 
   const currencyOptions = [
@@ -335,56 +434,181 @@ const Navigation = () => {
     { value: "JPY", label: "JPY", flag: "🇯🇵" }
   ];
 
+  // Toggle the Drawer
+  const toggleDrawer = () => {
+    setDrawerOpen(!drawerOpen);
+  };
+
+  // ------------------- Drawer Content for Mobile -------------------
+  const drawerContent = (
+    <div
+      style={{
+        width: '250px',
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%'
+      }}
+    >
+      {/* NAV LIST */}
+      <List style={{ flex: 1 }}>
+        <ListItemButton component={Link} to="/" onClick={() => setDrawerOpen(false)}>
+          <ListItemText primary="Home" />
+        </ListItemButton>
+
+        <ListItemButton component={Link} to="/tours" onClick={() => setDrawerOpen(false)}>
+          <ListItemText primary="Tours" />
+        </ListItemButton>
+
+        <ListItemButton component={Link} to="/contact" onClick={() => setDrawerOpen(false)}>
+          <ListItemText primary="Contact" />
+        </ListItemButton>
+
+        {!user && (
+          <>
+            <ListItemButton component={Link} to="/login" onClick={() => setDrawerOpen(false)}>
+              <ListItemText primary="Login" />
+            </ListItemButton>
+            <ListItemButton component={Link} to="/register" onClick={() => setDrawerOpen(false)}>
+              <ListItemText primary="Register" />
+            </ListItemButton>
+          </>
+        )}
+
+        {/* If user is logged in */}
+        {user && !user.isAdmin && (
+          <ListItemButton component={Link} to="/account" onClick={() => setDrawerOpen(false)}>
+            <ListItemText primary="Account" />
+          </ListItemButton>
+        )}
+
+        {user && user.isAdmin && (
+          <ListItemButton component={Link} to="/admin" onClick={() => setDrawerOpen(false)}>
+            <ListItemText primary="Admin Panel" />
+          </ListItemButton>
+        )}
+
+        {user && (
+          <ListItemButton onClick={handleLogout}>
+            <ListItemText primary="Logout" />
+          </ListItemButton>
+        )}
+
+        {/* SEARCH BAR (for mobile) */}
+        <ListItemButton style={{ marginTop: '20px' }}>
+          <form
+            onSubmit={handleSearchSubmit}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              borderRadius: '50px',
+              border: "1.5px solid rgba(0,0,0,0.2)",
+              padding: '0px 10px',
+              width: '100%'
+            }}
+          >
+            <InputBase
+              placeholder="Search..."
+              value={searchTerm}
+              onChange={handleSearchChange}
+              style={{
+                width: '100%',
+                outline: 'none',
+              }}
+            />
+            <IconButton type="submit" size="small">
+              <SearchIcon />
+            </IconButton>
+          </form>
+        </ListItemButton>
+      </List>
+
+      {/* COMPANY IMAGE at the bottom */}
+      <div
+        style={{
+          padding: '10px',
+          borderTop: '1px solid #ccc',
+          textAlign: 'center'
+        }}
+      >
+        <img
+          src="https://i.postimg.cc/6Q1tcM0S/HL1.png"
+          alt="Holiday Life Logo"
+          style={{
+            width: '120px',
+            objectFit: 'contain',
+            marginTop: '10px'
+          }}
+        />
+      </div>
+    </div>
+  );
+
   return (
     <div>
-      <AppBar 
-        position="fixed" 
+      {/* ------------------- AppBar / Top Navigation ------------------- */}
+      <AppBar
+        position="fixed"
         style={{
-          backgroundColor,
+          backgroundColor: isMobile? 'rgba(0, 62, 138,1) ': backgroundColor,
           transition: 'background-color 0.3s ease-in-out',
           boxShadow: 'none',
-          height: '80px',
+          height: isMobile? '70px': '80px',
           backdropFilter: 'blur(10px)',
-      }}>
-        <Toolbar className="flex justify-start items-center h-full px-6">
-          <div className="flex items-center">
-            <Tabs
-              value={value}
-              onChange={handleChange}
-              TabIndicatorProps={{ style: { backgroundColor: "rgba(255,255,255,0.9)", height: "2px", marginBottom: "15px" } }}
-              textColor="white"
-              style={{ marginLeft: '0px', marginRight: '2vw', marginLeft: '9vw'}}
-            >
-              <Tab
-                label="Home"
-                component={Link}
-                to="/"
-                value={0}
-                style={{ ontSize: '1rem',marginRight: '2vw', color: 'rgba(255,255,255,0.9)' }}  
-              />
-              <Tab
-                label="Tours"
-                component={Link}
-                to="/tours"
-                value={1}
-                style={{ fontSize: '1rem',marginRight: '2vw', color: 'rgba(255,255,255,0.9)' }}
-              />
-              <Tab
-                label="Contact"
-                component={Link}
-                to="/contact"
-                value={2}
-                style={{ ffontSize: '1rem', color: 'rgba(255,255,255,0.9)' }}
-              />
-              <div style={{ marginLeft: '8vw', marginRight: '8vw', padding: '0 3.5vw' }}>
+        }}
+      >
+        <Toolbar>
+          {/* If mobile, show the menu icon; else show the tabs */}
+          {isMobile ? (
+            <>
+              <img
+                  src="https://i.postimg.cc/6Q1tcM0S/HL1.png"
+                  alt="Holiday Life Logo"
+                  style={{ height: '60px', objectFit: 'contain', padding: '10px 5px' }}
+                />
+            </>
+          ) : (
+            <>
+              {/* Desktop Tabs */}
+              <Tabs
+                value={value}
+                onChange={handleChange}
+                TabIndicatorProps={{ style: { backgroundColor: "rgba(255,255,255,0.9)", height: "2px", marginBottom: "0px" } }}
+                textColor="inherit"
+                style={{ marginLeft: '6vw' }}
+              >
+                <Tab
+                  label="Home"
+                  component={Link}
+                  to="/"
+                  value={0}
+                  style={{ color: 'rgba(255,255,255,0.9)', marginLeft: '0vw' }}
+                />
+                <Tab
+                  label="Tours"
+                  component={Link}
+                  to="/tours"
+                  value={1}
+                  style={{ color: 'rgba(255,255,255,0.9)', marginLeft: '2vw' }}
+                />
+                <Tab
+                  label="Contact"
+                  component={Link}
+                  to="/contact"
+                  value={2}
+                  style={{ color: 'rgba(255,255,255,0.9)',marginLeft: '2vw' }}
+                />
+              </Tabs>
+
+              <div style={{ marginLeft: '8vw', marginRight: '8vw', padding: '0vh 4vw' }}>
                 <img
-                  src="https://i.postimg.cc/6Q1tcM0S/HL1.png" 
+                  src="https://i.postimg.cc/6Q1tcM0S/HL1.png"
                   alt="Holiday Life Logo"
                   style={{ height: '72px', objectFit: 'contain' }}
                 />
               </div>
+
+              {/* Search bar for desktop */}
               {!user && (
-                <div style={{ marginRight: '1vw', flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                 <form
                   onSubmit={handleSearchSubmit}
                   style={{
@@ -395,7 +619,7 @@ const Navigation = () => {
                     border: "1.5px solid rgba(255,255,255,0.7)",
                     padding: '0px 10px',
                     boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
-                    transition: 'all 0.3s ease-in-out', 
+                    transition: 'all 0.3s ease-in-out',
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)';
@@ -425,11 +649,9 @@ const Navigation = () => {
                     <SearchIcon style={{ color: 'rgba(255,255,255,0.7)', background: 'transparent', borderRadius: '25px', padding: '0px' }} />
                   </IconButton>
                 </form>
-              </div>
-              
               )}
-              {!user && (
-                <div style={{ marginRight: '', display: 'flex', alignItems: 'center', backgroundColor: 'transparent', padding: '0px 10px' }}>
+
+              <div style={{ marginLeft: '1vw' }}>
                 <Select
                   value={currency}
                   onChange={handleCurrencyChange}
@@ -442,54 +664,112 @@ const Navigation = () => {
                     borderRadius: '25px',
                     border: '1.5px solid rgba(255,255,255,0.7)',
                     height: '45px',
+                    marginLeft: '0vw'
                   }}
                   disableUnderline
                 >
                   {currencyOptions.map((option) => (
-                    <MenuItem key={option.value} value={option.value} style={{ display: 'flex', alignItems: 'center', paddingTop: '0px' }}>
-                      <span style={{ marginRight: '8px', padding: '-10px 0px' }}>{option.flag}</span> {option.label}
+                    <MenuItem
+                      key={option.value}
+                      value={option.value}
+                      style={{ display: 'flex', alignItems: 'center' }}
+                    >
+                      <span style={{ marginRight: '8px' }}>{option.flag}</span>
+                      {option.label}
                     </MenuItem>
                   ))}
                 </Select>
               </div>
-              
-              )}
-              {user && !user.isAdmin && (
-                <Tab
-                  label="Account"
-                  component={Link}
-                  to="/account"
-                  value={7}
-                  style={{ fontWeight: 'bold', fontSize: '1.05rem', marginRight: '50px' }}
-                  className="hover:text-gray-300"
-                />
-              )}
-              {user && user.isAdmin && (
-                <Tab
-                  label="Admin Panel"
-                  component={Link}
-                  to="/admin"
-                  value={8}
-                  style={{ fontWeight: 'bold', fontSize: '1.05rem', marginRight: '50px' }}
-                  className=" hover:text-gray-300"
-                />
-              )}
-              {user && (
-                <Tab
-                  label="Logout"
-                  onClick={handleLogout}
-                  value={9}
-                  style={{ fontWeight: 'bold', fontSize: '1.05rem', marginRight: '50px' }}
-                  className="hover:text-gray-300"
-                />
-              )}
 
-            </Tabs>
-          </div>
+              {/* Additional Tabs (Login, Account, etc.) on Desktop */}
+              <Tabs
+                value={false} // so it doesn't highlight extra tab
+                textColor="inherit"
+                TabIndicatorProps={{ style: { display: 'none' } }}
+              >
+                {user && !user.isAdmin && (
+                  <Tab
+                    label="Account"
+                    component={Link}
+                    to="/account"
+                    style={{ fontWeight: 'bold', marginLeft: '2vw' }}
+                  />
+                )}
+                {user && user.isAdmin && (
+                  <Tab
+                    label="Admin Panel"
+                    component={Link}
+                    to="/admin"
+                    style={{ fontWeight: 'bold', marginLeft: '2vw' }}
+                  />
+                )}
+                {user && (
+                  <Tab
+                    label="Logout"
+                    onClick={handleLogout}
+                    style={{ fontWeight: 'bold' }}
+                  />
+                )}
+              </Tabs>
+            </>
+          )}
+
+          {/* Currency Converter for mobile (optional if you want it in the same place) */}
+          {isMobile && (
+            <div style={{ marginLeft: 'auto' }}>
+              <Select
+                value={currency}
+                onChange={handleCurrencyChange}
+                style={{
+                  backgroundColor: 'transparent',
+                  fontSize: '1rem',
+                  fontWeight: 'bold',
+                  color: 'rgba(255,255,255,0.9)',
+                  padding: '0px 5px',
+                  borderRadius: '25px',
+                  border: '1.5px solid rgba(255,255,255,0.7)',
+                  height: '40px',
+                }}
+                disableUnderline
+              >
+                {currencyOptions.map((option) => (
+                  <MenuItem
+                    key={option.value}
+                    value={option.value}
+                    style={{ display: 'flex', alignItems: 'center' }}
+                  >
+                    <span style={{ marginRight: '8px' }}>{option.flag}</span>
+                    {option.label}
+                  </MenuItem>
+                ))}
+              </Select>
+              {isMobile && (
+                  <IconButton
+                    edge="start"
+                    color="inherit"
+                    aria-label="menu"
+                    onClick={toggleDrawer}
+                    style={{ marginLeft: 'auto' }}
+                  >
+                    <MenuIcon />
+                  </IconButton>
+                )}
+            </div>
+          )}
         </Toolbar>
       </AppBar>
 
-      <div style={{ position: 'relative', minHeight: '98vh' }}>
+      {/* -------------- Side Drawer for mobile -------------- */}
+      <Drawer
+        anchor="left"
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+      >
+        {drawerContent}
+      </Drawer>
+
+      {/* Content area below the nav bar */}
+      <div style={{ position: 'relative', height: isMobile? '94vh': '98vh', marginTop: isMobile ? '69px' : '0', background: isMobile? 'linear-gradient(to bottom, rgba(0, 0, 0, 0.0), transparent 30%, transparent 50%, rgba(0, 52, 108, 0.8))' :'none' }}>
         {value === 0 && <HomeTabContent />}
         {value === 1 && <ToursTabContent />}
         {value === 2 && <ContactTabContent />}
