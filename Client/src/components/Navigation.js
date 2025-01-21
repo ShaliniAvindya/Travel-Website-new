@@ -211,8 +211,8 @@ const TabContent = ({ title, backgroundImage }) => (
   </div>
 );
 
-export const RoomsTabContent = () => (
-  <TabContent title="Our Rooms" backgroundImage="https://firebasestorage.googleapis.com/v0/b/hotel-booking-system-35f4a.appspot.com/o/Public%20Folder%2Froom3.png?alt=media&token=910b9e2a-54b5-436a-8c8c-1fba99b19a3d" />
+export const ToursTabContent = () => (
+  <TabContent title="Explore Tours" backgroundImage="https://i.postimg.cc/Wb5WNvG7/pexels-asadphoto-1483053.jpg" />
 );
 
 export const FacilitiesTabContent = () => (
@@ -230,6 +230,7 @@ export const LoginTabContent = () => (
 export const RegisterTabContent = () => (
   <TabContent title="Register with us" backgroundImage="https://firebasestorage.googleapis.com/v0/b/hotel-booking-system-35f4a.appspot.com/o/Public%20Folder%2Flogin.jpg?alt=media&token=a810ff0a-6305-4be3-8a40-d0abbb0b8875" />
 );
+
 
 
 export const AccountTabContent = () => {
@@ -268,18 +269,18 @@ const Navigation = () => {
   }, []);
 
   useEffect(() => {
-    if (location.pathname === '/rooms') {
+    if (location.pathname === '/tours') {
       setValue(1);
-    } else if (location.pathname === '/facilities') {
-      setValue(2);
     } else if (location.pathname === '/contact') {
-      setValue(3);
+      setValue(2);
     } else if (location.pathname === '/login') {
-      setValue(5);
+      setValue(3);
     } else if (location.pathname === '/register') {
-      setValue(6);
+      setValue(4);
     } else if (location.pathname === '/account') {
-      setValue(7);
+      setValue(5);
+    }else if (location.pathname === '/facilities') {
+      setValue(6);
     } else {
       setValue(0);
     }
@@ -358,18 +359,21 @@ const Navigation = () => {
                 label="Home"
                 component={Link}
                 to="/"
+                value={0}
                 style={{ ontSize: '1rem',marginRight: '2vw', color: 'rgba(255,255,255,0.9)' }}  
               />
               <Tab
                 label="Tours"
                 component={Link}
                 to="/tours"
+                value={1}
                 style={{ fontSize: '1rem',marginRight: '2vw', color: 'rgba(255,255,255,0.9)' }}
               />
               <Tab
                 label="Contact"
                 component={Link}
                 to="/contact"
+                value={2}
                 style={{ ffontSize: '1rem', color: 'rgba(255,255,255,0.9)' }}
               />
               <div style={{ marginLeft: '8vw', marginRight: '8vw', padding: '0 3.5vw' }}>
@@ -487,12 +491,12 @@ const Navigation = () => {
 
       <div style={{ position: 'relative', minHeight: '98vh' }}>
         {value === 0 && <HomeTabContent />}
-        {value === 1 && <RoomsTabContent />}
-        {value === 2 && <FacilitiesTabContent />}
-        {value === 3 && <ContactTabContent />}
-        {value === 5 && <LoginTabContent />}
-        {value === 6 && <RegisterTabContent />}
-        {value === 7 && <AccountTabContent />}
+        {value === 1 && <ToursTabContent />}
+        {value === 2 && <ContactTabContent />}
+        {value === 3 && <LoginTabContent />}
+        {value === 4 && <RegisterTabContent />}
+        {value === 5 && <AccountTabContent />}
+        {value === 6 && <FacilitiesTabContent />}
       </div>
     </div>
   );

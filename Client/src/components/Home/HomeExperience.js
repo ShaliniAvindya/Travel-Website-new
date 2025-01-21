@@ -40,7 +40,7 @@ const HomeExperience = () => {
           >
             <h2>{experience.title}</h2> 
             <div className="hover-overlay">
-              <p>{experience.description}</p>
+              <p>{experience.description}</p><br></br>
               <button className="discover-button">DISCOVER MORE</button>
             </div>
           </div>

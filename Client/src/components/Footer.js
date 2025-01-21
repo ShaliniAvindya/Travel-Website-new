@@ -142,7 +142,6 @@ const Footer = () => {
       style={{
         backgroundColor: '#023e8a',
         padding: '50px 0',
-        boxShadow: '0 4px 15px rgba(0, 0, 0, 0.3)',
       }}
     >
       <Container>

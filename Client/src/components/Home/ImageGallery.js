@@ -9,7 +9,7 @@ const ImageGallery = () => {
   const navigate = useNavigate();
 
   const handleClick = (id) => {
-    navigate(`/rooms/${id}`);
+    navigate(`/tours/${id.$oid}`);
   };
 
   return (
@@ -20,6 +20,7 @@ const ImageGallery = () => {
             <Card
               sx={{
                 borderRadius: '16px',
+                height:'610px',
                 boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
                 transition: 'transform 0.3s ease, box-shadow 0.3s ease',
                 '&:hover': {
@@ -133,4 +134,3 @@ const ImageGallery = () => {
 };
 
 export default ImageGallery;
-
