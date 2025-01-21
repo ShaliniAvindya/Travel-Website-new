@@ -48,7 +48,7 @@ const Rooms = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/rooms', {
+        const response = await axios.get('http://localhost:8000/api/rooms', {
           params: {
             fromDate,
             toDate,
