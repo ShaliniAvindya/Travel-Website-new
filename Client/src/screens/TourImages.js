@@ -192,6 +192,31 @@ const TourImages = () => {
           .modal-gallery-grid img:hover {
             transform: scale(1.05);
           }
+          
+          .button-overlay {
+          position: absolute;
+          top: 46%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          z-index: 10; /* Ensures the button appears above the image */
+        }
+
+        .view-images-button {
+          background-color: #007BFF;
+          color: #fff;
+          padding: 10px 20px;
+          border-radius: 5px;
+          font-size: 1rem;
+          cursor: pointer;
+          border: none;
+
+        }
+
+        .view-images-button:hover {
+          background-color: #0056b3;
+          transform: scale(1.05);
+        }
+          
         `}
       </style>
 
@@ -214,6 +239,16 @@ const TourImages = () => {
                 height: '200px',
               }}
             />
+            {/* Add the button directly over the image */}
+            <div className="button-overlay">
+              <button
+                className="view-images-button bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition"
+                onClick={() => openModal(index)} // Open modal on button click
+              >
+                View Images
+              </button>
+            </div>
+              
             <div className="image-overlay">
               <h3>{section.title}</h3>
               <p>{section.description}</p>
