@@ -28,7 +28,7 @@ import SearchIcon from '@mui/icons-material/Search';
 
 
 function useIsMobile() {
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   useEffect(() => {
     const handleResize = () => {
@@ -49,7 +49,7 @@ const AnimatedText = ({ children }) => {
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollPos = window.pageYOffset;
-      setVisible(prevScrollPos > currentScrollPos || currentScrollPos < 10);
+      setVisible(prevScrollPos > currentScrollPos || currentScrollPos < 200);
       setPrevScrollPos(currentScrollPos);
     };
 
@@ -87,9 +87,9 @@ const HomeTabContent = () => {
       <Slider {...settings} dots={false}>
         <div style={{ position: 'relative' }}>
           <img
-            src="https://i.postimg.cc/8CYsNjcV/pexels-asadphoto-3426880.jpg"
+            src= {isMobile? 'https://i.postimg.cc/9ft5kn0j/Untitled-design-1.png' : "https://i.postimg.cc/8CYsNjcV/pexels-asadphoto-3426880.jpg"}
             alt="ocean"
-            style={{ width: '100%', height: isMobile ? '50vh' : '100vh', objectFit: 'cover' }}
+            style={{ width: '100%', height: isMobile ? '92.5vh' : '100vh', objectFit: 'cover' }}
           />
           <div
             style={{
@@ -98,43 +98,43 @@ const HomeTabContent = () => {
               left: 0,
               width: '100%',
               height: '100%',
-              background: isMobile? 'none' : 'linear-gradient(to bottom, rgba(0, 0, 0, 0.5), transparent 30%, transparent 70%, rgba(0, 0, 0, 0.5))',
+              background: isMobile? 'linear-gradient(to bottom, rgba(0, 0, 0, 0.0), transparent 30%, transparent 10%, rgba(0, 0, 0, 0.6))' : 'linear-gradient(to bottom, rgba(0, 0, 0, 0.5), transparent 30%, transparent 70%, rgba(0, 0, 0, 0.5))',
             }}
           ></div>
         </div>
         <div>
           <img
-            src="https://i.postimg.cc/yY3gdh9r/maldives-2299563-1280.jpg"
+            src={isMobile? 'https://i.postimg.cc/bJmXyS1C/Untitled-design-2.png'  :"https://i.postimg.cc/yY3gdh9r/maldives-2299563-1280.jpg"}
             alt="sea boat"
-            style={{ width: '100%', height: isMobile ? '50vh' : '100vh' }}
+            style={{ width: '100%', height: isMobile ? '92.5vh' : '100vh' }}
           />
         </div>
         <div>
           <img
-            src="https://i.postimg.cc/3RXf6xpz/Untitled-design-1.jpg"
+            src={isMobile? 'https://i.postimg.cc/JnrVC5HH/Untitled-design-3.png' : "https://i.postimg.cc/3RXf6xpz/Untitled-design-1.jpg"}
             alt="events"
-            style={{ width: '100%', height:isMobile ? '50vh' : '100vh' }}
+            style={{ width: '100%', height:isMobile ? '92.5vh' : '100vh' }}
           />
         </div>
         <div>
           <img
-            src="https://i.postimg.cc/3w8xg24h/pexels-asadphoto-3601440.jpg"
+            src={isMobile? 'https://i.postimg.cc/hGqRpBSr/Untitled-design.png' : "https://i.postimg.cc/3w8xg24h/pexels-asadphoto-3601440.jpg"}
             alt="ocean view"
-            style={{ width: '100%', height:isMobile ? '50vh' :  '100vh' }}
+            style={{ width: '100%', height:isMobile ? '92.5vh' :  '100vh' }}
           />
         </div>
         <div>
           <img
-            src="https://i.postimg.cc/NfqxcS6C/ray-954355-1280.jpg"
+            src={ isMobile? 'https://i.postimg.cc/ZK4ZhNXS/Untitled-design-4.png':"https://i.postimg.cc/NfqxcS6C/ray-954355-1280.jpg"}
             alt="diving"
-            style={{ width: '100%', height:isMobile ? '50vh' :  '100vh' }}
+            style={{ width: '100%', height:isMobile ? '92.5vh' :  '100vh' }}
           />
         </div>
         <div>
           <img
-            src="https://i.postimg.cc/2jhtt2mg/Untitled-design.jpg"
+            src={isMobile? 'https://i.postimg.cc/66dwScjc/Untitled-design-5.png' : "https://i.postimg.cc/2jhtt2mg/Untitled-design.jpg"}
             alt="Luxury hotel"
-            style={{ width: '100%', height:isMobile ? '50vh' :  '100vh' }}
+            style={{ width: '100%', height:isMobile ? '92.5vh' :  '100vh' }}
           />
         </div>
       </Slider>
@@ -144,7 +144,7 @@ const HomeTabContent = () => {
           alignContent: "center",
           textAlign: isMobile?  'center' : 'left',
           position: "absolute",
-          top: isMobile? '52%' : "35%",
+          bottom: isMobile? '6%' : "35%",
           left: isMobile? '50%' : "50%",
           transform: "translateX(-50%)",
         }}
@@ -159,8 +159,10 @@ const HomeTabContent = () => {
               fontWeight: "bolder",
               fontSize: isMobile? '30px' : "50px",
               textShadow: isMobile? 'none' : "0 8px 15px rgba(0, 0, 50, 0.8)",
-              backgroundColor: isMobile? 'rgba(0, 62, 138,1)' : 'none',
+              backgroundColor: isMobile? 'rgba(0, 62, 138,0)' : 'none',
               padding: isMobile? '7px 0' : '0' ,
+              borderTop: isMobile? '1px solid white' : 'none',
+              borderBottom: isMobile? '1px solid white': 'none',
             }}
           >
             Welcome to Your
@@ -179,38 +181,37 @@ const HomeTabContent = () => {
           >
             Dream Holiday
             </Typography>)}
-           {isMobile && (<Typography
+           {isMobile && (
+            <Typography
               variant="h1"
               component="div"
               style={{
                 fontFamily: "Playfair Display",
                 color: "white",
                 fontWeight: "bolder",
-                fontSize:  '90px' ,
-                marginTop: "-40px",
+                fontSize:  '3.3rem' ,
+                marginTop: "0px",
                 textShadow: isMobile? 'none' : "0 8px 15px rgba(0, 0, 50, 0.8)",
               }}
             >
-              Dream 
-              <span style={{ position: 'relative', top: '-40px', fontSize: '120px'}}> Holiday</span>
+              Dream Holiday
             </Typography>)}
           <button
             style={{
               marginTop: "30px",
-              padding: isMobile? "10px 15px" : "5px 15px",
-              width: isMobile? '50vw' : 'auto',
+              padding: isMobile? "15px 15px" : "5px 15px",
+              width: isMobile? '95vw' : '290px',
               fontSize: "20px",
               fontFamily: "Playfair Display, serif",
               color: "#fff",
-              backgroundColor: "rgba(0, 62, 138, 0.9)",
-              border: isMobile? '1px solid white' : "none",
-              borderRadius:  "30px",
+              backgroundColor: "rgba(0, 62, 138,1)",
+              borderRadius:  "10px",
               cursor: "pointer",
               boxShadow: "0 8px 15px rgba(0, 0, 0, 0.2)",
               transition: "all 0.3s ease",
               position: "relative",
-              top: isMobile? "-9vh" : "-6vh",
-              left: isMobile? "0vw" : "45%",
+              top: isMobile? "-1vh" : "-5vh",
+              left: isMobile? "0vw" : "49%",
             }}
             onMouseEnter={(e) => {
               e.target.style.transform = "scale(1.05)";
@@ -223,35 +224,7 @@ const HomeTabContent = () => {
           >
             Connect with US
           </button>
-          <button
-            style={{
-              marginTop: "30px",
-              padding: isMobile? "10px 15px" : "5px 15px",
-              width: isMobile? '50vw' : 'auto',
-              fontSize: "20px",
-              fontFamily: "Playfair Display, serif",
-              color: isMobile? 'white' : "rgba(0, 62, 138, 0.9)",
-              backgroundColor: isMobile? 'none' : "rgba(222, 222, 255, 0.3)",
-              border: isMobile? '1px solid rgba(255, 255, 255, 0.9)' : "1px solid rgba(0, 62, 138, 0.9)",
-              borderRadius: "30px",
-              cursor: "pointer",
-              boxShadow: "0 8px 15px rgba(0, 0, 0, 0.2)",
-              transition: "all 0.3s ease",
-              position: "relative",
-              top: isMobile? "-11vh" :  "-6vh",
-              left: isMobile? "0vh" :  "42vh",
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.transform = "scale(1.05)";
-              e.target.style.boxShadow = "0 12px 20px rgba(0, 0, 0, 0.3)";
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.transform = "scale(1)";
-              e.target.style.boxShadow = "0 8px 15px rgba(0, 0, 0, 0.2)";
-            }}
-          >
-            Learn More...
-          </button>
+          
         </AnimatedText>
       </div>
 
@@ -536,7 +509,7 @@ const Navigation = () => {
         </ListItemButton>
       </List>
 
-      {/* COMPANY IMAGE at the bottom */}}
+      {/* COMPANY IMAGE at the bottom */}
       <div
         style={{
           padding: '3vh 15vw',
@@ -566,7 +539,7 @@ const Navigation = () => {
           backgroundColor: isMobile? 'rgba(0, 62, 138,1) ': backgroundColor,
           transition: 'background-color 0.3s ease-in-out',
           boxShadow: 'none',
-          height: isMobile? '70px': '80px',
+          height: isMobile? '7.5vh': '10vh',
           backdropFilter: 'blur(10px)',
         }}
       >
@@ -783,7 +756,7 @@ const Navigation = () => {
       </Drawer>
 
       {/* Content area below the nav bar */}
-      <div style={{ position: 'relative', height: isMobile? '94vh': '98vh', marginTop: isMobile ? '69px' : '0', background: isMobile? 'linear-gradient(to bottom, rgba(0, 0, 0, 0.0), transparent 30%, transparent 50%, rgba(0, 52, 108, 0.8))' :'none' }}>
+      <div style={{ position: 'relative', height: isMobile? '94vh': '98vh', marginTop: isMobile ? '7.5vh' : '0' }}>
         {value === 0 && <HomeTabContent />}
         {value === 1 && <ToursTabContent />}
         {value === 2 && <ContactTabContent />}
