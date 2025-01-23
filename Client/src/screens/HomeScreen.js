@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Container, Typography, Button, Grid, Box } from '@mui/material';
 import ImageGallery from '../components/Home/ImageGallery';
