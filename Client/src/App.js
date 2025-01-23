@@ -11,7 +11,7 @@ import Facilities from './screens/Facilities';
 import Contact from './screens/Contact';
 import AdminPanel from './screens/AdminPanel';
 import TourDetails from './screens/TourDetails';
-import Itinerary from './screens/Itinerary'
+// import Itinerary from './screens/Itinerary'
 
 
 const App = () => {
@@ -29,7 +29,7 @@ const App = () => {
         <Route path='/contact' element={<Contact />} /> 
         <Route path='/admin' element={<AdminPanel />} /> 
         <Route path='/tours/:id' element={<TourDetails/>}/>
-        <Route path="/tour/:tourId" element={<Itinerary />} />
+        {/* <Route path="/tour/:tourId" element={<Itinerary />} /> */}
       </Routes>
     </div>
   );

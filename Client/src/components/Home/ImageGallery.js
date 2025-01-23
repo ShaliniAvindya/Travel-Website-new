@@ -1,58 +1,61 @@
-import React, { useEffect, useState } from 'react';
-import { Grid, Card, CardContent, CardMedia, Typography, Box, Rating, Button } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Grid, Card, CardMedia, CardContent, Typography, Box, Rating, Button, CircularProgress } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { tourGallery } from './imageGalleryData';
+import axios from 'axios';
 import PhoneIcon from '@mui/icons-material/Phone';
-import Slider from 'react-slick';
-import "slick-carousel/slick/slick.css";
-import "slick-carousel/slick/slick-theme.css";
-
-function useDeviceType() {
-  const [deviceType, setDeviceType] = useState({
-    isMobile: window.innerWidth <= 768,
-    isTablet: window.innerWidth > 768 && window.innerWidth <= 1024,
-  });
-
-  useEffect(() => {
-    const handleResize = () => {
-      setDeviceType({
-        isMobile: window.innerWidth <= 768,
-        isTablet: window.innerWidth > 768 && window.innerWidth <= 1024,
-      });
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  return deviceType;
-}
 
 const ImageGallery = () => {
-  const { isMobile, isTablet } = useDeviceType();
+  const [tours, setTours] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const fetchTours = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/api/tours'); // Replace with your API endpoint
+        setTours(response.data);
+        setLoading(false);
+      } catch (err) {
+        setError('Failed to fetch tours. Please try again later.');
+        setLoading(false);
+      }
+    };
+
+    fetchTours();
+  }, []);
+
   const handleClick = (id) => {
-    navigate(`/tours/${id.$oid}`);
+    navigate(`/tours/${id}`);
   };
 
-  const sliderSettings = {
-    dots: true,
-    infinite: true,
-    speed: 500,
-    slidesToShow: 1,
-    slidesToScroll: 1,
-    autoplay: true,
-  };
+  if (loading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="70vh">
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="70vh">
+        <Typography variant="h6" color="error">
+          {error}
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
-    <Box sx={{ width: '100%', minHeight: '70vh', padding: isMobile? '20px 10px' : '20px 30px', backgroundColor: '#f9f9f9' }}>
+    <Box sx={{ width: '100%', minHeight: '70vh', padding: '20px 30px', backgroundColor: '#f9f9f9' }}>
       <Grid container spacing={5}>
-        {tourGallery.map((item, index) => (
-          <Grid item xs={12} sm={6} md={4} key={index}>
+        {tours.map((item) => (
+          <Grid item xs={12} sm={6} md={4} key={item._id}>
             <Card
               sx={{
                 borderRadius: '16px',
-                height: isMobile? '580px' : '610px',
+                height: '610px',
                 boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
                 transition: 'transform 0.3s ease, box-shadow 0.3s ease',
                 '&:hover': {
@@ -63,24 +66,20 @@ const ImageGallery = () => {
               }}
             >
               <Box sx={{ position: 'relative' }}>
-                <Slider {...sliderSettings}>
-                  {item.images.map((image, idx) => (
-                    <CardMedia
-                      key={idx}
-                      component="img"
-                      height="200"
-                      image={image}
-                      alt={item.title}
-                      sx={{
-                        cursor: 'pointer',
-                        '&:hover': {
-                          filter: 'brightness(0.85)',
-                        },
-                      }}
-                      onClick={() => handleClick(item._id)}
-                    />
-                  ))}
-                </Slider>
+                {/* Check if images array is empty and use a default placeholder image */}
+                <CardMedia
+                  component="img"
+                  height="200"
+                  image={item.tour_image}
+                  alt={item.title}
+                  sx={{
+                    cursor: 'pointer',
+                    '&:hover': {
+                      filter: 'brightness(0.85)',
+                    },
+                  }}
+                  onClick={() => handleClick(item._id)}
+                />
                 <Box
                   sx={{
                     position: 'absolute',
@@ -93,7 +92,7 @@ const ImageGallery = () => {
                   }}
                 >
                   <Typography variant="body2" fontWeight="bold">
-                    {item.days} days & {item.days - 1} nights
+                  {item.nights + 1} days & {item.nights} nights
                   </Typography>
                 </Box>
               </Box>
@@ -121,17 +120,22 @@ const ImageGallery = () => {
                     justifyContent="space-between"
                     mb={1}
                   >
-                    USD {item.price.toLocaleString()} {' '}
-                    <Typography
-                      component="span"
-                      variant="body1"
-                      sx={{ textDecoration: 'line-through', marginLeft: 1, color: 'text.secondary' }}
-                    >
-                      USD {(item.price + 500).toLocaleString()}
-                    </Typography>{' '}
-                    <Typography component="span" variant="body2" color="error" fontWeight="bold" backgroundColor="rgba(76, 175, 80, 0.1)" padding={0.5}>
-                      SAVE USD 500
-                    </Typography>
+                    {/* Check if price exists and is a valid number before calling toLocaleString */}
+                    USD {item.price && !isNaN(item.price) ? item.price.toLocaleString() : 'N/A'} {' '}
+                    {item.price && !isNaN(item.price) && (
+                      <Typography
+                        component="span"
+                        variant="body1"
+                        sx={{ textDecoration: 'line-through', marginLeft: 1, color: 'text.secondary' }}
+                      >
+                        USD {(item.price + 500).toLocaleString()}
+                      </Typography>
+                    )}
+                    {item.price && !isNaN(item.price) && (
+                      <Typography component="span" variant="body2" color="error" fontWeight="bold" backgroundColor="rgba(76, 175, 80, 0.1)" padding={0.5}>
+                        SAVE USD 500
+                      </Typography>
+                    )}
                   </Typography>
                 </Box>
                 <Box display="flex" gap={2} mt={3}>

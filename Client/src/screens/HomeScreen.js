@@ -154,6 +154,7 @@ const HomeScreen = () => {
       </Container>
 
       <HomeExperience /><br />
+
       <Box
         bgcolor="#ffffff"
         padding="30px"
@@ -190,7 +191,7 @@ const HomeScreen = () => {
         <br />
         <ImageGallery />
       </Box>
-      
+
       <br /><br />
 
       <OffersSection />

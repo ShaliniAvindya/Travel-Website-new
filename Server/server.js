@@ -3,9 +3,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const session = require('express-session');
 const passport = require('./passport'); 
-const roomRoutes = require('./routes/roomRoutes');
-const userRoutes = require('./routes/userRoutes');
-const notificationRoutes = require('./routes/notificationRoutes'); 
+const tourRoutes = require('./routes/tourRoutes');
 const bodyParser = require("body-parser");
 const contactRoutes = require('./routes/contactRoutes'); 
 
@@ -30,12 +28,10 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.use('/api/users', userRoutes);
-app.use('/api/rooms', roomRoutes);
-app.use('/api/notifications', notificationRoutes); 
+app.use('/api/tours', tourRoutes);
 
 // Connect to MongoDB
-mongoose.connect('mongodb+srv://harithmadu:myhoteldb@cluster0.klue1z8.mongodb.net/hotel-booking', { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect('mongodb+srv://shalini:Shalini%40LWD%40HL@cluster0.grvd0.mongodb.net/travel-website', { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log('DB connect successful'))
   .catch((err) => console.error('DB connection error:', err));
 
