@@ -6,16 +6,12 @@ const app = express();
 
 const db = require('./db');
 
-const roomRoutes = require('./routes/roomRoutes');
-const userRoutes = require('./routes/userRoutes');
-const bookingRoutes = require('./routes/bookingRoutes');
+const tourRoutes = require('./routes/tourRoutes');
 
 app.use(cors());
 app.use(bodyParser.json());
 
-app.use('/rooms', roomRoutes);
-app.use('/users', userRoutes);
-app.use('/book', bookingRoutes);
+app.use('/tours', tourRoutes);
 
 const port = process.env.port || 3000;
 app.listen(port, ()=>console.log(`Server running on ${port}`));

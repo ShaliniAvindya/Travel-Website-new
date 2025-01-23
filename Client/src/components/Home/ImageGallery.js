@@ -1,26 +1,61 @@
-import React from 'react';
-import { Grid, Card, CardMedia, CardContent, Typography, Box, Rating, Button } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Grid, Card, CardMedia, CardContent, Typography, Box, Rating, Button, CircularProgress } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { tourGallery } from './imageGalleryData';
+import axios from 'axios';
 import PhoneIcon from '@mui/icons-material/Phone';
 
-
 const ImageGallery = () => {
+  const [tours, setTours] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const fetchTours = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/api/tours'); // Replace with your API endpoint
+        setTours(response.data);
+        setLoading(false);
+      } catch (err) {
+        setError('Failed to fetch tours. Please try again later.');
+        setLoading(false);
+      }
+    };
+
+    fetchTours();
+  }, []);
+
   const handleClick = (id) => {
-    navigate(`/tours/${id.$oid}`);
+    navigate(`/tours/${id}`);
   };
+
+  if (loading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="70vh">
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="70vh">
+        <Typography variant="h6" color="error">
+          {error}
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ width: '100%', minHeight: '70vh', padding: '20px 30px', backgroundColor: '#f9f9f9' }}>
       <Grid container spacing={5}>
-        {tourGallery.map((item, index) => (
-          <Grid item xs={12} sm={6} md={4} key={index}>
+        {tours.map((item) => (
+          <Grid item xs={12} sm={6} md={4} key={item._id}>
             <Card
               sx={{
                 borderRadius: '16px',
-                height:'610px',
+                height: '610px',
                 boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
                 transition: 'transform 0.3s ease, box-shadow 0.3s ease',
                 '&:hover': {
@@ -31,10 +66,11 @@ const ImageGallery = () => {
               }}
             >
               <Box sx={{ position: 'relative' }}>
+                {/* Check if images array is empty and use a default placeholder image */}
                 <CardMedia
                   component="img"
                   height="200"
-                  image={item.images[0]}
+                  image={item.tour_image}
                   alt={item.title}
                   sx={{
                     cursor: 'pointer',
@@ -56,7 +92,7 @@ const ImageGallery = () => {
                   }}
                 >
                   <Typography variant="body2" fontWeight="bold">
-                    {item.days} days & {item.days - 1} nights
+                  {item.nights + 1} days & {item.nights} nights
                   </Typography>
                 </Box>
               </Box>
@@ -72,31 +108,38 @@ const ImageGallery = () => {
                     </Typography>
                   </Box>
                 </Box>
-                <Box >
+                <Box>
                   <Typography
-                    variant="body1" 
+                    variant="body1"
                     sx={{
                       color: 'text.primary',
                       fontWeight: 'bold',
                     }}
                     gutterBottom
-                    display="flex" justifyContent="space-between" mb={1}
+                    display="flex"
+                    justifyContent="space-between"
+                    mb={1}
                   >
-                    USD {item.price.toLocaleString()} {' '}
-                    <Typography
-                      component="span"
-                      variant="body1"
-                      sx={{ textDecoration: 'line-through', marginLeft: 1, color: 'text.secondary' }}
-                    >
-                      USD {(item.price + 500).toLocaleString()}
-                    </Typography>{' '}
-                    <Typography component="span" variant="body2" color="error" fontWeight="bold" backgroundColor="rgba(76, 175, 80, 0.1)" padding={0.5}> 
-                      SAVE USD 500
-                    </Typography>
+                    {/* Check if price exists and is a valid number before calling toLocaleString */}
+                    USD {item.price && !isNaN(item.price) ? item.price.toLocaleString() : 'N/A'} {' '}
+                    {item.price && !isNaN(item.price) && (
+                      <Typography
+                        component="span"
+                        variant="body1"
+                        sx={{ textDecoration: 'line-through', marginLeft: 1, color: 'text.secondary' }}
+                      >
+                        USD {(item.price + 500).toLocaleString()}
+                      </Typography>
+                    )}
+                    {item.price && !isNaN(item.price) && (
+                      <Typography component="span" variant="body2" color="error" fontWeight="bold" backgroundColor="rgba(76, 175, 80, 0.1)" padding={0.5}>
+                        SAVE USD 500
+                      </Typography>
+                    )}
                   </Typography>
                 </Box>
                 <Box display="flex" gap={2} mt={3}>
-                <Button
+                  <Button
                     variant="outlined"
                     startIcon={<PhoneIcon />}
                     sx={{
@@ -134,4 +177,3 @@ const ImageGallery = () => {
 };
 
 export default ImageGallery;
-

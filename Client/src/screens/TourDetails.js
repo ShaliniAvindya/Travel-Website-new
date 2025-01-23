@@ -1,40 +1,39 @@
-import React from 'react';
+import React, { useEffect , useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Typography, Box, Button } from '@mui/material';
 import { PhoneInTalk as PhoneInTalkIcon, ArrowForward as ArrowForwardIcon } from '@mui/icons-material';
-import { tourGallery } from '../components/Home/imageGalleryData'; 
 import TourImages from './TourImages';
 import Itinerary from './Itinerary';
 import Footer from '../components/Footer';
+import axios from 'axios';
 
 const TourDetails = () => {
   const { id } = useParams(); 
   const navigate = useNavigate();
+  const [tour, setTour] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const tourDetails = tourGallery.find((tour) => tour._id.$oid === id);
+  useEffect(() => {
+    const fetchTourDetails = async () => {
+      try {
+        const response = await axios.get(`http://localhost:5000/api/tours/${id}`); 
+        setTour(response.data);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching tour details:', error);
+        setLoading(false);  
+      }
+    };
+    window.scrollTo(0, 0);
+    fetchTourDetails();
+  }, [id]); 
 
-  if (!tourDetails) {
-    return (
-      <Box padding="30px" textAlign="center">
-        <Typography
-          variant="h4"
-          sx={{ color: '#D32F2F', fontFamily: 'Domine' }}
-        >
-          Tour not found
-        </Typography>
-        <Button
-          variant="contained"
-          sx={{
-            marginTop: '20px',
-            backgroundColor: '#0A369D',
-            ':hover': { backgroundColor: '#4472CA' },
-          }}
-          onClick={() => navigate('/')}
-        >
-          Back to Tours
-        </Button>
-      </Box>
-    );
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!tour) {
+    return <div>Tour not found</div>;
   }
 
   const handleInquiryClick = () => {
@@ -54,27 +53,27 @@ const TourDetails = () => {
             textAlign: 'left',
           }}
         >
-          {tourDetails.title}
+          {tour.title}
         </Typography>
 
         {/* Days & Nights */}
         <Box className="inline-block bg-gradient-to-r from-indigo-500 via-purple-600 to-pink-500 py-3 px-8 mb-8 rounded-lg shadow-xl">
           <Typography className="text-white text-6xl font-[Playfair Display]">
-            {tourDetails.days} Days / {tourDetails.days - 1} Nights
+            {tour.nights + 1} Days / {tour.nights} Nights
           </Typography>
         </Box>
 
         {/* Price */}
         <Box className="inline-block bg-gradient-to-r from-red-600 via-red-700 to-red-800 py-3 px-8 mb-12 ml-4 rounded-lg shadow-xl">
           <Typography className="text-white text-7xl font-[Domine]">
-            Price: USD {tourDetails.price.toLocaleString()}
+            Price: USD {tour.price.toLocaleString()}
           </Typography>
         </Box>
 
         {/* Inquiry Button */}
         <Button
           sx={{
-            background: 'linear-gradient(to right, #1e3a8a, #4f46e5)', // Gradient background
+            background: 'linear-gradient(to right, #1e3a8a, #4f46e5)', 
             color: 'white',
             padding: '10px 20px',
             marginLeft: '20px',
@@ -97,7 +96,7 @@ const TourDetails = () => {
         </Button>
 
         {/* others */}
-        {tourDetails.others.split("\n").map((line, index) => (
+        {/* {tour.others.split("\n").map((line, index) => (
         <Typography
           key={index}
           variant="h5"
@@ -109,11 +108,10 @@ const TourDetails = () => {
         >
           {line}
         </Typography>
-      ))}<br></br>
-
+      ))}<br></br> */}
 
         {/* Main Description */}
-        <Typography
+        {/* <Typography
         sx={{
           fontFamily: 'Playfair Display',
           color: 'black',
@@ -122,56 +120,68 @@ const TourDetails = () => {
           fontSize: '18px',
         }}
       >
-        {tourDetails.sum}
-      </Typography><br />
+        {tour.sum}
+      </Typography><br /> */}
         
+      {/* Main Image and Gallery */}
+      {tour.tour_image && (
+    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '20px' }}>
+    <div className="main-image-container">
+      <img
+        src={tour.tour_image}
+        alt={tour.title}
+        className="main-image"
+        style={{
+          width: '800px',
+          height: 'auto',
+          borderRadius: '10px',
+          objectFit: 'cover',
+          maxHeight: '650px',
+        }}
+      />
+      <div className="main-image-overlay"></div>
+    </div>
 
-        {/* Main Image and Gallery */}
-        {tourDetails.images && tourDetails.images[0] && (
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '20px' }}>
-            <div className="main-image-container">
-              <img
-                src={tourDetails.images[0]}
-                alt={tourDetails.title}
-                className="main-image"
-                style={{
-                  width: '800px',
-                  height: 'auto',
-                  borderRadius: '10px',
-                  objectFit: 'cover',
-                  maxHeight: '650px',
-                }}
-              />
-              <div className="main-image-overlay"></div>
-            </div>
+    {/* Custom Styles */}
+    <style>
+      {`
+        .main-image {
+          transition: transform 0.3s ease, box-shadow 0.3s ease;
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .main-image:hover {
+          transform: scale(1.05);
+          box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+        .main-image-container {
+          position: relative;
+        }
+        .main-image-overlay {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          width: 100%;
+          height: 50px;
+          border-radius: 0 0 10px 10px;
+        }
+      `}
+    </style>
 
-            <style>
-              {`
-                .main-image {
-                  transition: transform 0.3s ease, box-shadow 0.3s ease;
-                  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-                }
-                .main-image:hover {
-                  transform: scale(1.05); 
-                  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); 
-                }
-              `}
-            </style>
+    {/* Image Gallery */}
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '10px',
+        width: '60%',
+        height: 'auto',
+      }}
+    >
+      <TourImages mainImageHeight="400px" />
+    </div>
+  </div>
+)}
 
-            {/* Image Gallery on the Right */}
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '10px',
-                width: '60%',
-                height: 'auto',
-              }}
-            >
-              <TourImages mainImageHeight="400px" />
-            </div>
-          </div>
-        )}
 
         {/* Itinerary Section */}
         <div><br /><br />
@@ -187,7 +197,7 @@ const TourDetails = () => {
             backgroundColor: '#0A369D',
             ':hover': { backgroundColor: '#4472CA' },
           }}
-          onClick={() => navigate('/')}
+          onClick={() => navigate('/tours')}
         >
           Back to Tours
         </Button>

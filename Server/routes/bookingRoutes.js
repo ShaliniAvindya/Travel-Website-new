@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express();
 const Booking = require('../models/booking');
-const Room = require('../models/Room');
+const Room = require('../models/Tour');
 
 // Create a new booking
 router.post('/', async (req, res) => {

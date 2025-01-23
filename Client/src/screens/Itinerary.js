@@ -1,152 +1,197 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import ToursData from "./ToursData"; 
-import { tourGallery } from "../components/Home/imageGalleryData"; 
+import axios from "axios";
 import { Button, Typography, Box } from "@mui/material";
 import { PhoneInTalk as PhoneInTalkIcon, ArrowForward as ArrowForwardIcon } from "@mui/icons-material";
 
-
 const Itinerary = () => {
-  const { id } = useParams(); 
-  const [activeTab, setActiveTab] = useState("itinerary"); // State for the active tab
+  const { id } = useParams();
+  const [tourData, setTourData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [activeTab, setActiveTab] = useState("itinerary");
+  const [imageIndices, setImageIndices] = useState([]);
 
-  const selectedTour = ToursData.find((tour) => tour._id.$oid === id);
-  const matchingGallery = tourGallery.find(
-    (gallery) => gallery._id.$oid === selectedTour?._id.$oid
-  );
+  useEffect(() => {
+    const fetchTourData = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get(`/api/tours/${id}`);
+        setTourData(response.data);
 
-  const combinedTour = { ...selectedTour, ...matchingGallery }; // Merge the tour data with gallery data
+        // Initialize image indices for all days
+        const initialIndices = Array(response.data.nights + 1).fill(0);
+        setImageIndices(initialIndices);
+      } catch (err) {
+        console.error("Error fetching tour data:", err);
+        setError("Failed to fetch tour details. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  if (!combinedTour) {
-    return <h2 className="text-center text-lg font-semibold">Tour not found. Please select a valid tour.</h2>;
+    fetchTourData();
+  }, [id]);
+
+  useEffect(() => {
+    if (!tourData || !tourData.itinerary_images) return;
+
+    // Single interval for all sliders
+    const interval = setInterval(() => {
+      setImageIndices((prevIndices) => {
+        return prevIndices.map((currentIndex, dayIndex) => {
+          const imagesForDay = tourData.itinerary_images[`day_${dayIndex + 1}`];
+          if (imagesForDay && imagesForDay.length > 0) {
+            return (currentIndex + 1) % imagesForDay.length; // Cycle to the next image
+          }
+          return currentIndex; // No change if no images
+        });
+      });
+    }, 3000); // Change images every 3 seconds
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(interval);
+  }, [tourData]);
+
+  if (loading) {
+    return <div>Loading tour details...</div>;
   }
+
+  if (error || !tourData) {
+    return <div>{error || "Tour not found."}</div>;
+  }
+
+  const totalDays = tourData.nights + 1;
   const handleInquiryClick = () => {
-    window.location.href = "tel:+1234567890"; 
+    window.location.href = "tel:+1234567890"; // Replace with your contact number
   };
   
   return (
-  <div className="itinerary-wrap flex flex-col w-full">
-  <div className="tabs flex justify-between mb-6 gap-4 w-full">
-  <div
-    className={`tab flex items-center justify-center px-8 py-4 cursor-pointer text-xl font-semibold transition-all duration-300 transform flex-1 border-2 rounded-lg ${
-      activeTab === "itinerary"
-        ? "bg-blue-600 text-white scale-105 shadow-lg border-blue-600"
-        : "bg-gray-100 text-gray-600 hover:bg-gray-200 hover:scale-105 border-gray-300"
-    } border-black hover:ring-2 hover:ring-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none`}
-    onClick={() => setActiveTab("itinerary")}
-  >
-    <i className="fas fa-map-marker-alt mr-2"></i> 
-    Itinerary
-  </div>
-  <div
-    className={`tab flex items-center justify-center px-8 py-4 cursor-pointer text-xl font-semibold transition-all duration-300 transform flex-1 border-2 rounded-lg ${
-      activeTab === "summary"
-        ? "bg-blue-600 text-white scale-105 shadow-lg border-blue-600"
-        : "bg-gray-100 text-gray-600 hover:bg-gray-200 hover:scale-105 border-gray-300"
-    } border-black hover:ring-2 hover:ring-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none`}
-    onClick={() => setActiveTab("summary")}
-  >
-    <i className="fas fa-info-circle mr-2"></i> 
-    Summary
-  </div>
-  <div
-    className={`tab flex items-center justify-center px-8 py-4 cursor-pointer text-xl font-semibold transition-all duration-300 transform flex-1 border-2 rounded-lg ${
-      activeTab === "finePrint"
-        ? "bg-blue-600 text-white scale-105 shadow-lg border-blue-600"
-        : "bg-gray-100 text-gray-600 hover:bg-gray-200 hover:scale-105 border-gray-300"
-    } border-black hover:ring-2 hover:ring-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none`}
-    onClick={() => setActiveTab("finePrint")}
-  >
-    <i className="fas fa-file-alt mr-2"></i> 
-    Fine Print
-  </div>
-</div>
-   {/* Tab Content */}
+    <div className="itinerary-wrap flex flex-col w-full">
+      <div className="tabs flex justify-between mb-6 gap-4 w-full">
+        {["itinerary", "summary", "fineprint"].map((tab) => (
+          <div
+            key={tab}
+            className={`tab flex items-center justify-center px-8 py-4 cursor-pointer text-xl font-semibold transition-all duration-300 transform flex-1 border-2 rounded-lg ${
+              activeTab === tab
+                ? "bg-blue-600 text-white scale-105 shadow-lg border-blue-600"
+                : "bg-gray-100 text-gray-600 hover:bg-gray-200 hover:scale-105 border-gray-300"
+            }`}
+            onClick={() => setActiveTab(tab)}
+          >
+            {tab.charAt(0).toUpperCase() + tab.slice(1)}
+          </div>
+        ))}
+      </div>
+
       <div className="tab-content p-6">
         {activeTab === "itinerary" && (
-          <div className="itinerary-container">
-            {Array.isArray(combinedTour.itinerary) &&
-              combinedTour.itinerary.map((item, itemIndex) => (
+          <div>
+            {Array.from({ length: totalDays }).map((_, dayIndex) => {
+              const dayDetails = tourData.itinerary[`day_${dayIndex + 1}`];
+              const imagesForDay = tourData.itinerary_images[`day_${dayIndex + 1}`];
+              const titleForDay = tourData.itinerary_title[`day_${dayIndex + 1}`];
+
+              return (
                 <div
-                  className="itinerary-item flex flex-wrap border border-gray-300  p-6 mb-6 bg-white shadow-lg transform hover:scale-105 transition-all"
-                  key={itemIndex}
+                  key={dayIndex}
+                  className="itinerary-item flex flex-wrap border border-gray-300 p-6 mb-6 bg-white shadow-lg transform hover:scale-105 transition-all"
                 >
                   <div className="itinerary-desc-wrap flex flex-col gap-6 flex-1">
-                    <div className="flex items-center ">
+                    <div className="flex items-center">
                       <div className="itinerary-day-box px-4 py-2 w-40 bg-blue-600 text-white font-semibold text-2xl">
-                        {item.day}
+                        Day {dayIndex + 1}
                       </div>
                       <div className="itinerary-title bg-gray-200 px-6 py-2 w-[80%] text-2xl font-semibold text-blue-800">
-                      {item.title}
-                    </div>
-
+                        {titleForDay || `Day ${dayIndex + 1} - Title Not Available`}
+                      </div>
                     </div>
                     <div className="itinerary-desc text-base leading-relaxed text-gray-700">
-                      {item.description}
-                    </div>
-                    <div className="itinerary-features">
-                      {Array.isArray(item.features) && (
-                        <ul className="list-disc pl-6 text-lg text-gray-800">
-                          {item.features.map((feature, i) => (
-                            <li key={i}>{feature}</li>
+                      {dayDetails ? (
+                        <ul className="list-disc pl-6">
+                          {dayDetails.map((detail, index) => (
+                            <li key={index} className="mb-2">{detail}</li>
                           ))}
                         </ul>
+                      ) : (
+                        <p>No activities available for this day.</p>
                       )}
                     </div>
                   </div>
-                  {item.image && (
-                  <div className="itinerary-item-img flex-shrink-0 w-64 h-60 rounded-xl overflow-hidden">
-                    <img src={item.image} alt={item.alt} className="w-full h-full object-cover rounded-xl" />
+                  <div className="itinerary-images relative flex items-center justify-center w-64 h-60 rounded-xl overflow-hidden">
+                    {imagesForDay && imagesForDay.length > 0 ? (
+                      <>
+                        <img
+                          src={imagesForDay[imageIndices[dayIndex]]}
+                          alt={`Day ${dayIndex + 1} image`}
+                          className="w-full h-full object-cover rounded-xl transition-all duration-1000 ease-in-out"
+                        />
+                        <div
+                          className="absolute left-2 top-1/2 transform -translate-y-1/2 text-2xl font-bold cursor-pointer z-10 select-none text-white"
+                          onClick={() =>
+                            setImageIndices((prevIndices) => {
+                              const newIndices = [...prevIndices];
+                              newIndices[dayIndex] =
+                                (newIndices[dayIndex] - 1 + imagesForDay.length) %
+                                imagesForDay.length; // Cycle backward
+                              return newIndices;
+                            })
+                          }
+                        >
+                          &lt;
+                        </div>
+                        <div
+                          className="absolute right-2 top-1/2 transform -translate-y-1/2 text-2xl font-bold cursor-pointer z-10 select-none text-white"
+                          onClick={() =>
+                            setImageIndices((prevIndices) => {
+                              const newIndices = [...prevIndices];
+                              newIndices[dayIndex] =
+                                (newIndices[dayIndex] + 1) % imagesForDay.length; // Cycle forward
+                              return newIndices;
+                            })
+                          }
+                        >
+                          &gt;
+                        </div>
+                      </>
+                    ) : (
+                      <p>No images available for this day.</p>
+                    )}
                   </div>
-                )}
                 </div>
-              ))}
+              );
+            })}
           </div>
         )}
-
-        {activeTab === "summary" && (
+  {activeTab === "summary" && (
           <div className="summary-container">
-            {Array.isArray(combinedTour.itinerary) &&
-              combinedTour.itinerary.map((item, itemIndex) => (
-                <div className="summary-item flex flex-wrap border border-gray-300 p-6 mb-6 bg-white shadow-lg transform hover:scale-105 transition-all" key={itemIndex}>
-                  <div className="summary-desc-wrap flex flex-col gap-6 flex-1">
-                    <div className="flex items-center">
-                    <div className="itinerary-day-box px-4 py-2 w-40 bg-blue-600 text-white font-semibold text-2xl">
-                        {item.day}
-                      </div>
-                      <div className="itinerary-title bg-gray-200 px-6 py-2 w-[80%] text-2xl font-semibold text-blue-800">
-                      {item.title}
-                    </div>
-                    </div>
-                    <div className="summary-icons flex gap-4 mb-6">
-                      {item.summaryIcons && item.summaryIcons.map((icon, iconIndex) => (
-                        <span key={iconIndex} className="text-3xl text-gray-600">
-                          {icon}
-                        </span>
-                      ))}
-                    </div>
-                    <div className="summary-desc text-lg text-gray-700 leading-relaxed">
-                      {item.summary || "No summary available."}
-                    </div>
-                  </div>
-                  {item.image && (
-                    <div className="summary-item-img flex-shrink-0 w-64 h-40 rounded-xl overflow-hidden">
-                      <img src={item.image} alt={item.alt} className="w-full h-full object-cover rounded-xl" />
-                    </div>
-                  )}
+            <div className="summary-item flex flex-wrap border border-gray-300 p-6 mb-6 bg-white shadow-lg transform hover:scale-105 transition-all">
+              <div className="summary-desc-wrap flex flex-col gap-6 flex-1">
+                <div className="summary-desc text-lg text-gray-700 leading-relaxed">
+                  {tourData.tour_summary || "No summary available."}
                 </div>
-              ))}
+              </div>
+              {tourData.tour_image && (
+                <div className="summary-item-img flex-shrink-0 w-64 h-40 rounded-xl overflow-hidden">
+                  <img
+                    src={tourData.tour_image}
+                    alt="Tour Summary Image"
+                    className="w-full h-full object-cover rounded-xl"
+                  />
+                </div>
+              )}
+            </div>
           </div>
         )}
 
-        {activeTab === "finePrint" && (
-          <div className="overflow-x-auto bg-white p-8 ">
-              <Box className=" justify-center space-x-4 items-cente">
-               <Box className="inline-block bg-gradient-to-r from-red-600 via-red-700 to-red-800 py-3 px-8 mb-12 ml-4 shadow-xl">
-              <Typography className="text-white text-7xl font-[Domine]">
-                Price: USD {combinedTour.price.toLocaleString()}
-              </Typography>
-            </Box>
+{activeTab === "fineprint" && (
+          <div className="overflow-x-auto bg-white p-8">
+            <Box className="justify-center space-x-4 items-center">
+              <Box className="inline-block bg-gradient-to-r from-red-600 via-red-700 to-red-800 py-3 px-8 mb-12 ml-4 shadow-xl">
+                <Typography className="text-white text-7xl font-[Domine]">
+                  Price: USD {tourData.price.toLocaleString()}
+                </Typography>
+              </Box>
               <Button
                 sx={{
                   background: "linear-gradient(to right, #1e3a8a, #4f46e5)",
@@ -156,7 +201,6 @@ const Itinerary = () => {
                   fontFamily: "Domine",
                   alignItems: "center",
                   justifyContent: "center",
-                  width: "auto",
                   "&:hover": {
                     background: "linear-gradient(to right, #1e40af, #3730a3)",
                   },
@@ -179,11 +223,12 @@ const Itinerary = () => {
               <tbody>
                 <tr className="min-h-[200px]">
                   <td className="px-8 py-6 border-b border-r">
-                    {Array.isArray(combinedTour.inclusions) && combinedTour.inclusions.length > 0 ? (
+                    {Array.isArray(tourData.inclusions) && tourData.inclusions.length > 0 ? (
                       <ul className="list-none gap-y-4 text-lg">
-                        {combinedTour.inclusions.map((inc, incIndex) => (
-                          <li key={incIndex} className="flex items-center text-green-500 mb-4">
-                            <span className="mr-4 text-xl">&#10004;</span>{inc}
+                        {tourData.inclusions.map((inc, index) => (
+                          <li key={index} className="flex items-center text-green-500 mb-4">
+                            <span className="mr-4 text-xl">&#10004;</span>
+                            {inc}
                           </li>
                         ))}
                       </ul>
@@ -192,11 +237,12 @@ const Itinerary = () => {
                     )}
                   </td>
                   <td className="px-8 py-6 border-b">
-                    {Array.isArray(combinedTour.exclusions) && combinedTour.exclusions.length > 0 ? (
+                    {Array.isArray(tourData.exclusions) && tourData.exclusions.length > 0 ? (
                       <ul className="list-none gap-y-4 text-lg">
-                        {combinedTour.exclusions.map((exc, excIndex) => (
-                          <li key={excIndex} className="flex items-center text-red-500 mb-4">
-                            <span className="mr-4 text-xl">&#10008;</span>{exc}
+                        {tourData.exclusions.map((exc, index) => (
+                          <li key={index} className="flex items-center text-red-500 mb-4">
+                            <span className="mr-4 text-xl">&#10008;</span>
+                            {exc}
                           </li>
                         ))}
                       </ul>
@@ -207,8 +253,7 @@ const Itinerary = () => {
                 </tr>
               </tbody>
             </table>
-
-            {/*Policies Section */}
+            {/* Policies Section */}
             <div className="mt-12 space-y-12">
               <div>
                 <h3 className="text-3xl font-semibold text-blue-900 mb-6">Refund Policies</h3>
@@ -247,11 +292,13 @@ const Itinerary = () => {
                   <li>Payments must be made according to the specified deadlines.</li>
                 </ul>
               </div>
-            </div>
+          </div>
           </div>
         )}
       </div>
     </div>
+
+
   );
 };
 

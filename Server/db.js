@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const app = express();
 
 // MongoDB connection URI
-const uri = 'mongodb+srv://harithmadu:myhoteldb@cluster0.klue1z8.mongodb.net/hotel-booking';
+const uri = 'mongodb+srv://shalini:Shalini%40LWD%40HL@cluster0.grvd0.mongodb.net/travel-website';
 
 // Function to connect to MongoDB
 async function connectDB() {

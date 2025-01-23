@@ -192,8 +192,8 @@ const TourImages = () => {
           .modal-gallery-grid img:hover {
             transform: scale(1.05);
           }
-          
-          .button-overlay {
+
+        .button-overlay {
           position: absolute;
           top: 46%;
           left: 50%;
@@ -216,46 +216,41 @@ const TourImages = () => {
           background-color: #0056b3;
           transform: scale(1.05);
         }
-          
-        `}
+ `}
       </style>
 
       <div className="tour-images-grid">
-        {galleryDetails.map((section, index) => (
-          <div
-            className="tour-image-item"
-            key={index}
-            onClick={() => openModal(index)} 
-          >
-            <img
-              src={section.images[0]} 
-              alt={`Preview of ${section.title}`}
-              loading="lazy"
-              className="w-full h-auto rounded-md object-cover"
-              style={{
-                width: '100%',
-                borderRadius: '8px',
-                objectFit: 'cover',
-                height: '200px',
-              }}
-            />
-            {/* Add the button directly over the image */}
-            <div className="button-overlay">
-              <button
-                className="view-images-button bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition"
-                onClick={() => openModal(index)} // Open modal on button click
-              >
-                View Images
-              </button>
-            </div>
-              
-            <div className="image-overlay">
-              <h3>{section.title}</h3>
-              <p>{section.description}</p>
-            </div>
-          </div>
-        ))}
+  {galleryDetails.map((section, index) => (
+    <div className="tour-image-item" key={index}>
+      <img
+        src={section.images[0]}
+        alt={`Preview of ${section.title}`}
+        loading="lazy"
+        className="w-full h-auto rounded-md object-cover"
+        style={{
+          width: '100%',
+          borderRadius: '8px',
+          objectFit: 'cover',
+          height: '200px',
+        }}
+      />
+      {/* Add the button directly over the image */}
+      <div className="button-overlay">
+        <button
+          className="view-images-button bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition"
+          onClick={() => openModal(index)} // Open modal on button click
+        >
+          View Images
+        </button>
       </div>
+      <div className="image-overlay">
+        <h3>{section.title}</h3>
+        <p>{section.description}</p>
+      </div>
+    </div>
+  ))}
+</div>
+
 
       {/* Modal */}
       {isModalOpen && selectedSection && (
