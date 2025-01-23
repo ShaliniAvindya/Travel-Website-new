@@ -269,68 +269,99 @@ const HomeTabContent = () => {
 };
 
 // ----------------------- Reusable TabContent for other pages -----------------------
-const TabContent = ({ title, backgroundImage }) => (
-  <div
-    style={{
-      backgroundImage: `url(${backgroundImage})`,
-      backgroundRepeat: 'no-repeat',
-      backgroundSize: 'cover',
-      minHeight: '98vh',
-      opacity: '0.9',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      color: 'black',
-    }}
-  >
-    <AnimatedText>
-      <Typography
-        variant="h1"
-        component="div"
-        style={{ textAlign: 'center' }}
-        marginTop={11}
-        fontFamily={'Playfair Display'}
-      >
-        {title}
-      </Typography>
-    </AnimatedText>
-  </div>
-  
-);
+const TabContent = ({ title, backgroundImage1, backgroundImage2 }) => {
+  const { isMobile, isTablet } = useDeviceType();
+
+  const overlayStyle = {
+    background: isMobile
+      ? 'linear-gradient(to bottom, rgba(0, 0, 0, 0.0), transparent 30%, transparent 10%, rgba(0, 0, 0, 0.6))'
+      : 'linear-gradient(to bottom, rgba(0, 0, 0, 0.5), transparent 30%, transparent 70%, rgba(0, 0, 0, 0.5))',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 1,
+  };
+
+  const containerStyle = {
+    backgroundImage: isMobile? `url(${backgroundImage2})` :`url(${backgroundImage1})`,
+    backgroundRepeat: 'no-repeat',
+    backgroundSize: 'cover',
+    minHeight: isMobile? '92.5vh' : '100vh',
+    opacity: '0.9',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: 'black',
+    position: 'relative',
+  };
+
+  const contentStyle = {
+    position: 'relative',
+    zIndex: 2,
+  };
+
+  return (
+    <div style={containerStyle}>
+      <div style={overlayStyle}></div>
+      <div style={contentStyle}>
+        <AnimatedText>
+          <Typography
+            variant={ isMobile? "h2" : "h1"}
+            component="div"
+            style={{ textAlign: 'center' }}
+            marginTop={11}
+            fontFamily={'Playfair Display'}
+            color={'white'}
+            fontWeight={'bolder'}
+          >
+            {title}
+          </Typography>
+        </AnimatedText>
+      </div>
+    </div>
+  );
+};
 
 // ----------------------- Other Pages/Tab contents -----------------------
 export const ToursTabContent = () => (
   <TabContent
     title="Explore Tours"
-    backgroundImage="https://i.postimg.cc/Wb5WNvG7/pexels-asadphoto-1483053.jpg"
+    backgroundImage1= "https://i.postimg.cc/Wb5WNvG7/pexels-asadphoto-1483053.jpg"
+    backgroundImage2= "https://i.postimg.cc/L5Db3GNy/Untitled-design-6.png"
   />
 );
 
 export const FacilitiesTabContent = () => (
   <TabContent
     title="Facilities we offer"
-    backgroundImage="https://firebasestorage.googleapis.com/v0/b/hotel-booking-system-35f4a.appspot.com/o/Public%20Folder%2FSwimming.png?alt=media&token=a8b2c994-cf8e-429c-b874-fd01b633a44e"
+    backgroundImage1="https://firebasestorage.googleapis.com/v0/b/hotel-booking-system-35f4a.appspot.com/o/Public%20Folder%2FSwimming.png?alt=media&token=a8b2c994-cf8e-429c-b874-fd01b633a44e"
+    backgroundImage2='https://i.postimg.cc/BbbxRyJ7/Untitled-design-10.png'
   />
 );
 
 export const ContactTabContent = () => (
   <TabContent
     title="Contact us"
-    backgroundImage="https://i.postimg.cc/Wb5WNvG7/pexels-asadphoto-1483053.jpg"
+    backgroundImage1="https://i.postimg.cc/Wb5WNvG7/pexels-asadphoto-1483053.jpg"
+    backgroundImage2='https://i.postimg.cc/QMgk716m/Untitled-design-7.png'
   />
 );
 
 export const LoginTabContent = () => (
   <TabContent
     title="Login with us"
-    backgroundImage="https://firebasestorage.googleapis.com/v0/b/hotel-booking-system-35f4a.appspot.com/o/Public%20Folder%2Flogin.jpg?alt=media&token=a810ff0a-6305-4be3-8a40-d0abbb0b8875"
+    backgroundImage1="https://firebasestorage.googleapis.com/v0/b/hotel-booking-system-35f4a.appspot.com/o/Public%20Folder%2Flogin.jpg?alt=media&token=a810ff0a-6305-4be3-8a40-d0abbb0b8875"
+    backgroundImage2='https://i.postimg.cc/mDb3ykJs/Untitled-design-8.png'
   />
 );
 
 export const RegisterTabContent = () => (
   <TabContent
     title="Register with us"
-    backgroundImage="https://firebasestorage.googleapis.com/v0/b/hotel-booking-system-35f4a.appspot.com/o/Public%20Folder%2Flogin.jpg?alt=media&token=a810ff0a-6305-4be3-8a40-d0abbb0b8875"
+    backgroundImage1="https://firebasestorage.googleapis.com/v0/b/hotel-booking-system-35f4a.appspot.com/o/Public%20Folder%2Flogin.jpg?alt=media&token=a810ff0a-6305-4be3-8a40-d0abbb0b8875"
+    backgroundImage2='https://i.postimg.cc/4dB6LZRh/Untitled-design-9.png'
   />
 );
 
@@ -382,7 +413,7 @@ const Navigation = () => {
 
   useEffect(() => {
     // Highlight the correct tab depending on route
-    if (location.pathname === '/tours') {
+    if (location.pathname.startsWith('/tours')) {
       setValue(1);
     } else if (location.pathname === '/contact') {
       setValue(2);

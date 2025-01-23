@@ -1,26 +1,58 @@
-import React from 'react';
-import { Grid, Card, CardMedia, CardContent, Typography, Box, Rating, Button } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { Grid, Card, CardContent, CardMedia, Typography, Box, Rating, Button } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { tourGallery } from './imageGalleryData';
 import PhoneIcon from '@mui/icons-material/Phone';
+import Slider from 'react-slick';
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
 
+function useDeviceType() {
+  const [deviceType, setDeviceType] = useState({
+    isMobile: window.innerWidth <= 768,
+    isTablet: window.innerWidth > 768 && window.innerWidth <= 1024,
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      setDeviceType({
+        isMobile: window.innerWidth <= 768,
+        isTablet: window.innerWidth > 768 && window.innerWidth <= 1024,
+      });
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  return deviceType;
+}
 
 const ImageGallery = () => {
+  const { isMobile, isTablet } = useDeviceType();
   const navigate = useNavigate();
 
   const handleClick = (id) => {
     navigate(`/tours/${id.$oid}`);
   };
 
+  const sliderSettings = {
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    autoplay: true,
+  };
+
   return (
-    <Box sx={{ width: '100%', minHeight: '70vh', padding: '20px 30px', backgroundColor: '#f9f9f9' }}>
+    <Box sx={{ width: '100%', minHeight: '70vh', padding: isMobile? '20px 10px' : '20px 30px', backgroundColor: '#f9f9f9' }}>
       <Grid container spacing={5}>
         {tourGallery.map((item, index) => (
           <Grid item xs={12} sm={6} md={4} key={index}>
             <Card
               sx={{
                 borderRadius: '16px',
-                height:'610px',
+                height: isMobile? '580px' : '610px',
                 boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
                 transition: 'transform 0.3s ease, box-shadow 0.3s ease',
                 '&:hover': {
@@ -31,19 +63,24 @@ const ImageGallery = () => {
               }}
             >
               <Box sx={{ position: 'relative' }}>
-                <CardMedia
-                  component="img"
-                  height="200"
-                  image={item.images[0]}
-                  alt={item.title}
-                  sx={{
-                    cursor: 'pointer',
-                    '&:hover': {
-                      filter: 'brightness(0.85)',
-                    },
-                  }}
-                  onClick={() => handleClick(item._id)}
-                />
+                <Slider {...sliderSettings}>
+                  {item.images.map((image, idx) => (
+                    <CardMedia
+                      key={idx}
+                      component="img"
+                      height="200"
+                      image={image}
+                      alt={item.title}
+                      sx={{
+                        cursor: 'pointer',
+                        '&:hover': {
+                          filter: 'brightness(0.85)',
+                        },
+                      }}
+                      onClick={() => handleClick(item._id)}
+                    />
+                  ))}
+                </Slider>
                 <Box
                   sx={{
                     position: 'absolute',
@@ -72,15 +109,17 @@ const ImageGallery = () => {
                     </Typography>
                   </Box>
                 </Box>
-                <Box >
+                <Box>
                   <Typography
-                    variant="body1" 
+                    variant="body1"
                     sx={{
                       color: 'text.primary',
                       fontWeight: 'bold',
                     }}
                     gutterBottom
-                    display="flex" justifyContent="space-between" mb={1}
+                    display="flex"
+                    justifyContent="space-between"
+                    mb={1}
                   >
                     USD {item.price.toLocaleString()} {' '}
                     <Typography
@@ -90,13 +129,13 @@ const ImageGallery = () => {
                     >
                       USD {(item.price + 500).toLocaleString()}
                     </Typography>{' '}
-                    <Typography component="span" variant="body2" color="error" fontWeight="bold" backgroundColor="rgba(76, 175, 80, 0.1)" padding={0.5}> 
+                    <Typography component="span" variant="body2" color="error" fontWeight="bold" backgroundColor="rgba(76, 175, 80, 0.1)" padding={0.5}>
                       SAVE USD 500
                     </Typography>
                   </Typography>
                 </Box>
                 <Box display="flex" gap={2} mt={3}>
-                <Button
+                  <Button
                     variant="outlined"
                     startIcon={<PhoneIcon />}
                     sx={{

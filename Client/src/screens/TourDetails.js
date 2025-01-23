@@ -43,74 +43,110 @@ const TourDetails = () => {
 
   return (
     <>
-      <Box padding="30px" sx={{ marginLeft: '100px', marginRight: '100px' }}>
+      <Box padding="40px" sx={{ margin: '0 6vw ', backgroundColor: '#f0f0f0' }}>
         {/* Title */}
         <Typography
           variant="h2"
           sx={{
             fontFamily: 'Dancing Script',
             color: '#023047',
-            marginBottom: '20px',
-            textAlign: 'left',
+            marginBottom: '30px',
+            textAlign: 'center',
+            fontWeight: 'bold',
           }}
         >
           {tourDetails.title}
         </Typography>
 
-        {/* Days & Nights */}
-        <Box className="inline-block bg-gradient-to-r from-indigo-500 via-purple-600 to-pink-500 py-3 px-8 mb-8 rounded-lg shadow-xl">
-          <Typography className="text-white text-6xl font-[Playfair Display]">
-            {tourDetails.days} Days / {tourDetails.days - 1} Nights
-          </Typography>
-        </Box>
+        <div>
+          {/* Days & Nights */}
+          <Box className="inline-block bg-blue-900/40 py-3 px-5 mb-8 shadow-xl">
+            <Typography className="text-white  text-6xl font-[Playfair Display]">
+              {tourDetails.days} Days / {tourDetails.days - 1} Nights
+            </Typography>
+          </Box>
 
-        {/* Price */}
-        <Box className="inline-block bg-gradient-to-r from-red-600 via-red-700 to-red-800 py-3 px-8 mb-12 ml-4 rounded-lg shadow-xl">
-          <Typography className="text-white text-7xl font-[Domine]">
-            Price: USD {tourDetails.price.toLocaleString()}
-          </Typography>
-        </Box>
+          {/* Price */}
+          <Box className="inline-block bg-blue-950/40 py-3 px-5 mb-12 ml-4 shadow-xl">
+            <Typography className="text-white text-7xl font-[Domine]">
+              Price: USD {tourDetails.price.toLocaleString()}
+            </Typography>
+          </Box>
 
-        {/* Inquiry Button */}
-        <Button
-          sx={{
-            background: 'linear-gradient(to right, #1e3a8a, #4f46e5)', // Gradient background
-            color: 'white',
-            padding: '10px 20px',
-            marginLeft: '20px',
-            fontSize: '20px',
-            fontWeight: 'bold',
-            fontFamily: 'Domine',
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: 'auto',
-            '&:hover': {
-              background: 'linear-gradient(to right, #1e40af, #3730a3)', 
-            },
-          }}
-          onClick={handleInquiryClick}
-        >
-          <PhoneInTalkIcon sx={{ marginRight: '10px', fontSize: 'inherit' }} />
-          Inquiry Now
-          <ArrowForwardIcon sx={{ marginLeft: '10px', fontSize: 'inherit' }} />
-        </Button>
+          {/* Inquiry Button */}
+          <Button
+            sx={{
+              backgroundColor: '#1e40af',
+              color: 'white',
+              padding: '7px 20px',
+              fontSize: '20px',
+              fontWeight: 'bold',
+              fontFamily: 'Domine',
+              position: 'absolute',
+              right: '8vw',
+              width: 'auto',
+              '&:hover': {
+                background: 'linear-gradient(to right, #1e40af, #3730a3)', 
+              },
+            }}
+            onClick={handleInquiryClick}
+          >
+            <PhoneInTalkIcon sx={{ marginRight: '10px', fontSize: 'inherit' }} />
+            Inquiry Now
+            <ArrowForwardIcon sx={{ marginLeft: '10px', fontSize: 'inherit' }} />
+          </Button>
+        </div>
 
         {/* others */}
-        {tourDetails.others.split("\n").map((line, index) => (
-        <Typography
-          key={index}
-          variant="h5"
+        <Box
           sx={{
-            fontFamily: "Dancing Script",
-            color: "#023047",
-            textAlign: "left",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-start",
+            gap: "10px",
+            backgroundColor: "#f8f9fa",
+            padding: "10px 20px",
+            borderRadius: "10px",
+            boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
+            width: '29vw',
           }}
         >
-          {line}
-        </Typography>
-      ))}<br></br>
-
+          {tourDetails.others.split("\n").map((line, index) => {
+            return (
+              <Box
+                key={index}
+                sx={{
+                  display: "flex",
+                  width: "100%", // Full width of the box
+                }}
+              >
+                <Typography
+                  sx={{
+                    fontWeight: "bold",
+                    fontSize: "20px",
+                    fontFamily: "Dancing Script",
+                    color: "#023047",
+                    minWidth: "175px", 
+                    textAlign: "left",
+                  }}
+                >
+                  {line.split(":")[0]}:
+                </Typography>
+                <Typography
+                  sx={{
+                    fontSize: "20px",
+                    fontFamily: "Dancing Script",
+                    color: "#555",
+                    textAlign: "left",
+                  }}
+                >
+                  {line.split(":")[1]}
+                </Typography>
+              </Box>
+            );
+          })}
+        </Box>
+        <br></br>
 
         {/* Main Description */}
         <Typography
@@ -192,17 +228,7 @@ const TourDetails = () => {
           Back to Tours
         </Button>
       </Box>
-
-      <Box sx={{
-        width: '100%',
-        position: 'relative',
-        bottom: 0,
-        left: 0,
-        backgroundColor: '#023e8a', 
-        padding: '20px',
-      }}>
-        <Footer />
-      </Box>
+      <Footer />
     </>
   );
 };
