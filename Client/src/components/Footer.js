@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   AppBar,
   Toolbar,
@@ -22,9 +22,28 @@ const center = {
   lng: 79.8612,
 };
 
+function useDeviceType() {
+  const [deviceType, setDeviceType] = useState({
+    isMobile: window.innerWidth <= 768,
+    isTablet: window.innerWidth > 768 && window.innerWidth <= 1024,
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      setDeviceType({
+        isMobile: window.innerWidth <= 768,
+        isTablet: window.innerWidth > 768 && window.innerWidth <= 1024,
+      });
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  return deviceType;
+}
+
 const Footer = () => {
-  // Responsive check; adjust breakpoint (600px, 768px, etc.) as needed:
-  const isMobile = useMediaQuery('(max-width:600px)');
+  const { isMobile, isTablet } = useDeviceType();
 
   const handleNavigation = (destination) => {
     console.log(`Navigating to ${destination}`);
@@ -33,9 +52,8 @@ const Footer = () => {
   // Inline style objects:
   const appBarStyle = {
     backgroundColor: '#023e8a',
-    // Different padding if it's mobile vs desktop
-    padding: isMobile ? '20px 0' : '50px 0',
-    marginTop: 'auto', // if you want it to stick to bottom
+    padding: isMobile || isTablet ? '20px 0' : '0px 0 30px 0',
+    marginTop: 'auto', 
   };
 
   const containerStyle = {
@@ -52,7 +70,7 @@ const Footer = () => {
   const logoImgStyle = {
     height: isMobile ? '60px' : '80px',
     objectFit: 'contain',
-    padding: isMobile? '0 30vw' : 'none'
+    padding: isMobile? '0 30vw' : isTablet? '0 30vw' : 'none'
   };
 
   const contactItemStyle = {
@@ -60,7 +78,7 @@ const Footer = () => {
     marginBottom: '20px',
     display: 'flex',
     alignItems: 'center',
-    padding: isMobile? '0 12vw' : '0'
+    padding: isMobile? '0 12vw' : isTablet? '0 28vw' : '0'
   };
 
   const contactIconStyle = {
@@ -75,18 +93,17 @@ const Footer = () => {
   const sectionTitleStyle = {
     color: '#fff',
     fontWeight: 'bold',
-    marginBottom: isMobile ? '20px' : '30px',
-    marginTop: isMobile ? '20px' : '0px',
+    marginBottom: isMobile|| isTablet ? '10px' : '20px',
+    marginTop: isMobile? '40px' :isTablet ? '0' : '15px',
     textAlign: 'center',
   };
 
   const socialIconsContainerStyle = {
     display: 'flex',
     alignItems: 'center',
-    padding: isMobile? '0 23vw' : '0 5vw'
+    padding: isMobile? '0 23vw' : isTablet? '0 34vw' : '0 5vw'
   };
 
-  // We'll handle hover with onMouseEnter / onMouseLeave for icons
   const iconBtnStyle = {
     color: '#fff',
     marginRight: '15px',
@@ -96,15 +113,16 @@ const Footer = () => {
   // Quick links
   const quickLinksContainerStyle = {
     display: 'flex',
-    flexDirection: isMobile? 'row' : 'column',
+    flexDirection: isMobile || isTablet? 'row' : 'column',
     alignItems: 'center',
-    padding: isMobile? '0 5vw' : '0'
+    textAlign: 'center',
+    padding: isMobile? '0 16vw' : isTablet? '0 30vw' : '0'
   };
 
   const quickLinkBtnStyle = {
     color: '#fff',
     fontSize: isMobile ? '14px' : '16px',
-    margin: '10px 0',
+    margin: '5px 0',
     fontWeight: 500,
     transition: 'color 0.3s ease',
     textTransform: 'none', // ensure normal text
@@ -122,6 +140,7 @@ const Footer = () => {
   const mapTitleStyle = {
     color: '#fff',
     fontWeight: 'bold',
+    marginTop: isTablet || isMobile ? '30px' : '0',
     marginBottom: '20px',
     textAlign: 'center',
   };
@@ -161,34 +180,35 @@ const Footer = () => {
           spacing={isMobile ? 2 : 6} 
           style={{ marginTop: 0 }}
         >
-          {/* Contact Information */}
           <Grid item xs={12} md={4}>
-            <Box>
+            <div style={{ padding: isMobile ? '0 0vw' : isTablet ? '0 0vw' : '0 0 0 2vw' }}>
               <div style={logoContainerStyle}>
-                <img
-                  src="https://i.postimg.cc/6Q1tcM0S/HL1.png"
-                  alt="Holiday Life Logo"
-                  style={logoImgStyle}
-                />
-              </div>
-              <Box style={contactItemStyle}>
-                <HomeIcon style={contactIconStyle} />
-                <Typography variant="body1" style={contactTextStyle}>
-                  123 Main Street, Colombo, Sri Lanka
-                </Typography>
-              </Box>
-              <Box style={contactItemStyle}>
-                <PhoneIcon style={contactIconStyle} />
-                <Typography variant="body1" style={contactTextStyle}>
-                  Phone: +94 91 565 8956
-                </Typography>
-              </Box>
-              <Box style={contactItemStyle}>
-                <EmailIcon style={contactIconStyle} />
-                <Typography variant="body1" style={contactTextStyle}>
-                  Email: example@example.com
-                </Typography>
-              </Box>
+                  <img
+                    src="https://i.postimg.cc/6Q1tcM0S/HL1.png"
+                    alt="Holiday Life Logo"
+                    style={logoImgStyle}
+                  />
+                </div>
+                <Box style={contactItemStyle}>
+                  <HomeIcon style={contactIconStyle} />
+                  <Typography variant="body1" style={contactTextStyle}>
+                    123 Main Street, Colombo, Sri Lanka
+                  </Typography>
+                </Box>
+                <Box style={contactItemStyle}>
+                  <PhoneIcon style={contactIconStyle} />
+                  <Typography variant="body1" style={contactTextStyle}>
+                    Phone: +94 91 565 8956
+                  </Typography>
+                </Box>
+                <Box style={contactItemStyle}>
+                  <EmailIcon style={contactIconStyle} />
+                  <Typography variant="body1" style={contactTextStyle}>
+                    Email: example@example.com
+                  </Typography>
+                </Box>
+            </div>
+            <Box>
               <Typography variant="h5" gutterBottom style={sectionTitleStyle}>
                 Connect With Us
               </Typography>
@@ -212,15 +232,13 @@ const Footer = () => {
               </div>
             </Box>
           </Grid>
-
-          {/* Navigation Links */}
-          <Grid item xs={12} md={4}>
+          <Grid item xs={12} md={4} style={{  }}>
             <Box>
               <Typography variant="h5" gutterBottom style={sectionTitleStyle}>
                 Quick Links
               </Typography>
               <Grid container style={quickLinksContainerStyle}>
-                {['Home', 'Rooms', 'Contact Us', 'Login', 'Register'].map((link, index) => (
+                {['Home', 'Rooms', 'Contact Us'].map((link, index) => (
                   <Button
                     key={index}
                     variant="text"

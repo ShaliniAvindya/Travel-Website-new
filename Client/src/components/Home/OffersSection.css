@@ -1,6 +1,6 @@
 .offers-section-wrapper {
   position: relative;
-  width: 100%;
+  width: 100vw;
   overflow: hidden;
 }
 
@@ -8,6 +8,7 @@
   padding: 40px 20px;
   background-color: #caf0f8;
   position: relative;
+  width: 100vw;
 }
 
 .offers-header {

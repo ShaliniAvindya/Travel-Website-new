@@ -13,28 +13,35 @@ import HomeExperience from '../components/Home/HomeExperience';
 import OffersSection from '../components/Home/OffersSection';
 import { useEffect, useState } from 'react';
 
-function useIsMobile() {
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+function useDeviceType() {
+  const [deviceType, setDeviceType] = useState({
+    isMobile: window.innerWidth <= 768,
+    isTablet: window.innerWidth > 768 && window.innerWidth <= 1024,
+  });
 
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
+      setDeviceType({
+        isMobile: window.innerWidth <= 768,
+        isTablet: window.innerWidth > 768 && window.innerWidth <= 1024,
+      });
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  return isMobile;
+  return deviceType;
 }
 
 const HomeScreen = () => {
-  const isMobile = useIsMobile();
+  const { isMobile, isTablet} = useDeviceType();
+
   return (
     <div style={{ backgroundColor: '#caf0f8' }}>
       <LiveChat />
 
-      <Box bgcolor="#ffffff" padding={isMobile ? '10px' : '35px'} mt="30px" minWidth='100vw' marginTop={'1px'}><br></br>
-        <div style={{ display: 'flex', flexDirection: isMobile? 'column' : 'row' , marginBottom: '30px' }}>
+      <Box bgcolor="#ffffff" padding={isMobile ? '10px' : '35px'} mt="30px" minWidth='98vw' marginTop={'1px'}><br></br>
+        <div style={{ display: 'flex', flexDirection: isMobile || isTablet? 'column' : 'row' , marginBottom: '30px' }}>
           {/* Left Block: Image */}
           <div
             style={{
@@ -44,7 +51,6 @@ const HomeScreen = () => {
               backgroundPosition: 'center',
               height: '550px',
               minHeight: '550px',
-              marginLeft: isMobile? '0' : '10px',
               transition: 'transform 0.3s ease, background-color 0.3s ease, opacity 0.8s ease', 
               cursor: 'pointer', 
             }}
@@ -68,7 +74,7 @@ const HomeScreen = () => {
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              marginLeft: isMobile? '0' : '20px',
+              marginLeft: isMobile || isTablet? '0' : '20px',
               justifyContent: 'center',
               border: '1px solid rgba(54, 160, 226, 0.71)',
             }}
@@ -110,7 +116,7 @@ const HomeScreen = () => {
                 border: 'solid 1px',
                 borderRadius: '10px',
                 borderColor: '#0A369D',
-                margin: isMobile? '20px 0' : '20px 0 0 0',
+                margin: isMobile || isTablet? '20px 0' : '20px 0 0 0',
               }}
               onMouseEnter={(e) => {
                 e.target.style.transform = 'scale(1.04)'; 

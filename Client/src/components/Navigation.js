@@ -27,19 +27,26 @@ import MenuIcon from '@mui/icons-material/Menu';
 import SearchIcon from '@mui/icons-material/Search';
 
 
-function useIsMobile() {
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+function useDeviceType() {
+  const [deviceType, setDeviceType] = useState({
+    isMobile: window.innerWidth <= 768,
+    isTablet: window.innerWidth > 768 && window.innerWidth <= 1024,
+  });
 
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
+      setDeviceType({
+        isMobile: window.innerWidth <= 768,
+        isTablet: window.innerWidth > 768 && window.innerWidth <= 1024,
+      });
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  return isMobile;
+  return deviceType;
 }
+
 
 // ----------------------- AnimatedText -----------------------
 const AnimatedText = ({ children }) => {
@@ -80,10 +87,10 @@ const HomeTabContent = () => {
     autoplaySpeed: 3000,
   };
 
-  const isMobile = useIsMobile()
+  const { isMobile, isTablet } = useDeviceType();
 
   return (
-    <div style={{ position: 'relative', minHeight: '98vh', opacity: '0.9' }}>
+    <div style={{ position: 'relative', minHeight: '98vh', opacity: '0.9' }} >
       <Slider {...settings} dots={false}>
         <div style={{ position: 'relative' }}>
           <img
@@ -142,11 +149,12 @@ const HomeTabContent = () => {
       <div
         style={{
           alignContent: "center",
-          textAlign: isMobile?  'center' : 'left',
+          textAlign: 'center' ,
           position: "absolute",
           bottom: isMobile? '6%' : "35%",
-          left: isMobile? '50%' : "50%",
+          left: isMobile? '50%' : isTablet? '50%' : "50%",
           transform: "translateX(-50%)",
+          width: isMobile? '90%' : isTablet? '80%' : '65%',
         }}
       >
         <AnimatedText>
@@ -174,7 +182,7 @@ const HomeTabContent = () => {
               fontFamily: "Playfair Display",
               color: "white",
               fontWeight: "bolder",
-              fontSize:  "110px",
+              fontSize: isTablet? '100px' : isTablet? '100px' : "110px",
               marginTop: "-20px",
               textShadow: "0 8px 15px rgba(0, 0, 50, 0.8)",
             }}
@@ -191,7 +199,7 @@ const HomeTabContent = () => {
                 fontWeight: "bolder",
                 fontSize:  '3.3rem' ,
                 marginTop: "0px",
-                textShadow: isMobile? 'none' : "0 8px 15px rgba(0, 0, 50, 0.8)",
+                textShadow: 'none',
               }}
             >
               Dream Holiday
@@ -199,8 +207,8 @@ const HomeTabContent = () => {
           <button
             style={{
               marginTop: "30px",
-              padding: isMobile? "15px 15px" : "5px 15px",
-              width: isMobile? '95vw' : '290px',
+              padding: isMobile? "10px 15px" : "5px 10px",
+              width: isMobile? '95vw' : '240px',
               fontSize: "20px",
               fontFamily: "Playfair Display, serif",
               color: "#fff",
@@ -210,8 +218,36 @@ const HomeTabContent = () => {
               boxShadow: "0 8px 15px rgba(0, 0, 0, 0.2)",
               transition: "all 0.3s ease",
               position: "relative",
-              top: isMobile? "-1vh" : "-5vh",
-              left: isMobile? "0vw" : "49%",
+              top: isMobile? "-1vh" : isTablet? '-3vh' : "-5vh",
+              left: isMobile? "-2.2vw" : isTablet? '0%' : "0%",
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.transform = "scale(1.05)";
+              e.target.style.boxShadow = "0 12px 20px rgba(0, 0, 0, 0.3)";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.transform = "scale(1)";
+              e.target.style.boxShadow = "0 8px 15px rgba(0, 0, 0, 0.2)";
+            }}
+          >
+            Explore Tours
+          </button>
+          <button
+            style={{
+              marginTop: isMobile? '10px': "30px",
+              padding: isMobile? "10px 15px" : "5px 10px",
+              width: isMobile? '95vw' : '240px',
+              fontSize: "20px",
+              fontFamily: "Playfair Display, serif",
+              color: "#fff",
+              backgroundColor: "rgba(0, 37, 82,1)",
+              borderRadius:  "10px",
+              cursor: "pointer",
+              boxShadow: "0 8px 15px rgba(0, 0, 0, 0.2)",
+              transition: "all 0.3s ease",
+              position: "relative",
+              top: isMobile? "-1vh" : isTablet? '-3vh' : "-5vh",
+              left: isMobile? "-2.2vw" : isTablet? '1%' : "1%",
             }}
             onMouseEnter={(e) => {
               e.target.style.transform = "scale(1.05)";
@@ -259,6 +295,7 @@ const TabContent = ({ title, backgroundImage }) => (
       </Typography>
     </AnimatedText>
   </div>
+  
 );
 
 // ----------------------- Other Pages/Tab contents -----------------------
@@ -336,7 +373,7 @@ const Navigation = () => {
   // For controlling the background color of the navbar on scroll
   const [scrollPosition, setScrollPosition] = useState(0);
 
-  const isMobile = useIsMobile()
+  const { isMobile, isTablet } = useDeviceType();
 
   useEffect(() => {
     const currentUser = JSON.parse(localStorage.getItem('currentUser'));
@@ -532,19 +569,18 @@ const Navigation = () => {
 
   return (
     <div>
-      {/* ------------------- AppBar / Top Navigation ------------------- */}
       <AppBar
         position="fixed"
+        left= "0"
         style={{
           backgroundColor: isMobile? 'rgba(0, 62, 138,1) ': backgroundColor,
           transition: 'background-color 0.3s ease-in-out',
           boxShadow: 'none',
-          height: isMobile? '7.5vh': '10vh',
+          height: isMobile? '7.5vh': isTablet? '6.5vh' : '10vh',
           backdropFilter: 'blur(10px)',
         }}
       >
-        <Toolbar>
-          {/* If mobile, show the menu icon; else show the tabs */}
+        <Toolbar>  
           {isMobile ? (
             <>
               <img
@@ -561,36 +597,36 @@ const Navigation = () => {
                 onChange={handleChange}
                 TabIndicatorProps={{ style: { backgroundColor: "rgba(255,255,255,0.9)", height: "2px", marginBottom: "0px" } }}
                 textColor="inherit"
-                style={{ marginLeft: '6vw' }}
+                style={{ marginLeft: isTablet? '0vw' : '6vw' }}
               >
                 <Tab
                   label="Home"
                   component={Link}
                   to="/"
                   value={0}
-                  style={{ color: 'rgba(255,255,255,0.9)', marginLeft: '0vw' }}
+                  style={{ color: 'rgba(255,255,255,0.9)', marginLeft: '0vw', padding: isTablet? '0px 0px' : '0px 10px' }}
                 />
                 <Tab
                   label="Tours"
                   component={Link}
                   to="/tours"
                   value={1}
-                  style={{ color: 'rgba(255,255,255,0.9)', marginLeft: '2vw' }}
+                  style={{ color: 'rgba(255,255,255,0.9)', marginLeft: isTablet? '0vw' : '2vw', padding: isTablet? '0px 0px' : '0px 10px' }}
                 />
                 <Tab
                   label="Contact"
                   component={Link}
                   to="/contact"
                   value={2}
-                  style={{ color: 'rgba(255,255,255,0.9)',marginLeft: '2vw' }}
+                  style={{ color: 'rgba(255,255,255,0.9)',marginLeft: isTablet? '0vw' : '2vw', padding: isTablet? '0px 0px' : '0px 10px' }}
                 />
               </Tabs>
 
-              <div style={{ marginLeft: '8vw', marginRight: '8vw', padding: '0vh 4vw' }}>
+              <div style={{ margin: isTablet? '0 0vw' : '0 8vw', padding: isTablet? '0 2vw' :'0vh 4vw' }}>
                 <img
                   src="https://i.postimg.cc/6Q1tcM0S/HL1.png"
                   alt="Holiday Life Logo"
-                  style={{ height: '72px', objectFit: 'contain' }}
+                  style={{ height: isTablet? '60px' : '72px', objectFit: 'contain' }}
                 />
               </div>
 
@@ -647,7 +683,7 @@ const Navigation = () => {
                     fontSize: '1rem',
                     fontWeight: 'bold',
                     color: 'rgba(255,255,255,0.9)',
-                    padding: '0px 10px',
+                    padding: isTablet? '0px 0px' : '0px 10px',
                     borderRadius: '25px',
                     border: '1.5px solid rgba(255,255,255,0.7)',
                     height: '45px',
