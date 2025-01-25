@@ -144,7 +144,7 @@ const Itinerary = () => {
                     </div>
                   </div>
 
-                  <div className="itinerary-images relative flex items-center justify-center w-full h-48 md:w-64 md:h-60 overflow-hidden">
+                  <div className="itinerary-images relative flex items-center justify-center w-full h-48 md:w-64 md:h-60 lg:h-auto lg:w-80 overflow-hidden">
                     {imagesForDay && imagesForDay.length > 0 ? (
                       <>
                         <img
@@ -197,7 +197,7 @@ const Itinerary = () => {
                 </div>
               </div>
               {tourData.tour_image && !isMobile && (
-                <div className="summary-item-img flex-shrink-0 justify-center align-middle w-64 h-44 lg:mx-0  overflow-hidden">
+                <div className="summary-item-img flex-shrink-0 justify-center align-middle w-64 h-fit lg:mx-0  overflow-hidden">
                   <img
                     src={tourData.tour_image}
                     alt="Tour Summary"

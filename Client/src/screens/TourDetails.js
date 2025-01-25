@@ -199,7 +199,7 @@ const TourDetails = () => {
           </Button>
         
         {tour.tour_image && (
-          <div style={{ display: 'flex',flexDirection: isMobile? 'column' : 'auto', alignItems: 'flex-start', gap: '20px' }}>
+          <div style={{ display: 'flex',flexDirection: isMobile? 'column' : 'row', alignItems: 'flex-start', gap: '20px' }}>
             <div
               className="main-image-container"
               style={{ position: 'relative' }}
