@@ -13,7 +13,7 @@ const ImageGallery = () => {
   useEffect(() => {
     const fetchTours = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/tours'); // Replace with your API endpoint
+        const response = await axios.get('http://localhost:8000/api/tours'); // Replace with your API endpoint
         setTours(response.data);
         setLoading(false);
       } catch (err) {
@@ -48,14 +48,14 @@ const ImageGallery = () => {
   }
 
   return (
-    <Box sx={{ width: '100%', minHeight: '70vh', padding: '20px 30px', backgroundColor: '#f9f9f9' }}>
+    <Box sx={{ width: '100%', minHeight: '65vh', padding: '20px 30px', backgroundColor: '#f9f9f9' }}>
       <Grid container spacing={5}>
         {tours.map((item) => (
           <Grid item xs={12} sm={6} md={4} key={item._id}>
             <Card
               sx={{
                 borderRadius: '16px',
-                height: '610px',
+                height: '580px',
                 boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
                 transition: 'transform 0.3s ease, box-shadow 0.3s ease',
                 '&:hover': {
@@ -98,15 +98,9 @@ const ImageGallery = () => {
               </Box>
               <CardContent sx={{ backgroundColor: '#fff', padding: '20px' }}>
                 <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-                  <Typography variant="h6" fontWeight="bold" fontSize={20}>
+                  <Typography variant="h1" fontWeight="bold" fontSize={24}>
                     {item.title}
                   </Typography>
-                  <Box display="flex" alignItems="center">
-                    <Rating name="read-only" value={4.5} precision={0.1} readOnly size="small" />
-                    <Typography variant="body2" color="textSecondary" ml={1}>
-                      (23)
-                    </Typography>
-                  </Box>
                 </Box>
                 <Box>
                   <Typography

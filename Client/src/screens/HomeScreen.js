@@ -11,6 +11,9 @@ import Experience from '../components/Home/Experience';
 import HomeExperience from '../components/Home/HomeExperience';
 import OffersSection from '../components/Home/OffersSection';
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import PhoneIcon from '@mui/icons-material/Phone';
 
 function useDeviceType() {
   const [deviceType, setDeviceType] = useState({
@@ -33,7 +36,29 @@ function useDeviceType() {
 }
 
 const HomeScreen = () => {
-  const { isMobile, isTablet} = useDeviceType();
+  const { isMobile, isTablet } = useDeviceType();
+  const [tours, setTours] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchTours = async () => {
+      try {
+        const response = await axios.get('http://localhost:8000/api/tours'); // Replace with your API endpoint
+        setTours(response.data.slice(0, 3)); // Fetch only the first 3 tours
+        setLoading(false);
+      } catch (err) {
+        console.error('Failed to fetch tours:', err);
+        setLoading(false);
+      }
+    };
+  
+    fetchTours();
+  }, []);
+  
+  const handleNavigate = () => {
+    navigate('/tours'); 
+  };
 
   return (
     <div style={{ backgroundColor: '#caf0f8' }}>
@@ -176,7 +201,7 @@ const HomeScreen = () => {
             textAlign: 'center',
           }}
         >
-         Maldives Tour Packages
+         Our Tour Packages
         </Typography>
         <Typography
           variant="body1"
@@ -189,7 +214,110 @@ const HomeScreen = () => {
           Our tour packages offer a seamless blend of luxury, adventure, and tranquility, making it the ultimate tropical escape. These packages typically include stays in overwater villas or beachfront resorts, where you can wake up to panoramic ocean views and enjoy private access to crystal-clear lagoons. Whether you're snorkeling amidst vibrant coral reefs, indulging in rejuvenating spa treatments, or savoring gourmet meals at underwater restaurants, every moment is designed for unforgettable memories. With options like sunset cruises, island-hopping excursions, and water sports, Maldives tour packages cater to honeymooners, families, and solo travelers alike, ensuring a stress-free journey in paradise.
         </Typography>
         <br />
-        <ImageGallery />
+        <Container>
+          <Grid container spacing={4}>
+            {loading ? (
+              <Typography variant="h6" align="center">
+                Loading tours...
+              </Typography>
+            ) : (
+              tours.map((tour) => (
+                <Grid item xs={12} md={4} key={tour._id}>
+                  <Box
+                    sx={{
+                      border: '1px solid #ddd',
+                      borderRadius: '8px',
+                      backgroundColor: '#fff',
+                      boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
+                    }}
+                  >
+                    <img
+                      src={tour.tour_image}
+                      alt={tour.title}
+                      style={{
+                        width: '100%',
+                        height: '200',
+                        objectFit: 'cover',
+                        borderRadius: '8px 8px 0 0',
+                      }}
+                    />
+                    <div style={{ padding: '20px' }}>
+                      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+                        <Typography variant="h1" fontWeight="bold" fontSize={24}>
+                          {tour.title}
+                        </Typography>
+                      </Box>
+                      <Box>
+                        <Typography
+                          variant="body1"
+                          sx={{
+                            color: 'text.primary',
+                            fontWeight: 'bold',
+                          }}
+                          gutterBottom
+                          display="flex"
+                          justifyContent="space-between"
+                          mb={1}
+                        >
+                          {/* Check if price exists and is a valid number before calling toLocaleString */}
+                          USD {tour.price && !isNaN(tour.price) ? tour.price.toLocaleString() : 'N/A'} {' '}
+                          {tour.price && !isNaN(tour.price) && (
+                            <Typography
+                              component="span"
+                              variant="body1"
+                              sx={{ textDecoration: 'line-through', marginLeft: 1, color: 'text.secondary' }}
+                            >
+                              USD {(tour.price + 500).toLocaleString()}
+                            </Typography>
+                          )}
+                          {tour.price && !isNaN(tour.price) && (
+                            <Typography component="span" variant="body2" color="error" fontWeight="bold" backgroundColor="rgba(76, 175, 80, 0.1)" padding={0.5}>
+                              SAVE USD 500
+                            </Typography>
+                          )}
+                        </Typography>
+                      </Box>
+                      <Box display="flex" gap={2} mt={3}>
+                      <Button
+                        variant="outlined"
+                        startIcon={<PhoneIcon />}
+                        sx={{
+                          borderColor: '#4CAF50',
+                          color: '#4CAF50',
+                          '&:hover': {
+                            backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                            borderColor: '#4CAF50',
+                          },
+                        }}
+                      >
+                        Call
+                      </Button>
+                      <Button
+                        variant="contained"
+                        fullWidth
+                        sx={{
+                          backgroundColor: '#2196F3',
+                          color: '#fff',
+                          '&:hover': {
+                            backgroundColor: '#1976D2',
+                          },
+                        }}
+                      >
+                        Request Callback
+                      </Button>
+                    </Box>
+                    </div>
+                  </Box>
+                </Grid>
+              ))
+            )}
+          </Grid>
+          <Box display="flex" justifyContent="center" mt={4}>
+            <Button variant="contained" color="primary" onClick={handleNavigate}>
+              View More Tours
+            </Button>
+          </Box>
+        </Container>
       </Box>
 
       <br /><br />

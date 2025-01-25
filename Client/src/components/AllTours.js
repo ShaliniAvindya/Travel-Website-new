@@ -21,7 +21,7 @@ const AllTours = () => {
   useEffect(() => {
     const fetchTours = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/tours");
+        const response = await axios.get("http://localhost:8000/api/tours");
         setTours(response.data);
         setLoading(false);
       } catch (err) {
@@ -98,7 +98,7 @@ const AllTours = () => {
 
     try {
       const response = await axios.put(
-        `http://localhost:5000/api/tours/${editData._id}`,
+        `http://localhost:8000/api/tours/${editData._id}`,
         formData
       );
       setTours((prevTours) =>
@@ -119,7 +119,7 @@ const AllTours = () => {
     if (!confirmDelete) return;
 
     try {
-      await axios.delete(`http://localhost:5000/api/tours/${tourId}`);
+      await axios.delete(`http://localhost:8000/api/tours/${tourId}`);
       setTours((prevTours) => prevTours.filter((tour) => tour._id !== tourId));
       Swal.fire("Tour deleted successfully!", "", "success");
     } catch (error) {

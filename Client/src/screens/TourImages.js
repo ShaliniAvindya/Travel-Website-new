@@ -1,280 +1,248 @@
 import React, { useState } from 'react';
 
-const TourImages = () => {
-  const destinationsImages = [
-    'https://i.postimg.cc/Wb5WNvG7/pexels-asadphoto-1483053.jpg',
-    'https://i.postimg.cc/50Fkmt7h/Home-Tab-1.png',
-    'https://i.postimg.cc/cHyK45NY/Sri-Lanka.jpg',
-    'https://i.postimg.cc/xTbP6B1D/India.jpg',
-    'https://i.postimg.cc/63r87L9P/Malaysia.jpg',
-    'https://i.postimg.cc/0j9b7Mjy/Thailand.jpg',
-    'https://i.postimg.cc/GhnbSNpf/santorini-416136-1280.jpg',
-    'https://i.postimg.cc/xdg79Bmp/Vietnam.jpg',
-    'https://i.postimg.cc/150yxHn3/lake-6526995-1280.jpg',
-    
-  ];
-
-  const activitiesImages = [
-    'https://i.postimg.cc/rw7xng4S/diving-689831-1280.jpg',
-    'https://i.postimg.cc/63PXn7g5/606e8ca07ac5d175-1-1wt4mcwxvxeqzscqkzr6sq.jpg',
-    'https://i.postimg.cc/05Dr15qL/pexels-asadphoto-1430676.jpg',
-    'https://i.postimg.cc/tgPPLPd8/diver-79597-1280.jpg',
-    'https://i.postimg.cc/jjQ9RWtk/4.png',
-    'https://i.postimg.cc/LXpfRXN5/sea-684351-1280.jpg',
-    'https://i.postimg.cc/MpQGdvLv/pexels-francesco-ungaro-3420262.jpg',
-    'https://i.postimg.cc/ZRTKbj5d/pexels-richard-segal-732340-1645028.jpg',
-
-  ];
-
-  const hotelsImages = [
-    'https://i.postimg.cc/YqvgFBcR/pexels-asadphoto-3319704.jpg',
-    'https://i.postimg.cc/nz3PQ6s4/2.png',
-    'https://i.postimg.cc/jdmBc0Mv/1.png',
-    'https://i.postimg.cc/MTzVfcxf/pexels-asadphoto-28843911.jpg',
-    'https://i.postimg.cc/hGB7NJXZ/maldives-3220681-1280.jpg',
-    'https://i.postimg.cc/c1MkzY62/Anantara20-Maldives20ishan-seefromthesky-gtt803-Wswn-A-unsplash.webp',
-    'https://i.postimg.cc/gJMXwNN1/maldives-1973322-1280.jpg',
-  ];
-
+const TourImages = ({ destinations, activities, hotels }) => {
+  // Build your gallery array from the props
   const galleryDetails = [
     {
       title: 'Destinations',
-      description: 'Discover breathtaking landscapes, pristine beaches, and captivating cultural landmarks at some of the most iconic destinations around the globe.',
-      images: destinationsImages,
+      description: 'Discover breathtaking landscapes, pristine beaches, and captivating cultural landmarks around the globe.',
+      images: destinations || [],
     },
     {
       title: 'Activities',
-      description: 'Engage in thrilling adventures and immersive experiences, from underwater diving to mountain treks, designed to make your journey unforgettable.',
-      images: activitiesImages,
+      description: 'Engage in thrilling adventures and immersive experiences—from underwater diving to mountain treks.',
+      images: activities || [],
     },
     {
       title: 'Hotels',
-      description: 'Stay in luxurious accommodations that offer stunning views, world-class amenities, and exceptional hospitality for a truly relaxing experience.',
-      images: hotelsImages,
+      description: 'Stay in luxurious accommodations offering stunning views, world-class amenities, and exceptional hospitality.',
+      images: hotels || [],
     },
   ];
 
+  // Track hovered section to show the overlay
+  const [hoveredSection, setHoveredSection] = useState(null);
+
+  // For the modal popup
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedSection, setSelectedSection] = useState(null);
 
   const openModal = (index) => {
-    setSelectedSection(galleryDetails[index]); 
+    setSelectedSection(galleryDetails[index]);
     setIsModalOpen(true);
   };
 
   const closeModal = (event) => {
-    event.stopPropagation(); 
+    event.stopPropagation();
     setIsModalOpen(false);
   };
 
   const handleModalClick = (event) => {
-    event.stopPropagation(); 
+    event.stopPropagation(); // so we don’t close if user clicks inside the modal content
   };
 
+  // ----- Inline Styles -----
+
+  const containerStyle = {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '20px',
+    width: '100%',
+  };
+
+  const sectionItemStyle = {
+    position: 'relative',
+    width: '100%',
+    height: '26.4vh',             
+    maxWidth: '600px',
+    overflow: 'hidden',
+    borderRadius: '10px',
+    cursor: 'pointer',
+    boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+    transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
+  };
+  
+  const previewImageStyle = {
+    width: '100%',
+    height: '100%',            
+    objectFit: 'cover',       
+    objectPosition: 'center',  
+    borderRadius: '10px',
+    display: 'block',
+    transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
+  };
+
+  // Base style for the overlay (hidden by default)
+  const overlayBaseStyle = {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    width: '100%',
+    background: 'rgba(0, 0, 0, 0.6)',
+    color: 'white',
+    padding: '20px',
+    opacity: 0,
+    transform: 'translateY(50%)',
+    transition: 'opacity 0.3s ease, transform 0.3s ease',
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderRadius: '0 0 10px 10px', // match bottom rounding
+  };
+
+  // The hover style that merges with the base style
+  const overlayHoverStyle = {
+    opacity: 1,
+    transform: 'translateY(0)',
+  };
+
+  // Common style for the overlay’s title
+  const titleStyle = {
+    fontSize: '1.25rem',
+    margin: 0,
+    fontWeight: 'bold',
+  };
+
+  // The “View Images” button on the overlay
+  const buttonStyle = {
+    backgroundColor: '#007BFF',
+    color: '#fff',
+    padding: '8px 16px',
+    border: 'none',
+    borderRadius: '5px',
+    cursor: 'pointer',
+    fontSize: '1rem',
+  };
+
+  // Modal styles
+  const modalStyle = {
+    display: isModalOpen ? 'block' : 'none',
+    position: 'fixed',
+    top: '65px',
+    left: '50%',
+    transform: 'translateX(-50%)',
+    width: '100%',
+    height: '100%',
+    background: 'rgba(0, 0, 0, 0.7)',
+    zIndex: 1000,
+    padding: '30px',
+  };
+
+  const modalContentStyle = {
+    background: 'white',
+    borderRadius: '10px',
+    padding: '20px',
+    maxWidth: '900px',
+    maxHeight: '800px',
+    margin: 'auto',
+    position: 'relative',
+    overflowY: 'auto', // so user can scroll if content is tall
+  };
+
+  const modalCloseStyle = {
+    position: 'absolute',
+    top: '10px',
+    right: '10px',
+    fontSize: '1.5rem',
+    color: 'black',
+    cursor: 'pointer',
+  };
+
+  const modalGalleryGridStyle = {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(3, 1fr)',
+    gap: '15px',
+    marginTop: '20px',
+    maxHeight: '450px',
+    overflowY: 'false',
+  };
+
+  const modalGalleryImageStyle = {
+    width: '100%',
+    height: 'auto',
+    borderRadius: '8px',
+    transition: 'transform 0.3s ease',
+  };
+
+  // ----- Render -----
   return (
-    <div className="tour-images-container">
-      <style>
-        {`
-          .tour-images-grid {
-              display: flex;
-              flex-direction: column;
-              gap: 20px;
-              width: 100%;
-          }
+    <div style={containerStyle}>
+      {galleryDetails.map((section, index) => {
+        // Determine the final overlay style (hover or not)
+        const computedOverlayStyle =
+          hoveredSection === index
+            ? { ...overlayBaseStyle, ...overlayHoverStyle }
+            : overlayBaseStyle;
 
-          .tour-image-item {
-              position: relative;
-              width: 100%;
-              max-width: 600px;
-              overflow: hidden;
-              border-radius: 10px;
-              cursor: pointer;
-              transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-          }
+        return (
+          <div
+            key={index}
+            style={sectionItemStyle}
+            onMouseEnter={() => setHoveredSection(index)}
+            onMouseLeave={() => setHoveredSection(null)}
+          >
+            {/* If there is at least one image, display the first as “cover” */}
+            {section.images.length > 0 && (
+              <img
+                src={section.images[0]}
+                alt={`Cover for ${section.title}`}
+                style={previewImageStyle}
+              />
+            )}
 
-          .tour-image-item img {
-              width: 100%;
-              height: auto;
-              border-radius: 10px;
-              transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-              box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-          }
-
-          .tour-image-item:hover img {
-              transform: scale(1.05);
-              box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-          }
-
-          .image-overlay {
-              position: absolute;
-              top: 0;
-              left: 0;
-              width: 100%;
-              height: 100%;
-              background: rgba(0, 0, 0, 0.6);
-              color: white;
-              display: flex;
-              flex-direction: column;
-              justify-content: flex-end;
-              padding: 20px;
-              opacity: 0;
-              transition: opacity 0.3s ease;
-          }
-
-          .tour-image-item:hover .image-overlay {
-              opacity: 1;
-          }
-
-          .tour-image-item h3 {
-              font-size: 1.5rem;
-              margin-bottom: 10px;
-          }
-
-          .tour-image-item p {
-              font-size: 1rem;
-              margin-bottom: 10px;
-          }
-
-          .modal {
-            display: ${isModalOpen ? 'block' : 'none'};
-            position: fixed;
-            top: 65px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            z-index: 1000;
-            padding: 30px;
-          }
-
-          .modal-content {
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-            max-width: 900px;
-            max-height: 800px;
-            margin: auto;
-            position: relative;
-          }
-
-          .modal-content img {
-            width: 100%;
-            height: auto;
-            border-radius: 10px;
-          }
-
-          .modal-close {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            font-size: 1.5rem;
-            color: black;
-            cursor: pointer;
-          }
-
-          .modal-gallery-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin-top: 20px;
-            max-height: 450px; 
-            overflow-y: auto; /* Enable vertical scrolling */
-          }
-
-          .modal-gallery-grid img {
-            width: 100%;
-            height: auto;
-            border-radius: 8px;
-            transition: transform 0.3s ease;
-          }
-
-          .modal-gallery-grid img:hover {
-            transform: scale(1.05);
-          }
-
-        .button-overlay {
-          position: absolute;
-          top: 46%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          z-index: 10; /* Ensures the button appears above the image */
-        }
-
-        .view-images-button {
-          background-color: #007BFF;
-          color: #fff;
-          padding: 10px 20px;
-          border-radius: 5px;
-          font-size: 1rem;
-          cursor: pointer;
-          border: none;
-
-        }
-
-        .view-images-button:hover {
-          background-color: #0056b3;
-          transform: scale(1.05);
-        }
- `}
-      </style>
-
-      <div className="tour-images-grid">
-  {galleryDetails.map((section, index) => (
-    <div className="tour-image-item" key={index}>
-      <img
-        src={section.images[0]}
-        alt={`Preview of ${section.title}`}
-        loading="lazy"
-        className="w-full h-auto rounded-md object-cover"
-        style={{
-          width: '100%',
-          borderRadius: '8px',
-          objectFit: 'cover',
-          height: '200px',
-        }}
-      />
-      {/* Add the button directly over the image */}
-      <div className="button-overlay">
-        <button
-          className="view-images-button bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition"
-          onClick={() => openModal(index)} // Open modal on button click
-        >
-          View Images
-        </button>
-      </div>
-      <div className="image-overlay">
-        <h3>{section.title}</h3>
-        <p>{section.description}</p>
-      </div>
-    </div>
-  ))}
-</div>
-
+            {/* Hover overlay with only the title and button at the bottom */}
+            <div style={computedOverlayStyle}>
+              <h3 style={titleStyle}>{section.title}</h3>
+              <button style={buttonStyle} onClick={() => openModal(index)}>
+                View Images
+              </button>
+            </div>
+          </div>
+        );
+      })}
 
       {/* Modal */}
       {isModalOpen && selectedSection && (
-        <div className="modal" onClick={closeModal}> {/* Close modal if clicking outside the content */}
-          <div
-            className="modal-content"
-            onClick={handleModalClick} 
-          >
-            <span className="modal-close" onClick={closeModal}>
+        <div style={modalStyle} onClick={closeModal}>
+          <div style={modalContentStyle} onClick={handleModalClick}>
+            <span style={modalCloseStyle} onClick={closeModal}>
               &times;
             </span>
-            <h3 className="text-3xl font-extrabold text-center text-blue-800 mb-4 transform scale-110 transition-transform duration-500 ease-in-out hover:scale-105">
+            <h2
+              style={{
+                textAlign: 'center',
+                fontSize: '1.75rem',
+                marginBottom: '1rem',
+              }}
+            >
               {selectedSection.title}
-            </h3>            
-            <p className="text-lg text-center text-gray-700 mb-6 max-w-2xl mx-auto leading-relaxed">
+            </h2>
+            <p
+              style={{
+                textAlign: 'center',
+                fontSize: '1rem',
+                color: '#374151',
+                marginBottom: '1.5rem',
+              }}
+            >
               {selectedSection.description}
             </p>
-            <div className="modal-gallery-grid">
-              {selectedSection.images.map((image, index) => (
+
+            <div style={modalGalleryGridStyle}>
+              {selectedSection.images.map((image, idx) => (
                 <img
-                  key={index}
+                  key={idx}
                   src={image}
-                  alt={`Scenic view of ${selectedSection.title} (${index + 1})`}
+                  alt={`Scenic view of ${selectedSection.title} ${idx + 1}`}
                   loading="lazy"
+                  style={modalGalleryImageStyle}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'scale(1.05)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'scale(1)';
+                  }}
                 />
               ))}
             </div>
@@ -286,3 +254,4 @@ const TourImages = () => {
 };
 
 export default TourImages;
+

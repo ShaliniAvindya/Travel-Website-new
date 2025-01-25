@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
-import { Button, Typography, Box } from "@mui/material";
+import { Button, Typography, Box, Divider } from "@mui/material";
 import { PhoneInTalk as PhoneInTalkIcon, ArrowForward as ArrowForwardIcon } from "@mui/icons-material";
 
 const Itinerary = () => {
@@ -9,6 +9,7 @@ const Itinerary = () => {
   const [tourData, setTourData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
   const [activeTab, setActiveTab] = useState("itinerary");
   const [imageIndices, setImageIndices] = useState([]);
 
@@ -16,11 +17,11 @@ const Itinerary = () => {
     const fetchTourData = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`/api/tours/${id}`);
+        const response = await axios.get(`http://localhost:8000/api/tours/${id}`);
         setTourData(response.data);
 
-        // Initialize image indices for all days
-        const initialIndices = Array(response.data.nights + 1).fill(0);
+        const totalDays = response.data.nights + 1; 
+        const initialIndices = Array(totalDays).fill(0);
         setImageIndices(initialIndices);
       } catch (err) {
         console.error("Error fetching tour data:", err);
@@ -29,27 +30,24 @@ const Itinerary = () => {
         setLoading(false);
       }
     };
-
     fetchTourData();
   }, [id]);
 
   useEffect(() => {
     if (!tourData || !tourData.itinerary_images) return;
 
-    // Single interval for all sliders
     const interval = setInterval(() => {
       setImageIndices((prevIndices) => {
         return prevIndices.map((currentIndex, dayIndex) => {
           const imagesForDay = tourData.itinerary_images[`day_${dayIndex + 1}`];
           if (imagesForDay && imagesForDay.length > 0) {
-            return (currentIndex + 1) % imagesForDay.length; // Cycle to the next image
+            return (currentIndex + 1) % imagesForDay.length;
           }
-          return currentIndex; // No change if no images
+          return currentIndex;
         });
       });
-    }, 3000); // Change images every 3 seconds
+    }, 3000);
 
-    // Cleanup interval on component unmount
     return () => clearInterval(interval);
   }, [tourData]);
 
@@ -62,21 +60,33 @@ const Itinerary = () => {
   }
 
   const totalDays = tourData.nights + 1;
+
   const handleInquiryClick = () => {
-    window.location.href = "tel:+1234567890"; // Replace with your contact number
+    window.location.href = "tel:+1234567890";
   };
-  
+
   return (
     <div className="itinerary-wrap flex flex-col w-full">
-      <div className="tabs flex justify-between mb-6 gap-4 w-full">
-        {["itinerary", "summary", "fineprint"].map((tab) => (
+      <Divider></Divider>
+      <div className="tabs flex mb-6 mt-6 gap-2 w-full justify-between align-middle">
+        {["itinerary", "fineprint"].map((tab) => (
           <div
             key={tab}
-            className={`tab flex items-center justify-center px-8 py-4 cursor-pointer text-xl font-semibold transition-all duration-300 transform flex-1 border-2 rounded-lg ${
-              activeTab === tab
-                ? "bg-blue-600 text-white scale-105 shadow-lg border-blue-600"
-                : "bg-gray-100 text-gray-600 hover:bg-gray-200 hover:scale-105 border-gray-300"
-            }`}
+            className={`tab 
+              flex items-center justify-center 
+              px-4 py-2  
+              text-2xl     
+              font-bold 
+              transition-all duration-300 transform 
+              border-2 rounded-lg
+              cursor-pointer
+              w-full
+              ${
+                activeTab === tab
+                  ? "bg-blue-600 text-white shadow-md border-blue-600" 
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200 border-gray-300"
+              }
+            `}
             onClick={() => setActiveTab(tab)}
           >
             {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -84,22 +94,22 @@ const Itinerary = () => {
         ))}
       </div>
 
-      <div className="tab-content p-6">
+      <div className="tab-content">
         {activeTab === "itinerary" && (
           <div>
             {Array.from({ length: totalDays }).map((_, dayIndex) => {
-              const dayDetails = tourData.itinerary[`day_${dayIndex + 1}`];
-              const imagesForDay = tourData.itinerary_images[`day_${dayIndex + 1}`];
-              const titleForDay = tourData.itinerary_title[`day_${dayIndex + 1}`];
+              const dayDetails = tourData.itinerary?.[`day_${dayIndex + 1}`];
+              const imagesForDay = tourData.itinerary_images?.[`day_${dayIndex + 1}`];
+              const titleForDay = tourData.itinerary_title?.[`day_${dayIndex + 1}`];
 
               return (
                 <div
                   key={dayIndex}
-                  className="itinerary-item flex flex-wrap border border-gray-300 p-6 mb-6 bg-white shadow-lg transform hover:scale-105 transition-all"
+                  className="itinerary-item flex flex-wrap border border-gray-300 p-0 mb-6 bg-white shadow-lg transform hover:scale-105 transition-all"
                 >
-                  <div className="itinerary-desc-wrap flex flex-col gap-6 flex-1">
+                  <div className="itinerary-desc-wrap flex flex-col gap-6 p-6 flex-1">
                     <div className="flex items-center">
-                      <div className="itinerary-day-box px-4 py-2 w-40 bg-blue-600 text-white font-semibold text-2xl">
+                      <div className="itinerary-day-box px-4 py-2 w-40 bg-blue-500 text-white font-semibold text-2xl">
                         Day {dayIndex + 1}
                       </div>
                       <div className="itinerary-title bg-gray-200 px-6 py-2 w-[80%] text-2xl font-semibold text-blue-800">
@@ -110,7 +120,9 @@ const Itinerary = () => {
                       {dayDetails ? (
                         <ul className="list-disc pl-6">
                           {dayDetails.map((detail, index) => (
-                            <li key={index} className="mb-2">{detail}</li>
+                            <li key={index} className="mb-2">
+                              {detail}
+                            </li>
                           ))}
                         </ul>
                       ) : (
@@ -118,22 +130,23 @@ const Itinerary = () => {
                       )}
                     </div>
                   </div>
-                  <div className="itinerary-images relative flex items-center justify-center w-64 h-60 rounded-xl overflow-hidden">
+
+                  <div className="itinerary-images relative flex items-center justify-center w-64 h-60 overflow-hidden">
                     {imagesForDay && imagesForDay.length > 0 ? (
                       <>
                         <img
                           src={imagesForDay[imageIndices[dayIndex]]}
                           alt={`Day ${dayIndex + 1} image`}
-                          className="w-full h-full object-cover rounded-xl transition-all duration-1000 ease-in-out"
+                          className="w-full h-full object-cover transition-all duration-1000 ease-in-out"
                         />
                         <div
                           className="absolute left-2 top-1/2 transform -translate-y-1/2 text-2xl font-bold cursor-pointer z-10 select-none text-white"
                           onClick={() =>
-                            setImageIndices((prevIndices) => {
-                              const newIndices = [...prevIndices];
+                            setImageIndices((prev) => {
+                              const newIndices = [...prev];
                               newIndices[dayIndex] =
                                 (newIndices[dayIndex] - 1 + imagesForDay.length) %
-                                imagesForDay.length; // Cycle backward
+                                imagesForDay.length;
                               return newIndices;
                             })
                           }
@@ -143,10 +156,10 @@ const Itinerary = () => {
                         <div
                           className="absolute right-2 top-1/2 transform -translate-y-1/2 text-2xl font-bold cursor-pointer z-10 select-none text-white"
                           onClick={() =>
-                            setImageIndices((prevIndices) => {
-                              const newIndices = [...prevIndices];
+                            setImageIndices((prev) => {
+                              const newIndices = [...prev];
                               newIndices[dayIndex] =
-                                (newIndices[dayIndex] + 1) % imagesForDay.length; // Cycle forward
+                                (newIndices[dayIndex] + 1) % imagesForDay.length;
                               return newIndices;
                             })
                           }
@@ -163,66 +176,43 @@ const Itinerary = () => {
             })}
           </div>
         )}
-  {activeTab === "summary" && (
-          <div className="summary-container">
-            <div className="summary-item flex flex-wrap border border-gray-300 p-6 mb-6 bg-white shadow-lg transform hover:scale-105 transition-all">
+
+        {activeTab === "fineprint" && (
+          <div className="overflow-x-auto bg-white p-8">
+            <div className="summary-item flex flex-wrap border border-gray-300 p-0 mb-6 bg-white shadow-lg transform">
               <div className="summary-desc-wrap flex flex-col gap-6 flex-1">
-                <div className="summary-desc text-lg text-gray-700 leading-relaxed">
+                <div className="summary-desc text-lg text-gray-700 leading-relaxed p-6">
                   {tourData.tour_summary || "No summary available."}
                 </div>
               </div>
               {tourData.tour_image && (
-                <div className="summary-item-img flex-shrink-0 w-64 h-40 rounded-xl overflow-hidden">
+                <div className="summary-item-img flex-shrink-0 w-64 h-40  overflow-hidden">
                   <img
                     src={tourData.tour_image}
-                    alt="Tour Summary Image"
-                    className="w-full h-full object-cover rounded-xl"
+                    alt="Tour Summary"
+                    className="w-full h-full object-cover"
                   />
                 </div>
               )}
             </div>
-          </div>
-        )}
 
-{activeTab === "fineprint" && (
-          <div className="overflow-x-auto bg-white p-8">
-            <Box className="justify-center space-x-4 items-center">
-              <Box className="inline-block bg-gradient-to-r from-red-600 via-red-700 to-red-800 py-3 px-8 mb-12 ml-4 shadow-xl">
-                <Typography className="text-white text-7xl font-[Domine]">
-                  Price: USD {tourData.price.toLocaleString()}
-                </Typography>
-              </Box>
-              <Button
-                sx={{
-                  background: "linear-gradient(to right, #1e3a8a, #4f46e5)",
-                  color: "white",
-                  fontSize: "20px",
-                  fontWeight: "bold",
-                  fontFamily: "Domine",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  "&:hover": {
-                    background: "linear-gradient(to right, #1e40af, #3730a3)",
-                  },
-                }}
-                onClick={handleInquiryClick}
-              >
-                <PhoneInTalkIcon sx={{ marginRight: "10px", fontSize: "inherit" }} />
-                Inquiry Now
-                <ArrowForwardIcon sx={{ marginLeft: "10px", fontSize: "inherit" }} />
-              </Button>
-            </Box>
-            <h2 className="text-4xl font-semibold mb-6 text-center text-blue-900">What's Inside the Package?</h2>
+            <h2 className="text-4xl font-semibold mb-6 mt-5 text-center text-blue-900">
+              What&apos;s Inside the Package?
+            </h2>
             <table className="min-w-full table-auto border-separate border-spacing-0">
               <thead>
                 <tr className="bg-gray-100 border-b">
-                  <th className="px-8 py-6 text-center text-xl font-medium text-gray-600 border-r">Inclusions</th>
-                  <th className="px-8 py-6 text-center text-xl font-medium text-gray-600">Exclusions</th>
+                  <th className="px-8 py-6 text-center text-xl font-bold text-gray-600 border-r">
+                    Inclusions
+                  </th>
+                  <th className="px-8 py-6 text-center text-xl font-bold text-gray-600">
+                    Exclusions
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 <tr className="min-h-[200px]">
-                  <td className="px-8 py-6 border-b border-r">
+                  <td className="px-8 py-6 border-b border-r align-top">
                     {Array.isArray(tourData.inclusions) && tourData.inclusions.length > 0 ? (
                       <ul className="list-none gap-y-4 text-lg">
                         {tourData.inclusions.map((inc, index) => (
@@ -236,7 +226,7 @@ const Itinerary = () => {
                       <p className="text-gray-700 text-lg">No inclusions available.</p>
                     )}
                   </td>
-                  <td className="px-8 py-6 border-b">
+                  <td className="px-8 py-6 border-b align-top">
                     {Array.isArray(tourData.exclusions) && tourData.exclusions.length > 0 ? (
                       <ul className="list-none gap-y-4 text-lg">
                         {tourData.exclusions.map((exc, index) => (
@@ -253,7 +243,7 @@ const Itinerary = () => {
                 </tr>
               </tbody>
             </table>
-            {/* Policies Section */}
+
             <div className="mt-12 space-y-12">
               <div>
                 <h3 className="text-3xl font-semibold text-blue-900 mb-6">Refund Policies</h3>
@@ -267,11 +257,10 @@ const Itinerary = () => {
                 </ul>
               </div>
 
-              {/* Payment Methods */}
               <div>
                 <h3 className="text-3xl font-semibold text-blue-900 mb-6">Payment Methods</h3>
                 <p className="text-gray-700 text-lg mb-6 text-justify">
-                  We provide a variety of secure and convenient payment options..
+                  We provide a variety of secure and convenient payment options.
                 </p>
                 <ul className="list-disc pl-8 text-gray-800 text-lg leading-relaxed">
                   <li>Credit cards and debit cards are accepted.</li>
@@ -280,7 +269,6 @@ const Itinerary = () => {
                 </ul>
               </div>
 
-              {/* Payment Policies */}
               <div>
                 <h3 className="text-3xl font-semibold text-blue-900 mb-6">Payment Policies</h3>
                 <p className="text-gray-700 text-lg mb-6 text-justify">
@@ -288,17 +276,15 @@ const Itinerary = () => {
                 </p>
                 <ul className="list-disc pl-8 text-gray-800 text-lg leading-relaxed">
                   <li>Full payment is required at the time of booking or as per the terms.</li>
-                  <li>Deposits may be required for specific bookings.</li>
+                  <li>Deposits may be required for certain trips or packages.</li>
                   <li>Payments must be made according to the specified deadlines.</li>
                 </ul>
               </div>
-          </div>
+            </div>
           </div>
         )}
       </div>
     </div>
-
-
   );
 };
 

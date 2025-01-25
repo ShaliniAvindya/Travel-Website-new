@@ -28,7 +28,7 @@ const AdminTourForm = () => {
     const fetchTour = async () => {
       if (tourId) {
         try {
-          const response = await axios.get(`http://localhost:5000/tours/${tourId}`);
+          const response = await axios.get(`http://localhost:8000/tours/${tourId}`);
           setTour(response.data.tour);
         } catch (error) {
           console.error("Error fetching tour:", error);
@@ -45,10 +45,10 @@ const AdminTourForm = () => {
     try {
       if (tourId) {
         // Update existing tour
-        await axios.put(`http://localhost:5000/tours/${tourId}`, tour);
+        await axios.put(`http://localhost:8000/tours/${tourId}`, tour);
       } else {
         // Create new tour
-        await axios.post('http://localhost:5000/tours', tour);
+        await axios.post('http://localhost:8000/tours', tour);
       }
       navigate('/admin'); 
     } catch (error) {

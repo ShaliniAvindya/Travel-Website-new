@@ -6,6 +6,7 @@ const passport = require('./passport');
 const tourRoutes = require('./routes/tourRoutes');
 const bodyParser = require("body-parser");
 const contactRoutes = require('./routes/contactRoutes'); 
+const inquireRoutes = require('./routes/inquiryRoutes');
 
 const app = express();
 app.use(bodyParser.json());
@@ -29,6 +30,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use('/api/tours', tourRoutes);
+app.use('/api/inquiries', inquireRoutes);
 
 // Connect to MongoDB
 mongoose.connect('mongodb+srv://shalini:Shalini%40LWD%40HL@cluster0.grvd0.mongodb.net/travel-website', { useNewUrlParser: true, useUnifiedTopology: true })
