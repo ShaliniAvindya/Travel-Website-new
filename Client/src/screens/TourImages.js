@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 
-const TourImages = ({ destinations, activities, hotels }) => {
+const TourImages = ({ destinations, activities, hotels, deviceType }) => {
+  const isMobile = deviceType === 'mobile';
+  const isTablet = deviceType === 'tablet';
   // Build your gallery array from the props
   const galleryDetails = [
     {
@@ -52,9 +54,8 @@ const TourImages = ({ destinations, activities, hotels }) => {
 
   const sectionItemStyle = {
     position: 'relative',
-    width: '100%',
-    height: '26.4vh',             
-    maxWidth: '600px',
+    width: isMobile? '82vw' :'100%',
+    height: isMobile? '20vh': '26.4vh', 
     overflow: 'hidden',
     borderRadius: '10px',
     cursor: 'pointer',
@@ -151,7 +152,7 @@ const TourImages = ({ destinations, activities, hotels }) => {
 
   const modalGalleryGridStyle = {
     display: 'grid',
-    gridTemplateColumns: 'repeat(3, 1fr)',
+    gridTemplateColumns: isMobile? 'repeat(2, 1fr)' :'repeat(3, 1fr)',
     gap: '15px',
     marginTop: '20px',
     maxHeight: '450px',

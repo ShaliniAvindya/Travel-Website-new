@@ -125,10 +125,10 @@ const TourDetails = () => {
 
   return (
     <>
-      <Box padding="2vw" sx={{ margin: '0 6vw ', backgroundColor: '#f0f0f0' }}>
+      <Box padding={isMobile? '3vw':'2vw'} sx={{ margin: '0 6vw ', backgroundColor: '#f0f0f0' }}>
         {/* Title */}
         <Typography
-          variant= {isMobile? 'h5': isTablet? 'h3' : "h2"}
+          variant= {isMobile? 'h4': isTablet? 'h3' : "h2"}
           sx={{
             fontFamily: 'Dancing Script',
             color: '#023047',
@@ -142,15 +142,15 @@ const TourDetails = () => {
         </Typography>
         {/* Days & Nights */}
         {isMobile && (
-          <Box style={{ alignItems: 'center', display: 'flex', justifyContent: 'center' }}>
-            <Box className="inline-block bg-blue-900/40 py-3 px-6 mb-8 shadow-xl">
+          <Box style={{ alignItems: 'center', display: 'flex', justifyContent: 'center', columnGap: '5px' }}>
+            <Box className="inline-block bg-blue-900/40 py-3 px-3  w-full max-w-44 mb-8 shadow-xl text-center">
               <Typography className="text-white text-6xl font-[Playfair Display]">
                 {tour.nights + 1} Days / {tour.nights} Nights
               </Typography>
             </Box>
 
             {/* Price */}
-            <Box className="inline-block bg-blue-900/40 py-3 px-6 mb-8 shadow-xl ml-2">
+            <Box className="inline-block bg-blue-900/40 py-3 w-full max-w-44 px-1 mb-8 shadow-xl text-center">
               <Typography className="text-white text-7xl font-[Domine]">
                 Price: USD {tour.price.toLocaleString()}
               </Typography>
@@ -158,19 +158,18 @@ const TourDetails = () => {
           </Box>
         )}
         { !isMobile && (
-          <Box>
             <Box className="inline-block bg-blue-900/40 py-3 px-5 mb-8 shadow-xl">
               <Typography className="text-white text-6xl font-[Playfair Display]">
                 {tour.nights + 1} Days / {tour.nights} Nights
               </Typography>
             </Box>
-
+          )}
+          { !isMobile && (
             <Box className="inline-block bg-blue-900/40 py-3 px-5 mb-8 shadow-xl ml-2">
               <Typography className="text-white text-7xl font-[Domine]">
                 Price: USD {tour.price.toLocaleString()}
               </Typography>
-            </Box>
-            </Box>
+            </Box>  
           )}
 
           <Button
@@ -200,7 +199,7 @@ const TourDetails = () => {
           </Button>
         
         {tour.tour_image && (
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '20px' }}>
+          <div style={{ display: 'flex',flexDirection: isMobile? 'column' : 'auto', alignItems: 'flex-start', gap: '20px' }}>
             <div
               className="main-image-container"
               style={{ position: 'relative' }}
@@ -210,7 +209,7 @@ const TourDetails = () => {
                 alt={tour.title}
                 className="main-image"
                 style={{
-                  width: '65vw',
+                  width: isMobile? '100%' : '65vw',
                   height: 'auto',
                   borderRadius: '10px',
                   objectFit: 'cover',
@@ -247,6 +246,7 @@ const TourDetails = () => {
                 destinations={tour.destination_images}
                 activities={tour.activity_images}
                 hotels={tour.hotel_images}
+                deviceType={isMobile ? 'mobile' : isTablet? 'tablet': 'desktop'}
               />
             </div>
           </div>
@@ -259,7 +259,7 @@ const TourDetails = () => {
         </div>
 
         {/* Back Button */}
-        <div className='flex flex-row justify-center gap-2 mt-6' >
+        <div className='flex flex-col lg:flex-row justify-center gap-2 mt-6 pb-6' >
           <Button
             variant="contained"
             sx={{
@@ -272,35 +272,36 @@ const TourDetails = () => {
           >
             Back to Tours
           </Button>
-            <Button
-              sx={{
-                background: "linear-gradient(to right, #1e3a8a, #4f46e5)",
-                color: "white",
-                padding: "7px 20px",
-                fontSize: "20px",
-                fontWeight: "bold",
-                fontFamily: "Domine",
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                width: "auto",
-                "&:hover": {
-                  background: "linear-gradient(to right, #1e40af, #3730a3)",
-                },
-              }}
-              onClick={handleOpenDialog}
-            >
-              Inquire Now
-              <SendIcon sx={{ marginLeft: '10px', fontSize: 'inherit' }} />
-            </Button>
-
+          <Button
+            sx={{
+              background: "linear-gradient(to right, #1e3a8a, #4f46e5)",
+              color: "white",
+              padding: "7px 20px",
+              fontSize: "20px",
+              fontWeight: "bold",
+              fontFamily: "Domine",
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "auto",
+              "&:hover": {
+                background: "linear-gradient(to right, #1e40af, #3730a3)",
+              },
+            }}
+            onClick={handleOpenDialog}
+          >
+            Inquire Now
+            <SendIcon sx={{ marginLeft: '10px', fontSize: 'inherit' }} />
+          </Button>
+        </div>
+        <div>
             <Dialog
               open={openDialog}
               onClose={handleCloseDialog}
               PaperProps={{
                 sx: {
-                  width: '35vw',
-                  borderRadius: '16px',
+                  width: isMobile? '95vwvw' : '35vw',
+                  borderRadius: isMobile? '10px' : '16px',
                   overflowX: 'hidden',
                 },
               }}
@@ -385,7 +386,7 @@ const TourDetails = () => {
               <Divider />
 
               {/* Form Section */}
-              <DialogContent sx={{ pt: 0 , pb: '0px' }}>
+              <DialogContent sx={{ pt: 0 , pb: '0px', px: isMobile? '10px' : '16px' }}>
                 <TextField
                   required
                   label="Full Name"
