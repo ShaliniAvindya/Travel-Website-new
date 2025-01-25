@@ -177,11 +177,10 @@ const TourDetails = () => {
         height: 'auto',
       }}
     >
-      <TourImages mainImageHeight="400px" />
+      <TourImages mainImageHeight="500px" />
     </div>
   </div>
 )}
-
 
         {/* Itinerary Section */}
         <div><br /><br />

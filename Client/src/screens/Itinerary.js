@@ -88,9 +88,9 @@ const Itinerary = () => {
         {activeTab === "itinerary" && (
           <div>
             {Array.from({ length: totalDays }).map((_, dayIndex) => {
-              const dayDetails = tourData.itinerary[`day_${dayIndex + 1}`];
-              const imagesForDay = tourData.itinerary_images[`day_${dayIndex + 1}`];
-              const titleForDay = tourData.itinerary_title[`day_${dayIndex + 1}`];
+              const dayDetails = tourData.itinerary ? tourData.itinerary[`day_${dayIndex + 1}`] : [];
+              const imagesForDay = tourData.itinerary_images ? tourData.itinerary_images[`day_${dayIndex + 1}`] : [];
+              const titleForDay = tourData.itinerary_titles ? tourData.itinerary_titles[`day_${dayIndex + 1}`] : `Day ${dayIndex + 1}`;
 
               return (
                 <div
@@ -163,7 +163,7 @@ const Itinerary = () => {
             })}
           </div>
         )}
-  {activeTab === "summary" && (
+        {activeTab === "summary" && (
           <div className="summary-container">
             <div className="summary-item flex flex-wrap border border-gray-300 p-6 mb-6 bg-white shadow-lg transform hover:scale-105 transition-all">
               <div className="summary-desc-wrap flex flex-col gap-6 flex-1">
@@ -184,7 +184,7 @@ const Itinerary = () => {
           </div>
         )}
 
-{activeTab === "fineprint" && (
+        {activeTab === "fineprint" && (
           <div className="overflow-x-auto bg-white p-8">
             <Box className="justify-center space-x-4 items-center">
               <Box className="inline-block bg-gradient-to-r from-red-600 via-red-700 to-red-800 py-3 px-8 mb-12 ml-4 shadow-xl">
@@ -297,8 +297,6 @@ const Itinerary = () => {
         )}
       </div>
     </div>
-
-
   );
 };
 

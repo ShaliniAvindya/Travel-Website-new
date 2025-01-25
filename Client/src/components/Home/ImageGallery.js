@@ -66,13 +66,15 @@ const ImageGallery = () => {
               }}
             >
               <Box sx={{ position: 'relative' }}>
-                {/* Check if images array is empty and use a default placeholder image */}
                 <CardMedia
                   component="img"
-                  height="200"
+                  height={item.tour_image.includes('https://i.ibb.co') ? '300' : '200'} // Conditionally adjust height
                   image={item.tour_image}
                   alt={item.title}
                   sx={{
+                    width: '100%', // Ensure the image takes the full width of the container
+                    objectFit: 'cover', // Ensure the image covers the container without stretching
+                    height: '400px', // Ensure the image takes the full height of the container
                     cursor: 'pointer',
                     '&:hover': {
                       filter: 'brightness(0.85)',
@@ -92,7 +94,7 @@ const ImageGallery = () => {
                   }}
                 >
                   <Typography variant="body2" fontWeight="bold">
-                  {item.nights + 1} days & {item.nights} nights
+                    {item.nights + 1} days & {item.nights} nights
                   </Typography>
                 </Box>
               </Box>
@@ -120,7 +122,6 @@ const ImageGallery = () => {
                     justifyContent="space-between"
                     mb={1}
                   >
-                    {/* Check if price exists and is a valid number before calling toLocaleString */}
                     USD {item.price && !isNaN(item.price) ? item.price.toLocaleString() : 'N/A'} {' '}
                     {item.price && !isNaN(item.price) && (
                       <Typography
