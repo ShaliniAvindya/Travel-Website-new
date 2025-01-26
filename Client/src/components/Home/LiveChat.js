@@ -12,11 +12,15 @@ const LiveChat = () => {
   const [showFAQ, setShowFAQ] = useState(false);
 
   const faqList = [
-    { question: 'What are your working hours?', answer: 'Our working hours are 9 AM to 6 PM, Monday to Friday.' },
-    { question: 'How can I book a room?', answer: 'You can book a room through our website or by calling our reception.' },
-    { question: 'Do you offer airport transfers?', answer: 'Yes, we offer airport transfer services. Please contact our concierge for more details.' },
-    { question: 'What amenities do you provide?', answer: 'We provide free Wi-Fi, a spa, a fitness center, and a restaurant with a view.' },
-    { question: 'Is there parking available?', answer: 'Yes, we offer free parking for all guests.' },
+      { question: 'What are your working hours?', answer: 'Our working hours are 9 AM to 6 PM, Monday to Friday.' },
+      { question: 'How can I book a tour?', answer: 'You can book a tour by calling our office during working hours. Our team will assist you with the process.' },
+      { question: 'Do you offer group tours?', answer: 'Yes, we offer group tours. Please call us for more information and to check availability.' },
+      { question: 'What types of tours do you provide?', answer: 'We offer city tours, adventure tours, cultural tours, and custom tours tailored to your preferences.' },
+      { question: 'Is advance booking required?', answer: 'Yes, we recommend booking in advance to secure your preferred tour date and time.' },
+      { question: 'What payment methods do you accept?', answer: 'We accept credit/debit cards, bank transfers, and cash payments. Payment details can be confirmed during the booking call.' },
+      { question: 'Do you offer tours in multiple languages?', answer: 'Yes, we have multilingual guides for many of our tours. Please let us know your preferred language when booking.' },
+      { question: 'Are meals included in the tours?', answer: 'Some tours include meals, while others do not. Please confirm this detail with our team when making a booking.' },
+      { question: 'What safety measures are in place for the tours?', answer: 'We prioritize safety and ensure that all tours comply with the necessary safety guidelines. Please ask our team for specifics about your chosen tour.' },
   ];
 
   const handleSendMessage = () => {
@@ -100,8 +104,8 @@ const LiveChat = () => {
             position: 'fixed',
             bottom: '80px',
             right: '30px',
-            width: '300px',
-            height: '450px', 
+            width: '600px',
+            height: '500px', 
             backgroundColor: '#cce6f4',
             boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.3)',
             borderRadius: '12px',
@@ -167,20 +171,28 @@ const LiveChat = () => {
           </Box>
 
           <div style={{ display: 'flex', alignItems: 'center' }}>
-            <TextField
-              variant="outlined"
-              placeholder="Type a message..."
-              fullWidth
-              value={userMessage}
-              onChange={(e) => setUserMessage(e.target.value)}
-              style={{ marginRight: '10px', fontSize: '14px', width: 'calc(100% - 50px)' }} 
-              InputProps={{
-                style: {
-                  fontSize: '14px',
-                  padding: '10px',
-                }
-              }}
-            />
+          <TextField
+           variant="outlined"
+            placeholder="Type a message..."
+            fullWidth
+            value={userMessage}
+            onChange={(e) => setUserMessage(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault(); 
+                handleSendMessage(); 
+              }
+            }}
+            style={{ marginRight: '10px', fontSize: '14px', width: 'calc(100% - 50px)' }}
+            InputProps={{
+              style: {
+                fontSize: '14px',
+                padding: '10px',
+              }
+            }}
+          />
+
+
             <Button
               variant="contained"
               color="primary"

@@ -1,3 +1,5 @@
+// HomeScreen.js
+
 import React from 'react';
 import { Container, Typography, Button, Grid, Box } from '@mui/material';
 import ImageGallery from '../components/Home/ImageGallery';
@@ -36,7 +38,7 @@ const HomeScreen = () => {
             
             onMouseEnter={(e) => {
               e.target.style.transform = 'scale(1.04)'; 
-              e.target.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+              e.target.style.backgroundColor = '#022859'; // Change colon to equal sign
             }}
             
             onMouseLeave={(e) => {
@@ -145,6 +147,7 @@ const HomeScreen = () => {
           left: '80px' ,
           boxSizing: 'border-box',
         }}
+        id="image-gallery" // Add this ID
       >
         <Typography
           variant="h3"

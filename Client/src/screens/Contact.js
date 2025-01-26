@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   TextField,
   Button,
@@ -22,6 +22,7 @@ const ContactUsForm = () => {
 
   const [status, setStatus] = useState({ type: "", message: "" });
   const [open, setOpen] = useState(false);
+  const [inquiries, setInquiries] = useState([]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -41,7 +42,14 @@ const ContactUsForm = () => {
         body: JSON.stringify(formData),
       });
 
-      const result = await response.json();
+      let result;
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.indexOf("application/json") !== -1) {
+        result = await response.json();
+      } else {
+        const text = await response.text();
+        throw new Error(`Server returned non-JSON response: ${text}`);
+      }
 
       if (response.ok) {
         setStatus({ type: "success", message: result.message });
@@ -51,7 +59,7 @@ const ContactUsForm = () => {
       }
     } catch (error) {
       console.error("Error submitting form:", error);
-      setStatus({ type: "error", message: "Error: Unable to send your message." });
+      setStatus({ type: "error", message: `Error: ${error.message}` });
     } finally {
       setOpen(true);
     }
@@ -62,6 +70,20 @@ const ContactUsForm = () => {
   };
 
   const handleClose = () => setOpen(false);
+
+  const fetchInquiries = async () => {
+    try {
+      const response = await fetch("/api/inquiries");
+      const data = await response.json();
+      setInquiries(data);
+    } catch (error) {
+      console.error("Failed to fetch inquiries:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchInquiries();
+  }, []);
 
   return (
     <>

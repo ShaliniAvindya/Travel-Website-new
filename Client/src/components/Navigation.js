@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
 import { AppBar, Toolbar, Typography, Tabs, Tab } from '@mui/material';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { animated, useSpring } from 'react-spring';
 import Slider from "react-slick";  
 import "slick-carousel/slick/slick.css";
@@ -10,6 +9,7 @@ import InputBase from '@mui/material/InputBase';
 import IconButton from '@mui/material/IconButton';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { Select, MenuItem } from '@mui/material';
+import React, { useState, useEffect, useRef } from 'react';
 
 
 const AnimatedText = ({ children }) => {
@@ -256,12 +256,14 @@ export const AccountTabContent = () => {
   );
 };
 
-const Navigation = () => {
+
+const Navigation = ({ onSearch }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [value, setValue] = useState(0);
   const [user, setUser] = useState();
   const location = useLocation();
-  const [currency, setCurrency] = useState("LKR");
+  const navigate = useNavigate();
+  const [currency, setCurrency] = useState(localStorage.getItem('selectedCurrency') || "USD");
 
   useEffect(() => {
     const currentUser = JSON.parse(localStorage.getItem('currentUser'));
@@ -279,7 +281,7 @@ const Navigation = () => {
       setValue(4);
     } else if (location.pathname === '/account') {
       setValue(5);
-    }else if (location.pathname === '/facilities') {
+    } else if (location.pathname === '/facilities') {
       setValue(6);
     } else {
       setValue(0);
@@ -299,20 +301,22 @@ const Navigation = () => {
     };
   }, []);
 
+  const handleCurrencyChange = (event) => {
+    setCurrency(event.target.value);
+    localStorage.setItem('selectedCurrency', event.target.value);
+    window.location.reload(); // Reload to apply currency change
+  };
 
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
   };
 
-  const handleCurrencyChange = (event) => {
-    setCurrency(event.target.value);
-    console.log("Currency changed to:", event.target.value);
-  };
-
   const handleSearchSubmit = (event) => {
     event.preventDefault();
-    console.log("Searching for:", searchTerm);
-    // Implement search logic here
+    if (onSearch) {
+      onSearch(searchTerm);
+    }
+    navigate(`/tours?search=${searchTerm}`);
   };
 
   const handleChange = (event, newValue) => {
@@ -332,7 +336,10 @@ const Navigation = () => {
     { value: "USD", label: "USD", flag: "🇺🇸" },
     { value: "EUR", label: "EUR", flag: "🇪🇺" },
     { value: "GBP", label: "GBP", flag: "🇬🇧" },
-    { value: "JPY", label: "JPY", flag: "🇯🇵" }
+    { value: "JPY", label: "JPY", flag: "🇯🇵" },
+    { value: "AUD", label: "AUD", flag: "🇦🇺" },
+    { value: "INR", label: "INR", flag: "🇮🇳" },
+
   ];
 
   return (
@@ -360,21 +367,21 @@ const Navigation = () => {
                 component={Link}
                 to="/"
                 value={0}
-                style={{ ontSize: '1rem',marginRight: '2vw', color: 'rgba(255,255,255,0.9)' }}  
+                style={{ fontSize: '1rem', marginRight: '2vw', color: 'rgba(255,255,255,0.9)' }}  
               />
               <Tab
                 label="Tours"
                 component={Link}
                 to="/tours"
                 value={1}
-                style={{ fontSize: '1rem',marginRight: '2vw', color: 'rgba(255,255,255,0.9)' }}
+                style={{ fontSize: '1rem', marginRight: '2vw', color: 'rgba(255,255,255,0.9)' }}
               />
               <Tab
                 label="Contact"
                 component={Link}
                 to="/contact"
                 value={2}
-                style={{ ffontSize: '1rem', color: 'rgba(255,255,255,0.9)' }}
+                style={{ fontSize: '1rem', color: 'rgba(255,255,255,0.9)' }}
               />
               <div style={{ marginLeft: '8vw', marginRight: '8vw', padding: '0 3.5vw' }}>
                 <img
@@ -385,74 +392,72 @@ const Navigation = () => {
               </div>
               {!user && (
                 <div style={{ marginRight: '1vw', flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                <form
-                  onSubmit={handleSearchSubmit}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    backgroundColor: 'transparent',
-                    borderRadius: '50px',
-                    border: "1.5px solid rgba(255,255,255,0.7)",
-                    padding: '0px 10px',
-                    boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
-                    transition: 'all 0.3s ease-in-out', 
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)';
-                    e.currentTarget.style.borderColor = 'rgba(255,255,255,1)';
-                    e.currentTarget.style.boxShadow = '0px 6px 8px rgba(0, 0, 0, 0.2)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'transparent';
-                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.7)';
-                    e.currentTarget.style.boxShadow = '0px 4px 6px rgba(0, 0, 0, 0.1)';
-                  }}
-                >
-                  <InputBase
-                    placeholder="Search..."
-                    value={searchTerm}
-                    onChange={handleSearchChange}
+                  <form
+                    onSubmit={handleSearchSubmit}
                     style={{
+                      display: 'flex',
+                      alignItems: 'center',
                       backgroundColor: 'transparent',
-                      borderRadius: '25px',
+                      borderRadius: '50px',
+                      border: "1.5px solid rgba(255,255,255,0.7)",
                       padding: '0px 10px',
-                      width: '13vw',
-                      color: 'white',
-                      outline: 'none',
+                      boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
+                      transition: 'all 0.3s ease-in-out', 
                     }}
-                  />
-                  <IconButton type="submit">
-                    <SearchIcon style={{ color: 'rgba(255,255,255,0.7)', background: 'transparent', borderRadius: '25px', padding: '0px' }} />
-                  </IconButton>
-                </form>
-              </div>
-              
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)';
+                      e.currentTarget.style.borderColor = 'rgba(255,255,255,1)';
+                      e.currentTarget.style.boxShadow = '0px 6px 8px rgba(0, 0, 0, 0.2)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                      e.currentTarget.style.borderColor = 'rgba(255,255,255,0.7)';
+                      e.currentTarget.style.boxShadow = '0px 4px 6px rgba(0, 0, 0, 0.1)';
+                    }}
+                  >
+                    <InputBase
+                      placeholder="Search Tours ....."
+                      value={searchTerm}
+                      onChange={handleSearchChange}
+                      style={{
+                        backgroundColor: 'transparent',
+                        borderRadius: '25px',
+                        padding: '0px 10px',
+                        width: '13vw',
+                        color: 'white',
+                        outline: 'none',
+                      }}
+                    />
+                    <IconButton type="submit">
+                      <SearchIcon style={{ color: 'rgba(255,255,255,0.7)', background: 'transparent', borderRadius: '25px', padding: '0px' }} />
+                    </IconButton>
+                  </form>
+                </div>
               )}
               {!user && (
                 <div style={{ marginRight: '', display: 'flex', alignItems: 'center', backgroundColor: 'transparent', padding: '0px 10px' }}>
-                <Select
-                  value={currency}
-                  onChange={handleCurrencyChange}
-                  style={{
-                    backgroundColor: 'transparent',
-                    fontSize: '1rem',
-                    fontWeight: 'bold',
-                    color: 'rgba(255,255,255,0.9)',
-                    padding: '0px 10px',
-                    borderRadius: '25px',
-                    border: '1.5px solid rgba(255,255,255,0.7)',
-                    height: '45px',
-                  }}
-                  disableUnderline
-                >
-                  {currencyOptions.map((option) => (
-                    <MenuItem key={option.value} value={option.value} style={{ display: 'flex', alignItems: 'center', paddingTop: '0px' }}>
-                      <span style={{ marginRight: '8px', padding: '-10px 0px' }}>{option.flag}</span> {option.label}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </div>
-              
+                  <Select
+                    value={currency}
+                    onChange={handleCurrencyChange}
+                    style={{
+                      backgroundColor: 'transparent',
+                      fontSize: '1rem',
+                      fontWeight: 'bold',
+                      color: 'rgba(255,255,255,0.9)',
+                      padding: '0px 10px',
+                      borderRadius: '25px',
+                      border: '1.5px solid rgba(255,255,255,0.7)',
+                      height: '45px',
+                    }}
+                    disableUnderline
+                  >
+                    {currencyOptions.map((option) => (
+                      <MenuItem key={option.value} value={option.value} style={{ display: 'flex', alignItems: 'center', paddingTop: '0px' }}>
+                        <span style={{ marginRight: '8px', padding: '-10px 0px' }}>{option.flag}</span> {option.label}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </div>
               )}
               {user && !user.isAdmin && (
                 <Tab
@@ -483,7 +488,6 @@ const Navigation = () => {
                   className="hover:text-gray-300"
                 />
               )}
-
             </Tabs>
           </div>
         </Toolbar>

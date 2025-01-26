@@ -6,6 +6,8 @@ const path = require('path');
 
 // Import the routes
 const tourRoutes = require('./routes/tourRoutes');
+const contactRoutes = require('./routes/contactRoutes'); 
+
 
 const app = express();
 
@@ -27,6 +29,7 @@ mongoose.connect('mongodb+srv://shalini:Shalini%40LWD%40HL@cluster0.grvd0.mongod
 
 // Set up the routes
 app.use('/api/tours', tourRoutes);
+app.use('/api', contactRoutes);
 
 // Serve static files (like images) from 'uploads' folder
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

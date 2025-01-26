@@ -11,6 +11,7 @@ import Facilities from './screens/Facilities';
 import Contact from './screens/Contact';
 import AdminPanel from './screens/AdminPanel';
 import TourDetails from './screens/TourDetails';
+import ImageGallery from './components/Home/ImageGallery';
 // import Itinerary from './screens/Itinerary'
 
 
@@ -29,6 +30,7 @@ const App = () => {
         <Route path='/contact' element={<Contact />} /> 
         <Route path='/admin' element={<AdminPanel />} /> 
         <Route path='/tours/:id' element={<TourDetails/>}/>
+        <Route path="/" element={<ImageGallery />} />
         {/* <Route path="/tour/:tourId" element={<Itinerary />} /> */}
       </Routes>
     </div>

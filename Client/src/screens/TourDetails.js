@@ -1,4 +1,4 @@
-import React, { useEffect , useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Typography, Box, Button } from '@mui/material';
 import { PhoneInTalk as PhoneInTalkIcon, ArrowForward as ArrowForwardIcon } from '@mui/icons-material';
@@ -7,11 +7,24 @@ import Itinerary from './Itinerary';
 import Footer from '../components/Footer';
 import axios from 'axios';
 
+const convertCurrency = (amount, currency) => {
+  const exchangeRates = {
+    USD: 1,
+    LKR: 200,
+    EUR: 0.85,
+    GBP: 0.75,
+    JPY: 110,
+  };
+  const rate = exchangeRates[currency] || 1;
+  return (amount * rate).toFixed(2);
+};
+
 const TourDetails = () => {
   const { id } = useParams(); 
   const navigate = useNavigate();
   const [tour, setTour] = useState(null);
   const [loading, setLoading] = useState(true);
+  const selectedCurrency = localStorage.getItem('selectedCurrency') || 'USD';
 
   useEffect(() => {
     const fetchTourDetails = async () => {
@@ -66,7 +79,7 @@ const TourDetails = () => {
         {/* Price */}
         <Box className="inline-block bg-gradient-to-r from-red-600 via-red-700 to-red-800 py-3 px-8 mb-12 ml-4 rounded-lg shadow-xl">
           <Typography className="text-white text-7xl font-[Domine]">
-            Price: USD {tour.price.toLocaleString()}
+            Price: {selectedCurrency} {Number(convertCurrency(tour.price, selectedCurrency)).toLocaleString()}
           </Typography>
         </Box>
 

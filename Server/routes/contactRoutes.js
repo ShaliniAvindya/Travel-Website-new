@@ -34,7 +34,7 @@ const sendContactEmail = async ({ name, email, message }) => {
   return transporter.sendMail(mailOptions); 
 };
 
-router.post('/', async (req, res) => {
+router.post('/contact', async (req, res) => {
   const { name, email, message } = req.body;
 
   if (!name || !email || !message) {
@@ -51,7 +51,7 @@ router.post('/', async (req, res) => {
     res.status(200).json({ message: 'Thank you for contacting us! We have received your message.' });
   } catch (error) {
     console.error('Error processing contact form:', error);
-    res.status(500).json({ message: 'Error: Unable to submit your message.' });
+    res.status(500).json({ message: 'Error: Unable to submit your message.', error: error.message });
   }
 });
 
@@ -62,7 +62,7 @@ router.get('/inquiries', async (req, res) => {
     res.status(200).json(inquiries);
   } catch (error) {
     console.error('Error fetching contact submissions:', error);
-    res.status(500).json({ message: 'Unable to fetch inquiries.' });
+    res.status(500).json({ message: 'Unable to fetch inquiries.', error: error.message });
   }
 });
 
@@ -78,7 +78,7 @@ router.delete('/inquiries/:id', async (req, res) => {
     res.status(200).json({ message: 'Inquiry deleted successfully.' });
   } catch (error) {
     console.error('Error deleting inquiry:', error);
-    res.status(500).json({ message: 'Error deleting inquiry.' });
+    res.status(500).json({ message: 'Error deleting inquiry.', error: error.message });
   }
 });
 

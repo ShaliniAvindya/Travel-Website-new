@@ -4,6 +4,18 @@ import axios from "axios";
 import { Button, Typography, Box } from "@mui/material";
 import { PhoneInTalk as PhoneInTalkIcon, ArrowForward as ArrowForwardIcon } from "@mui/icons-material";
 
+const convertCurrency = (amount, currency) => {
+  const exchangeRates = {
+    USD: 1,
+    LKR: 200,
+    EUR: 0.85,
+    GBP: 0.75,
+    JPY: 110,
+  };
+  const rate = exchangeRates[currency] || 1;
+  return (amount * rate).toFixed(2);
+};
+
 const Itinerary = () => {
   const { id } = useParams();
   const [tourData, setTourData] = useState(null);
@@ -11,6 +23,8 @@ const Itinerary = () => {
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState("itinerary");
   const [imageIndices, setImageIndices] = useState([]);
+  const selectedCurrency = localStorage.getItem('selectedCurrency') || 'USD';
+
 
   useEffect(() => {
     const fetchTourData = async () => {
@@ -44,12 +58,11 @@ const Itinerary = () => {
           if (imagesForDay && imagesForDay.length > 0) {
             return (currentIndex + 1) % imagesForDay.length; // Cycle to the next image
           }
-          return currentIndex; // No change if no images
+          return currentIndex; 
         });
       });
-    }, 3000); // Change images every 3 seconds
+    }, 3000); 
 
-    // Cleanup interval on component unmount
     return () => clearInterval(interval);
   }, [tourData]);
 
@@ -63,7 +76,7 @@ const Itinerary = () => {
 
   const totalDays = tourData.nights + 1;
   const handleInquiryClick = () => {
-    window.location.href = "tel:+1234567890"; // Replace with your contact number
+    window.location.href = "tel:+1234567890"; 
   };
   
   return (
@@ -188,9 +201,9 @@ const Itinerary = () => {
           <div className="overflow-x-auto bg-white p-8">
             <Box className="justify-center space-x-4 items-center">
               <Box className="inline-block bg-gradient-to-r from-red-600 via-red-700 to-red-800 py-3 px-8 mb-12 ml-4 shadow-xl">
-                <Typography className="text-white text-7xl font-[Domine]">
-                  Price: USD {tourData.price.toLocaleString()}
-                </Typography>
+              <Typography variant="h6" component="h2">
+        Price: {selectedCurrency} {Number(convertCurrency(tourData.price, selectedCurrency)).toLocaleString()}
+      </Typography>
               </Box>
               <Button
                 sx={{

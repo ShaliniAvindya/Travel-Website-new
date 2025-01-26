@@ -1,23 +1,40 @@
 import React, { useState, useEffect } from 'react';
-import { Grid, Card, CardMedia, CardContent, Typography, Box, Rating, Button, CircularProgress } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { Grid, Card, CardMedia, CardContent, Typography, Box, Rating, Button, CircularProgress, TextField, IconButton } from '@mui/material';
+import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import PhoneIcon from '@mui/icons-material/Phone';
+import SearchIcon from '@mui/icons-material/Search';
+
 
 const ImageGallery = () => {
   const [tours, setTours] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Get the search term from the query string of the URL
+  const query = new URLSearchParams(location.search);
+  const searchTerm = query.get('search') || '';
+  const nights = query.get('nights') || '';
+  const days = query.get('days') || '';
+  const country = query.get('country') || '';
+
+  const selectedCurrency = localStorage.getItem('selectedCurrency') || 'USD';
+
+  const [search, setSearch] = useState(searchTerm);
+  const [searchNights, setSearchNights] = useState(nights);
+  const [searchDays, setSearchDays] = useState(days);
+  const [searchCountry, setSearchCountry] = useState(country);
 
   useEffect(() => {
     const fetchTours = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/tours'); // Replace with your API endpoint
+        const response = await axios.get('/api/tours');
         setTours(response.data);
         setLoading(false);
-      } catch (err) {
-        setError('Failed to fetch tours. Please try again later.');
+      } catch (error) {
+        setError(error);
         setLoading(false);
       }
     };
@@ -25,37 +42,105 @@ const ImageGallery = () => {
     fetchTours();
   }, []);
 
+  useEffect(() => {
+    setSearch(searchTerm);
+    setSearchNights(nights);
+    setSearchDays(days);
+    setSearchCountry(country);
+  }, [searchTerm, nights, days, country]);
+
+  const filteredTours = tours.filter(tour => {
+    const searchDaysValue = searchDays ? parseInt(searchDays.split(' ')[0]) : null;
+    const searchNightsValue = searchNights ? parseInt(searchNights.split(' ')[0]) : null;
+
+    return (
+      (!search || tour.title.toLowerCase().includes(search.toLowerCase())) &&
+      (!searchNightsValue || tour.nights === searchNightsValue) &&
+      (!searchDaysValue || tour.days === searchDaysValue) &&
+      (!searchCountry || tour.country.toLowerCase().includes(searchCountry.toLowerCase()))
+    );
+  });
+
+  // Function to handle currency conversion
+  const convertCurrency = (price) => {
+    const rates = {
+      USD: 1,
+      LKR: 200,
+      EUR: 0.85,
+      GBP: 0.75,
+      JPY: 110,
+      AUD: 1.35,
+      INR: 75,
+    };
+    return (price * rates[selectedCurrency]).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 3 });
+  };
+
+  const handleSearchSubmit = (event) => {
+    event.preventDefault();
+    const query = new URLSearchParams({
+      search,
+      nights: searchNights,
+      days: searchDays,
+      country: searchCountry
+    }).toString();
+    navigate(`/imagegallery?${query}`);
+  };
+
   const handleClick = (id) => {
-    navigate(`/tours/${id}`);
+    navigate(`/tour/${id}`);
   };
 
   if (loading) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="70vh">
-        <CircularProgress />
-      </Box>
-    );
+    return <CircularProgress />;
   }
 
   if (error) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="70vh">
-        <Typography variant="h6" color="error">
-          {error}
-        </Typography>
-      </Box>
-    );
+    return <Typography variant="h6" color="error">{error.message}</Typography>;
   }
 
   return (
     <Box sx={{ width: '100%', minHeight: '70vh', padding: '20px 30px', backgroundColor: '#f9f9f9' }}>
+      {/* Search Bar */}
+      <Box mb={3}>
+        <form onSubmit={handleSearchSubmit} style={{ display: 'flex', gap: '10px' }}>
+          <TextField
+            fullWidth
+            label="Search for tours"
+            variant="outlined"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <TextField
+            label="Nights"
+            variant="outlined"
+            value={searchNights}
+            onChange={(e) => setSearchNights(e.target.value)}
+          />
+          <TextField
+            label="Days"
+            variant="outlined"
+            value={searchDays}
+            onChange={(e) => setSearchDays(e.target.value)}
+          />
+          <TextField
+            label="Country"
+            variant="outlined"
+            value={searchCountry}
+            onChange={(e) => setSearchCountry(e.target.value)}
+          />
+          <IconButton type="submit" color="primary">
+            <SearchIcon />
+          </IconButton>
+        </form>
+      </Box>
+
       <Grid container spacing={5}>
-        {tours.map((item) => (
+        {filteredTours.map((item) => (
           <Grid item xs={12} sm={6} md={4} key={item._id}>
             <Card
               sx={{
                 borderRadius: '16px',
-                height: '610px',
+                height: '630px',
                 boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
                 transition: 'transform 0.3s ease, box-shadow 0.3s ease',
                 '&:hover': {
@@ -72,9 +157,9 @@ const ImageGallery = () => {
                   image={item.tour_image}
                   alt={item.title}
                   sx={{
-                    width: '100%', // Ensure the image takes the full width of the container
-                    objectFit: 'cover', // Ensure the image covers the container without stretching
-                    height: '400px', // Ensure the image takes the full height of the container
+                    width: '100%',
+                    objectFit: 'cover',
+                    height: '400px',
                     cursor: 'pointer',
                     '&:hover': {
                       filter: 'brightness(0.85)',
@@ -122,14 +207,14 @@ const ImageGallery = () => {
                     justifyContent="space-between"
                     mb={1}
                   >
-                    USD {item.price && !isNaN(item.price) ? item.price.toLocaleString() : 'N/A'} {' '}
+                    {selectedCurrency} {item.price && !isNaN(item.price) ? convertCurrency(item.price) : 'N/A'}
                     {item.price && !isNaN(item.price) && (
                       <Typography
                         component="span"
                         variant="body1"
                         sx={{ textDecoration: 'line-through', marginLeft: 1, color: 'text.secondary' }}
                       >
-                        USD {(item.price + 500).toLocaleString()}
+                        {selectedCurrency} {convertCurrency(item.price + 500)}
                       </Typography>
                     )}
                     {item.price && !isNaN(item.price) && (
