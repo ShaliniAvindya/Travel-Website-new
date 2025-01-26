@@ -54,17 +54,21 @@ const ImageGallery = () => {
   };
 
   const filteredTours = tours.filter(tour => {
-    const searchDaysValue = searchDays ? parseInt(searchDays.split(' ')[0]) : null;
-    const searchNightsValue = searchNights ? parseInt(searchNights.split(' ')[0]) : null;
+    const searchDaysValue = searchDays ? parseInt(searchDays) : null; 
+    const searchNightsValue = searchNights ? parseInt(searchNights) : null;
+    const searchCountryValue = searchCountry ? searchCountry.toLowerCase() : '';
 
-    return (
-      (!search || tour.title.toLowerCase().includes(search.toLowerCase())) &&
-      (!searchNightsValue || tour.nights === searchNightsValue) &&
-      (!searchDaysValue || tour.days === searchDaysValue) &&
-      (!searchCountry || tour.country.toLowerCase().includes(searchCountry.toLowerCase()))
+    const tourDaysValue = tour.nights ? tour.nights + 1 : null;  
+  const tourCountryValue = tour.country ? tour.country.toLowerCase() : ''; 
+  
+  return (
+    (!search || (tour.title && tour.title.toLowerCase().includes(search.toLowerCase()))) &&
+    (!searchNightsValue || tour.nights === searchNightsValue) &&
+    (!searchDaysValue || tourDaysValue === searchDaysValue) &&
+    (!searchCountryValue || tourCountryValue.includes(searchCountryValue))
     );
   });
-
+  
   // Function to handle currency conversion
   const convertCurrency = (price) => {
     const rates = {
