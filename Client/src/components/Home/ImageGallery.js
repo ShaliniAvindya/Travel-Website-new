@@ -28,13 +28,20 @@ const ImageGallery = () => {
   const [searchCountry, setSearchCountry] = useState(country);
 
   useEffect(() => {
+    setSearch(searchTerm);
+    setSearchNights(nights);
+    setSearchDays(days);
+    setSearchCountry(country);
+  }, [searchTerm, nights, days, country]);
+
+  useEffect(() => {
     const fetchTours = async () => {
       try {
-        const response = await axios.get('/api/tours');
+        const response = await axios.get('http://localhost:5000/api/tours');
         setTours(response.data);
         setLoading(false);
-      } catch (error) {
-        setError(error);
+      } catch (err) {
+        setError('Failed to fetch tours. Please try again later.');
         setLoading(false);
       }
     };
@@ -42,12 +49,9 @@ const ImageGallery = () => {
     fetchTours();
   }, []);
 
-  useEffect(() => {
-    setSearch(searchTerm);
-    setSearchNights(nights);
-    setSearchDays(days);
-    setSearchCountry(country);
-  }, [searchTerm, nights, days, country]);
+  const handleClick = (id) => {
+    navigate(`/tours/${id}`);
+  };
 
   const filteredTours = tours.filter(tour => {
     const searchDaysValue = searchDays ? parseInt(searchDays.split(' ')[0]) : null;
@@ -84,10 +88,6 @@ const ImageGallery = () => {
       country: searchCountry
     }).toString();
     navigate(`/imagegallery?${query}`);
-  };
-
-  const handleClick = (id) => {
-    navigate(`/tour/${id}`);
   };
 
   if (loading) {
