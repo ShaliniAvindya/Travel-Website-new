@@ -1,7 +1,8 @@
 const express = require('express');
-const router = express.Router();
-const Inquiry = require('../models/inquirySubmission'); // Path to your Inquiry model
 const nodemailer = require('nodemailer');
+const Inquiry = require('../models/inquirySubmission'); // Path to your Inquiry model
+const router = express.Router();
+require('dotenv').config(); 
 
 // Configure Nodemailer transporter using .env variables
 const transporter = nodemailer.createTransport({
@@ -15,10 +16,7 @@ const transporter = nodemailer.createTransport({
 });
 
 // Helper function to send inquiry email to Admin
-const sendInquiryEmail = async (inquiryData) => {
-  // Destructure the fields you want in the email
-  const { name, email, phone_number, travel_date, traveller_count, message } = inquiryData;
-
+const sendInquiryEmail = async ({ name, email, phone_number, travel_date, traveller_count, message }) => {
   const mailOptions = {
     from: `"${name}" <${email}>`, // "John Doe" <john@gmail.com>
     to: process.env.SMTP_USER,    // admin email from your .env or another email
@@ -41,70 +39,76 @@ const sendInquiryEmail = async (inquiryData) => {
 // POST /api/inquiries
 // Create a new inquiry + send email
 router.post('/', async (req, res) => {
+  const { name, email, phone_number, travel_date, traveller_count, message, tour_id } = req.body;
+
+  if (!name || !email || !phone_number || !travel_date || !traveller_count) {
+    return res.status(400).json({ message: 'Missing required fields. Please fill them all.' });
+  }
+
   try {
-    const {
-      name,
-      email,
-      phone_number,
-      travel_date,
-      traveller_count,
-      message,
-      tour_id,
-    } = req.body;
-
-    // Validate required fields
-    if (!name || !email || !phone_number || !travel_date || !traveller_count) {
-      return res
-        .status(400)
-        .json({ message: 'Missing required fields. Please fill them all.' });
-    }
-
-    // 1) Create a new Inquiry in MongoDB
-    const newInquiry = new Inquiry({
-      name,
-      email,
-      phone_number,
-      travel_date,
-      traveller_count,
-      message,
-      tour_id: tour_id || null,
-    });
+    const newInquiry = new Inquiry({ name, email, phone_number, travel_date, traveller_count, message, tour_id: tour_id || null });
     await newInquiry.save();
 
-    // 2) Send email notification to admin
-    await sendInquiryEmail({
-      name,
-      email,
-      phone_number,
-      travel_date,
-      traveller_count,
-      message,
-    });
+    await sendInquiryEmail({ name, email, phone_number, travel_date, traveller_count, message });
 
-    // 3) Return success
-    return res.status(201).json({
-      message: 'Inquiry submitted successfully!',
-      inquiry: newInquiry,
-    });
+    res.status(201).json({ message: 'Inquiry submitted successfully!', inquiry: newInquiry });
   } catch (error) {
     console.error('Error processing inquiry submission:', error);
-    return res.status(500).json({
-      message: 'Error: Unable to submit your inquiry.',
-      error: error.message,
-    });
+    res.status(500).json({ message: 'Error: Unable to submit your inquiry.', error: error.message });
   }
 });
 
-// (Optional) GET /api/inquiries
+// GET /api/inquiries
 router.get('/', async (req, res) => {
   try {
     const inquiries = await Inquiry.find({});
-    return res.json(inquiries);
+    res.json(inquiries);
   } catch (error) {
-    return res.status(500).json({
-      message: 'Error retrieving inquiries.',
-      error: error.message,
+    res.status(500).json({ message: 'Error retrieving inquiries.', error: error.message });
+  }
+});
+
+// DELETE /api/inquiries/:id
+router.delete('/:id', async (req, res) => {
+  try {
+    const removed = await Inquiry.findByIdAndDelete(req.params.id);
+    if (!removed) return res.status(404).json({ message: 'Not found.' });
+    res.json({ message: 'Deleted successfully.' });
+  } catch (err) {
+    res.status(500).json({ message: 'Error deleting inquiry.' });
+  }
+});
+
+// POST /api/inquiries/reply
+router.post('/reply', async (req, res) => {
+  const { inquiryId, email, subject, replyMessage } = req.body;
+
+  if (!email || !subject || !replyMessage || !inquiryId) {
+    return res.status(400).json({ message: 'Email, subject, reply message, and inquiry ID are required.' });
+  }
+
+  const mailOptions = {
+    from: process.env.SMTP_USER,
+    to: email,
+    subject,
+    text: replyMessage,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+
+    await Inquiry.findByIdAndUpdate(inquiryId, {
+      reply: {
+        subject,
+        message: replyMessage,
+        sentAt: new Date(),
+      },
     });
+
+    res.status(200).json({ message: 'Reply sent successfully.' });
+  } catch (error) {
+    console.error('Error sending reply:', error);
+    res.status(500).json({ message: 'Failed to send reply.', error: error.message });
   }
 });
 

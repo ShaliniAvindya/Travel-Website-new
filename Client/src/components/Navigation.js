@@ -18,7 +18,7 @@ import {
   useTheme,
   Divider
 } from '@mui/material';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { animated, useSpring } from 'react-spring';
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
@@ -88,6 +88,16 @@ const HomeTabContent = () => {
   };
 
   const { isMobile, isTablet } = useDeviceType();
+
+  const navigate = useNavigate();
+  
+const handleExploreToures = () =>{
+  navigate('/tours');
+}
+
+const handleConnectWithUs = () => {
+  navigate('/contact');
+}
 
   return (
     <div style={{ position: 'relative', minHeight: '98vh', opacity: '0.9' }} >
@@ -229,6 +239,7 @@ const HomeTabContent = () => {
               e.target.style.transform = "scale(1)";
               e.target.style.boxShadow = "0 8px 15px rgba(0, 0, 0, 0.2)";
             }}
+            onClick={handleExploreToures}
           >
             Explore Tours
           </button>
@@ -257,6 +268,7 @@ const HomeTabContent = () => {
               e.target.style.transform = "scale(1)";
               e.target.style.boxShadow = "0 8px 15px rgba(0, 0, 0, 0.2)";
             }}
+            onClick={handleConnectWithUs}
           >
             Connect with US
           </button>
@@ -374,19 +386,11 @@ export const AccountTabContent = () => {
   }, []);
 
   return (
-    <div
-      style={{
-        position: 'relative',
-        backgroundImage: `url('https://firebasestorage.googleapis.com/v0/b/hotel-booking-system-35f4a.appspot.com/o/Public%20Folder%2FSpa.png?alt=media&token=f0e89146-dbfe-4a98-9eae-a1243bfb8de3')`,
-        backgroundSize: 'cover',
-        height: '100vh',
-        opacity: 0.86
-      }}
-    >
       <TabContent
-        title={user ? (user.isAdmin ? "Admin Dashboard" : "My Account") : "My Account"}
+        title={JSON.parse(localStorage.getItem('currentUser')) ? (JSON.parse(localStorage.getItem('currentUser')).isAdmin ? "Admin Dashboard" : "My Account") : "My Account"}
+        backgroundImage1= 'https://i.postimg.cc/jSMNZsyY/Untitled-design-1.png'
+        backgroundImage2= 'https://i.postimg.cc/jSMNZsyY/Untitled-design-1.png'
       />
-    </div>
   );
 };
 
@@ -425,7 +429,11 @@ const Navigation = () => {
       setValue(5);
     } else if (location.pathname === '/facilities') {
       setValue(6);
-    } else {
+    }
+    else if (location.pathname === '/admin') {
+      setValue(8);
+    }
+    else {
       setValue(0);
     }
   }, [location]);
@@ -831,6 +839,7 @@ const Navigation = () => {
         {value === 4 && <RegisterTabContent />}
         {value === 5 && <AccountTabContent />}
         {value === 6 && <FacilitiesTabContent />}
+        {value === 8 && <AccountTabContent />}
       </div>
     </div>
   );

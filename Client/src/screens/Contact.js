@@ -12,6 +12,7 @@ import {
 } from "@mui/material";
 import { Person, Email, Message } from "@mui/icons-material";
 import Footer from "../components/Footer";
+import axios from "axios";
 
 const ContactUsForm = () => {
   const [formData, setFormData] = useState({
@@ -33,21 +34,17 @@ const ContactUsForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
-      const response = await fetch("/api/contact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
+      const response = await axios.post(
+        "http://localhost:8000/api/contact",
+        formData
+    );
 
-      const result = await response.json();
-
-      if (response.ok) {
-        setStatus({ type: "success", message: result.message });
+      if (response.success) {
+        setStatus({ type: "success", message: response.message });
         setFormData({ name: "", email: "", message: "" });
       } else {
-        setStatus({ type: "error", message: result.message });
+        setStatus({ type: "error", message: response.message });
       }
     } catch (error) {
       console.error("Error submitting form:", error);

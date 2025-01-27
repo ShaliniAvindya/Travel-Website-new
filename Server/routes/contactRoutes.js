@@ -36,6 +36,7 @@ const sendContactEmail = async ({ name, email, message }) => {
 
 router.post('/', async (req, res) => {
   const { name, email, message } = req.body;
+  console.log(req.body);
 
   if (!name || !email || !message) {
     return res.status(400).json({ message: 'All fields are required.' });
@@ -48,10 +49,10 @@ router.post('/', async (req, res) => {
     // Send email notification
     await sendContactEmail({ name, email, message });
 
-    res.status(200).json({ message: 'Thank you for contacting us! We have received your message.' });
+    res.status(200).json({ success: true, message: 'Thank you for contacting us! We have received your message.' });
   } catch (error) {
     console.error('Error processing contact form:', error);
-    res.status(500).json({ message: 'Error: Unable to submit your message.' });
+    res.status(500).json({ success:false, message: 'Error: Unable to submit your message.' });
   }
 });
 

@@ -9,14 +9,13 @@ const router = express.Router();
 // Registration Route
 router.post('/register', async (req, res) => {
   const { name, email, password } = req.body;
-
+  
   try {
     let user = await User.findOne({ email });
     if (user) {
       return res.status(400).json({ message: 'User already exists' });
     }
   
-    // Create a new user (password will be hashed by userSchema pre-save hook)
     user = new User({
       name,
       email,

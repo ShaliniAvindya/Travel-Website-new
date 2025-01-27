@@ -7,15 +7,17 @@ const tourRoutes = require('./routes/tourRoutes');
 const bodyParser = require("body-parser");
 const contactRoutes = require('./routes/contactRoutes'); 
 const inquireRoutes = require('./routes/inquiryRoutes');
+const userRoutes = require('./routes/userRoutes');
 
 const app = express();
 app.use(bodyParser.json());
-app.use('/api/contact', contactRoutes);
 
-// Use CORS for cross-origin requests
-app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
+app.use(cors({
+  origin: "http://localhost:3000", // Your frontend URL
+  methods: ["GET", "POST"], // Allowed methods
+  allowedHeaders: ["Content-Type", "Authorization"], // Allowed headers
+}));
 
-// Middleware to parse JSON data
 app.use(express.json());
 
 // Enable session for passport
@@ -29,8 +31,13 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
+app.options("*", cors());
+
+
 app.use('/api/tours', tourRoutes);
 app.use('/api/inquiries', inquireRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/contact', contactRoutes);
 
 // Connect to MongoDB
 mongoose.connect('mongodb+srv://shalini:Shalini%40LWD%40HL@cluster0.grvd0.mongodb.net/travel-website', { useNewUrlParser: true, useUnifiedTopology: true })

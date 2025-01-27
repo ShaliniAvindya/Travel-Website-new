@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Button, Modal, Form, Input, message, Space } from 'antd';
+import { DeleteOutlined } from '@ant-design/icons';
 
 const ContactInquiries = () => {
   const [inquiries, setInquiries] = useState([]);
@@ -102,55 +103,70 @@ const ContactInquiries = () => {
       title: 'Name',
       dataIndex: 'name',
       key: 'name',
+      align: 'center',
     },
     {
       title: 'Email',
       dataIndex: 'email',
       key: 'email',
+      align: 'center',
     },
     {
       title: 'Message',
       dataIndex: 'message',
       key: 'message',
+      align: 'center',
     },
-    {
-      title: 'Reply Status',
-      key: 'reply',
-      render: (_, record) =>
-        record.reply ? (
-          <span style={{ color: 'green' }}>Replied</span>
-        ) : (
-          <span style={{ color: 'red' }}>No Reply</span>
-        ),
-    },
+    // The "Reply Status" column is removed.
+
     {
       title: 'Actions',
       key: 'actions',
-      render: (_, record) => (
-        <Space>
-          <Button
-            type="primary"
-            onClick={() => {
-              setCurrentInquiry(record);
-              setReplyModalVisible(true);
-            }}
-          >
-            Reply
-          </Button>
-          <Button type="link" onClick={() => handleViewReply(record)}>
-            View Reply
-          </Button>
-          <Button type="danger" onClick={() => deleteInquiry(record._id)}>
-            Delete
-          </Button>
-        </Space>
-      ),
+      align: 'center',
+      render: (_, record) => {
+        // If there's no reply, highlight the Reply button.
+        const replyButtonStyle = !record.reply
+          ? { backgroundColor: 'blue', color: '#fff' }
+          : {};
+
+        // If there's a reply, highlight the View Reply button.
+        const viewReplyButtonStyle = record.reply
+          ? { backgroundColor: 'blue', color: '#fff' }
+          : {};
+
+        return (
+          <Space>
+            <Button
+              type="primary"
+              style={replyButtonStyle}
+              onClick={() => {
+                setCurrentInquiry(record);
+                setReplyModalVisible(true);
+              }}
+            >
+              Reply
+            </Button>
+            <Button
+              type="primary"
+              style={viewReplyButtonStyle}
+              onClick={() => handleViewReply(record)}
+            >
+              View Reply
+            </Button>
+            <Button
+              icon={<DeleteOutlined />}
+              style={{ border: '1px solid red', color: 'red' }}
+              onClick={() => deleteInquiry(record._id)}
+            />
+          </Space>
+        );
+      },
     },
   ];
 
   return (
     <div>
-      <h2>Contact Inquiries</h2>
+      <h2 className="text-5xl font-bold text-center mb-8">Contact Inquiries</h2>
       <Button
         type="primary"
         onClick={fetchInquiries}
@@ -165,6 +181,7 @@ const ContactInquiries = () => {
         columns={columns}
         rowKey="_id"
         loading={loading}
+        pagination={{ pageSize: 6 }}
       />
 
       <Modal

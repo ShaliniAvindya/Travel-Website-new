@@ -27,56 +27,29 @@ router.get('/:id', async (req, res) => {
 
 // Create a new tour (Admin only)
 router.post('/', async (req, res) => {
-    const { title, days, price,images, description } = req.body;
-
-    console.log('Received data:', {
-        title,
-        days,
-        price,
-        images,
-        description,
-    });
-
     try {
-        const newTour = new Tour({
-        title,
-        days,
-        price,
-        images,
-        description,
-        });
-        const savedTour = await newTour.save();
-        res.status(201).json(savedTour);
+      const tour = new Tour(req.body);
+      await tour.save();
+      res.status(201).json(tour);
     } catch (error) {
-        console.error('Error saving tour:', error);
-        res.status(500).json({ message: 'Failed to save tour', error: error.message });
+      res.status(500).json({ message: 'Error creating tour', error });
     }
-});
-
-router.put('/:id', async (req, res) => {
+  });
+  
+  // PUT update a tour
+  router.put('/:id', async (req, res) => {
     try {
-        const tour = await Tour.findById(req.params.id);
-        if (!tour) {
-            return res.status(404).json({ message: 'Tour not found' });
-        }
-
-        room.title = req.body.title || tour.title;
-        room.days = req.body.days || tour.days;
-        room.price = req.body.price || tour.price;
-        room.description = req.body.description || room.description;
-
-        if (req.body.images) {
-            tour.images = req.body.images; // Update with new images
-        }
-
-        const updatedTour = await tour.save();
-        res.json(updatedTour);
+      const { id } = req.params;
+      const updatedTour = await Tour.findByIdAndUpdate(id, req.body, { new: true });
+      if (!updatedTour) {
+        return res.status(404).json({ message: 'Tour not found' });
+      }
+      res.status(200).json(updatedTour);
     } catch (error) {
-        console.error('Error updating tour:', error);
-        res.status(500).json({ message: 'Failed to update tour', error: error.message });
+      res.status(500).json({ message: 'Error updating tour', error });
     }
-});
-
+  });
+  
 // Delete a tour (Admin only)
 router.delete('/:id', async (req, res) => {
     try {

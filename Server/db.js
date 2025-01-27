@@ -8,7 +8,12 @@ const uri = 'mongodb+srv://shalini:Shalini%40LWD%40HL@cluster0.grvd0.mongodb.net
 // Function to connect to MongoDB
 async function connectDB() {
   try {
-    await mongoose.connect(uri); 
+    mongoose.connect(MONGO_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 5000, // Reduce server selection timeout (default: 30s)
+      socketTimeoutMS: 45000, // Increase socket timeout for operations
+    });
     console.log('MongoDB connected successfully');
   } catch (err) {
     console.error('MongoDB connection error:', err.message);

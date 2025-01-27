@@ -1,14 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Tabs } from 'antd';
 import AllTours from '../components/AllTours';
 import AddTour from '../components/AddTour';
 import ContactInquiries from '../components/ContactInquiries';
+import TourInquiries from '../components/TourInquiries';
 import Footer from '../components/Footer';
+import { useNavigate } from 'react-router-dom';
 
 const { TabPane } = Tabs;
 
 const AdminPanel = () => {
   const [activeTab, setActiveTab] = useState('1');
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('currentUser'));
+    if (!user || !user.isAdmin) {
+      navigate('/login');
+    }
+  }, []);
+
+
 
   const handleTabChange = (key) => {
     setActiveTab(key);
@@ -29,7 +41,7 @@ const AdminPanel = () => {
       <div
         style={{
           width: '100%',
-          marginTop:'50px',
+          marginTop:'3vh',
           marginBottom:'50px',
           maxWidth: '80vw',
           background: '#fff',
@@ -45,8 +57,8 @@ const AdminPanel = () => {
             background: '#e8f0fc',
             fontWeight: 'bold',
             fontSize: '20px',
-            padding: '0 10vw',
-            height: '10vh',
+            padding: '0 22vw',
+            height: '7vh',
             margin: '0',
 
           }}
@@ -55,18 +67,23 @@ const AdminPanel = () => {
           }}
         >
           <TabPane tab="Tours" key="1">
-            <div style={{ padding: '50px' }}>
+            <div style={{ padding: '30px' }}>
               <AllTours />
             </div>
           </TabPane>
           <TabPane tab="Add Tour" key="2">
-            <div style={{ padding: '50px' }}>
+            <div style={{ padding: '30px' }}>
               <AddTour />
             </div>
           </TabPane>
           <TabPane tab="Contact Form Inquiries" key="3">
-            <div style={{ padding: '50px' }}>
+            <div style={{ padding: '30px' }}>
               <ContactInquiries />
+            </div>
+          </TabPane>
+          <TabPane tab="Tour Inquiries" key='4'>
+            <div style={{ padding: '30px' }}>
+              <TourInquiries />
             </div>
           </TabPane>
         </Tabs>
