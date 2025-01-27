@@ -1,7 +1,5 @@
-// HomeScreen.js
-
 import React from 'react';
-import { Container, Typography, Button, Grid, Box } from '@mui/material';
+import { Container, Typography, Grid, Box } from '@mui/material';
 import ImageGallery from '../components/Home/ImageGallery';
 import Footer from '../components/Footer';
 import "slick-carousel/slick/slick.css";
@@ -12,7 +10,6 @@ import LiveChat from '../components/Home/LiveChat';
 import Experience from '../components/Home/Experience';
 import HomeExperience from '../components/Home/HomeExperience';
 import OffersSection from '../components/Home/OffersSection';
-// import Slider from '../components/Home/Slider';
 
 <LiveChat />
 

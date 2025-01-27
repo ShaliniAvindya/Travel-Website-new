@@ -318,7 +318,7 @@ const AllTours = () => {
                     <div key={index} className="relative">
                       <img
                         src={image}
-                        alt={`Tour Image ${index}`}
+                        alt={`Tour ${index}`}
                         className="w-48 h-48 object-cover rounded"
                       />
                       <button
@@ -384,7 +384,7 @@ const AllTours = () => {
                             <div key={idx} className="relative">
                               <img
                                 src={image}
-                                alt={`Day ${index + 1} Image ${idx}`}
+                                alt={`Day ${index + 1} ${idx}`}
                                 className="w-24 h-24 object-cover rounded"
                               />
                               <button

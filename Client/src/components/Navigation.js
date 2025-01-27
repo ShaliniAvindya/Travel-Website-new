@@ -7,9 +7,8 @@ import "slick-carousel/slick/slick-theme.css";
 import SearchIcon from '@mui/icons-material/Search';
 import InputBase from '@mui/material/InputBase';
 import IconButton from '@mui/material/IconButton';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { Select, MenuItem } from '@mui/material';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 
 
 const AnimatedText = ({ children }) => {
@@ -360,7 +359,7 @@ const Navigation = ({ onSearch }) => {
               onChange={handleChange}
               TabIndicatorProps={{ style: { backgroundColor: "rgba(255,255,255,0.9)", height: "2px", marginBottom: "15px" } }}
               textColor="white"
-              style={{ marginLeft: '0px', marginRight: '2vw', marginLeft: '9vw'}}
+              style={{ marginRight: '2vw', marginLeft: '9vw'}}
             >
               <Tab
                 label="Home"

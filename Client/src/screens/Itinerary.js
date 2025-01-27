@@ -136,7 +136,7 @@ const Itinerary = () => {
                       <>
                         <img
                           src={imagesForDay[imageIndices[dayIndex]]}
-                          alt={`Day ${dayIndex + 1} image`}
+                          alt={`Day ${dayIndex + 1} `}
                           className="w-full h-full object-cover rounded-xl transition-all duration-1000 ease-in-out"
                         />
                         <div
@@ -188,7 +188,7 @@ const Itinerary = () => {
                 <div className="summary-item-img flex-shrink-0 w-64 h-40 rounded-xl overflow-hidden">
                   <img
                     src={tourData.tour_image}
-                    alt="Tour Summary Image"
+                    alt="Tour Summary"
                     className="w-full h-full object-cover rounded-xl"
                   />
                 </div>
