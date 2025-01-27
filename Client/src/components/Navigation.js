@@ -26,7 +26,6 @@ import "slick-carousel/slick/slick-theme.css";
 import MenuIcon from '@mui/icons-material/Menu';
 import SearchIcon from '@mui/icons-material/Search';
 
-
 function useDeviceType() {
   const [deviceType, setDeviceType] = useState({
     isMobile: window.innerWidth <= 768,
@@ -400,7 +399,8 @@ const Navigation = () => {
   const [value, setValue] = useState(0);
   const [user, setUser] = useState();
   const location = useLocation();
-  const [currency, setCurrency] = useState("LKR");
+  const navigate = useNavigate();
+  const [currency, setCurrency] = useState(localStorage.getItem('selectedCurrency') || "USD");
 
   // Drawer open state
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -438,7 +438,12 @@ const Navigation = () => {
     }
   }, [location]);
 
-  // Handle scroll changes to set top bar background opacity
+  const handleCurrencyChange = (event) => {
+    setCurrency(event.target.value);
+    localStorage.setItem('selectedCurrency', event.target.value);
+    window.location.reload(); // Reload to apply currency change
+  };
+
   useEffect(() => {
     const handleScroll = () => {
       setScrollPosition(window.scrollY);
@@ -453,8 +458,8 @@ const Navigation = () => {
 
   const handleSearchSubmit = (event) => {
     event.preventDefault();
-    console.log("Searching for:", searchTerm);
-    // Implement search logic here
+    navigate('/tours', { state: { searchTerm } });
+    setSearchTerm("");
   };
 
   const handleChange = (event, newValue) => {
@@ -465,22 +470,17 @@ const Navigation = () => {
     localStorage.removeItem('currentUser');
     window.location.href = '/';
   };
-
-  const handleCurrencyChange = (event) => {
-    setCurrency(event.target.value);
-    console.log("Currency changed to:", event.target.value);
-  };
-
   // Calculate dynamic background color based on scroll
   const opacity = Math.min(1, scrollPosition / 400);
   const backgroundColor = `rgba(0, 62, 138, ${opacity})`;
 
   const currencyOptions = [
-    { value: "LKR", label: "LKR", flag: "🇱🇰" },
     { value: "USD", label: "USD", flag: "🇺🇸" },
     { value: "EUR", label: "EUR", flag: "🇪🇺" },
     { value: "GBP", label: "GBP", flag: "🇬🇧" },
-    { value: "JPY", label: "JPY", flag: "🇯🇵" }
+    { value: "JPY", label: "JPY", flag: "🇯🇵" },
+    { value: "AUD", label: "AUD", flag: "🇦🇺" },
+    { value: "INR", label: "INR", flag: "🇮🇳" },
   ];
 
   // Toggle the Drawer
@@ -671,77 +671,74 @@ const Navigation = () => {
 
               {/* Search bar for desktop */}
               {!user && (
-                <form
-                  onSubmit={handleSearchSubmit}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    backgroundColor: 'transparent',
-                    borderRadius: '50px',
-                    border: "1.5px solid rgba(255,255,255,0.7)",
-                    padding: '0px 10px',
-                    boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
-                    transition: 'all 0.3s ease-in-out',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)';
-                    e.currentTarget.style.borderColor = 'rgba(255,255,255,1)';
-                    e.currentTarget.style.boxShadow = '0px 6px 8px rgba(0, 0, 0, 0.2)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'transparent';
-                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.7)';
-                    e.currentTarget.style.boxShadow = '0px 4px 6px rgba(0, 0, 0, 0.1)';
-                  }}
-                >
-                  <InputBase
-                    placeholder="Search..."
-                    value={searchTerm}
-                    onChange={handleSearchChange}
+                <div style={{ marginRight: '1vw', flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                  <form
+                    onSubmit={handleSearchSubmit}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      backgroundColor: 'transparent',
+                      borderRadius: '50px',
+                      border: "1.5px solid rgba(255,255,255,0.7)",
+                      padding: '0px 10px',
+                      boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
+                      transition: 'all 0.3s ease-in-out', 
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)';
+                      e.currentTarget.style.borderColor = 'rgba(255,255,255,1)';
+                      e.currentTarget.style.boxShadow = '0px 6px 8px rgba(0, 0, 0, 0.2)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                      e.currentTarget.style.borderColor = 'rgba(255,255,255,0.7)';
+                      e.currentTarget.style.boxShadow = '0px 4px 6px rgba(0, 0, 0, 0.1)';
+                    }}
+                  >
+                    <InputBase
+                      placeholder="Search Tours ....."
+                      value={searchTerm}
+                      onChange={handleSearchChange}
+                      style={{
+                        backgroundColor: 'transparent',
+                        borderRadius: '25px',
+                        padding: '0px 10px',
+                        width: '13vw',
+                        color: 'white',
+                        outline: 'none',
+                      }}
+                    />
+                    <IconButton type="submit">
+                      <SearchIcon style={{ color: 'rgba(255,255,255,0.7)', background: 'transparent', borderRadius: '25px', padding: '0px' }} />
+                    </IconButton>
+                  </form>
+                </div>
+              )}
+              {!user && (
+                <div style={{ marginRight: '', display: 'flex', alignItems: 'center', backgroundColor: 'transparent', padding: '0px 10px' }}>
+                  <Select
+                    value={currency}
+                    onChange={handleCurrencyChange}
                     style={{
                       backgroundColor: 'transparent',
-                      borderRadius: '25px',
+                      fontSize: '1rem',
+                      fontWeight: 'bold',
+                      color: 'rgba(255,255,255,0.9)',
                       padding: '0px 10px',
-                      width: '13vw',
-                      color: 'white',
-                      outline: 'none',
+                      borderRadius: '25px',
+                      border: '1.5px solid rgba(255,255,255,0.7)',
+                      height: '45px',
                     }}
-                  />
-                  <IconButton type="submit">
-                    <SearchIcon style={{ color: 'rgba(255,255,255,0.7)', background: 'transparent', borderRadius: '25px', padding: '0px' }} />
-                  </IconButton>
-                </form>
+                    disableUnderline
+                  >
+                    {currencyOptions.map((option) => (
+                      <MenuItem key={option.value} value={option.value} style={{ display: 'flex', alignItems: 'center', paddingTop: '0px' }}>
+                        <span style={{ marginRight: '8px', padding: '-10px 0px' }}>{option.flag}</span> {option.label}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </div>
               )}
-
-              <div style={{ marginLeft: '1vw' }}>
-                <Select
-                  value={currency}
-                  onChange={handleCurrencyChange}
-                  style={{
-                    backgroundColor: 'transparent',
-                    fontSize: '1rem',
-                    fontWeight: 'bold',
-                    color: 'rgba(255,255,255,0.9)',
-                    padding: isTablet? '0px 0px' : '0px 10px',
-                    borderRadius: '25px',
-                    border: '1.5px solid rgba(255,255,255,0.7)',
-                    height: '45px',
-                    marginLeft: '0vw'
-                  }}
-                  disableUnderline
-                >
-                  {currencyOptions.map((option) => (
-                    <MenuItem
-                      key={option.value}
-                      value={option.value}
-                      style={{ display: 'flex', alignItems: 'center' }}
-                    >
-                      <span style={{ marginRight: '8px' }}>{option.flag}</span>
-                      {option.label}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </div>
 
               {/* Additional Tabs (Login, Account, etc.) on Desktop */}
               <Tabs

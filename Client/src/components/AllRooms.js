@@ -86,16 +86,27 @@ const AllRooms = () => {
   };
 
   const handleDelete = async (roomId) => {
+    // Prompt the user for confirmation before proceeding
     const confirmDelete = window.confirm("Are you sure you want to delete this room?");
-    if (!confirmDelete) return;
-
+  
+    if (!confirmDelete) {
+      console.log("User canceled the delete action.");
+      return;
+    }
+  
     try {
+      // Proceed with the delete request if confirmed
       await axios.delete(`http://localhost:8000/api/rooms/${roomId}`);
+  
+      // Update the UI to remove the deleted room
       setRooms((prevRooms) => prevRooms.filter((room) => room._id !== roomId));
-      alert("Room deleted successfully");
+  
+      alert("Room deleted successfully!");
     } catch (error) {
       console.error("Error deleting room:", error);
-      alert("Failed to delete room");
+  
+      // Notify the user of the failure
+      alert("Failed to delete room. Please try again.");
     }
   };
 

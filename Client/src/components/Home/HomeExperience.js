@@ -113,7 +113,7 @@ const ExperienceBlock = ({ experience, index, isMobile }) => {
   // Title text on the image
   const titleStyle = {
     position: 'absolute',
-    bottom: isMobile ? '1rem' : '1.5rem',
+    bottom: isMobile ? '1rem' : '3rem',
     left: '1rem',
     color: 'white',
     fontSize: isMobile ? '1.3rem' : '2rem',
@@ -144,9 +144,8 @@ const ExperienceBlock = ({ experience, index, isMobile }) => {
   // Container for the actual description text and button inside the overlay
   const overlayContentStyle = {
     position: 'absolute',
-    bottom: '1rem',
-    left: '1rem',
-    right: '1rem',
+    bottom: '0rem',
+    left: '0rem',
     opacity: hovered ? 1 : 0,
     transform: hovered ? 'translateY(0)' : 'translateY(20px)',
     transition: 'opacity 0.3s ease, transform 0.3s ease',
@@ -158,6 +157,7 @@ const ExperienceBlock = ({ experience, index, isMobile }) => {
     lineHeight: 1.5,
     marginBottom: '1rem',
     marginTop: '0.5rem',
+    padding: '0 1rem',
   };
 
   // "Discover More" button
@@ -191,20 +191,14 @@ const ExperienceBlock = ({ experience, index, isMobile }) => {
     >
       {/* The background image */}
       <div style={imageStyle}>
-        <h2 style={titleStyle}>{experience.title}</h2>
+        
       </div>
 
       {/* Overlay that appears on hover */}
       <div style={overlayStyle}>
         <div style={overlayContentStyle}>
+          <h2 style={titleStyle}>{experience.title}</h2>
           <p style={descStyle}>{experience.description}</p>
-          <button
-            style={buttonStyle}
-            onMouseEnter={handleButtonMouseEnter}
-            onMouseLeave={handleButtonMouseLeave}
-          >
-            DISCOVER MORE
-          </button>
         </div>
       </div>
     </div>

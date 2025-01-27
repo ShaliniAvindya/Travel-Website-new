@@ -207,18 +207,41 @@ const AllTours = () => {
 
   const handleDelete = async (id) => {
     try {
-      const response = await axios.delete(`/api/tours/${id}`);
-      if (response.status === 200) {
-        setTours(tours.filter((tour) => tour._id !== id));
-        Swal.fire("Deleted!", "Tour has been deleted.", "success");
+      // Show confirmation dialog before deleting
+      const result = await Swal.fire({
+        title: "Are you sure?",
+        text: "You won't be able to revert this!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Yes, delete it!",
+      });
+  
+      // If user clicks 'Yes, delete it!'
+      if (result.isConfirmed) {
+        const response = await axios.delete(`/api/tours/${id}`);
+        if (response.status === 200) {
+          // Update the UI by filtering out the deleted tour
+          setTours(tours.filter((tour) => tour._id !== id));
+  
+          // Show success message
+          Swal.fire("Deleted!", "Tour has been deleted.", "success");
+        } else {
+          throw new Error("Failed to delete the tour.");
+        }
       } else {
-        throw new Error("Failed to delete the tour.");
+        // Optional: Handle the case where the user cancels the action
+        console.log("Tour deletion was canceled by the user.");
       }
     } catch (error) {
       console.error("Error deleting tour:", error);
+  
+      // Show error message
       Swal.fire("Error", error.message, "error");
     }
   };
+  
 
   return (
     <div className="bg-white min-h-screen p-0">
