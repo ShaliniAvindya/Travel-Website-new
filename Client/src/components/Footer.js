@@ -46,7 +46,6 @@ const Footer = () => {
   const { isMobile, isTablet } = useDeviceType();
 
   const handleNavigation = (destination) => {
-    console.log(`Navigating to ${destination}`);
   };
 
   // Inline style objects:
@@ -217,12 +216,14 @@ const Footer = () => {
                 Quick Links
               </Typography>
               <Grid container style={quickLinksContainerStyle}>
-                {['Home', 'Packages', 'Contact Us'].map((link, index) => (
+              {['Home', 'Packages', 'Contact'].map((link, index) => {
+                const path = link === 'Packages' ? '/tours' : link === 'Home' ? '/' : link === 'Contact' ? '/contact' : '/';
+                return (
                   <Button
                     key={index}
                     variant="text"
                     component={Link}
-                    to={`/${link.toLowerCase().replace(' ', '')}`}
+                    to={path}
                     style={quickLinkBtnStyle}
                     onMouseEnter={handleQuickLinkHoverEnter}
                     onMouseLeave={handleQuickLinkHoverLeave}
@@ -230,7 +231,8 @@ const Footer = () => {
                   >
                     {link}
                   </Button>
-                ))}
+                );
+              })}
               </Grid>
             </Box>
           </Grid>

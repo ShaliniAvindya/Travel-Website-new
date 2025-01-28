@@ -37,16 +37,12 @@ userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) {
       return next();
   }
-  console.log('Plain password before hashing:', this.password); // Debugging the plain password
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
-  console.log('Hashed password:', this.password); // Debugging the hashed password
   next();
 });
 
 userSchema.methods.matchPassword = async function (enteredPassword) {
-  console.log('Entered password:', enteredPassword); // Debugging entered password
-  console.log('Stored hashed password:', this.password); // Debugging stored password
   return await bcrypt.compare(enteredPassword, this.password);
 };
 

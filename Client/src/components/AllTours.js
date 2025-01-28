@@ -95,48 +95,55 @@ const AllTours = () => {
 
   const handleImageUpload = async (e, fieldName, dayKey) => {
     const files = Array.from(e.target.files);
-    const uploadedUrls = [];
-
+  
     for (const file of files) {
-      const formData = new FormData();
-      formData.append('image', file);
-
+      // 1) Create a temporary preview URL for immediate display
+      const previewUrl = URL.createObjectURL(file);
+  
+      // 2) Put that preview into state so the user sees something right away
+      if (dayKey) {
+        setFormData((prevData) => ({
+          ...prevData,
+          itineraryImages: {
+            ...prevData.itineraryImages,
+            [dayKey]: [...prevData.itineraryImages[dayKey], previewUrl],
+          },
+        }));
+      } else {
+        setFormData((prevData) => ({
+          ...prevData,
+          [fieldName]: [...prevData[fieldName], previewUrl],
+        }));
+      }
+  
+      // 3) Actually upload to imgbb
       try {
-        const loadingUrl = URL.createObjectURL(file);
-        if (dayKey) {
-          setFormData((prevData) => ({
-            ...prevData,
-            itineraryImages: {
-              ...prevData.itineraryImages,
-              [dayKey]: [...prevData.itineraryImages[dayKey], loadingUrl],
-            },
-          }));
-        } else {
-          setFormData((prevData) => ({
-            ...prevData,
-            [fieldName]: [...prevData[fieldName], loadingUrl],
-          }));
-        }
-
-        const response = await fetch(`https://api.imgbb.com/1/upload?key=4e08e03047ee0d48610586ad270e2b39`, {
-          method: 'POST',
-          body: formData,
-        });
-
+        const formDataToSend = new FormData();
+        formDataToSend.append('image', file);
+  
+        const response = await fetch(
+          'https://api.imgbb.com/1/upload?key=4e08e03047ee0d48610586ad270e2b39',
+          {
+            method: 'POST',
+            body: formDataToSend,
+          }
+        );
+  
         if (!response.ok) {
           throw new Error(`Failed to upload image: ${response.statusText}`);
         }
-
+  
         const data = await response.json();
-        uploadedUrls.push(data.data.url);
-
+        const finalUrl = data.data.url; // The permanent URL from imgbb
+  
+        // 4) Replace the temporary preview with the permanent imgbb URL
         if (dayKey) {
           setFormData((prevData) => ({
             ...prevData,
             itineraryImages: {
               ...prevData.itineraryImages,
               [dayKey]: prevData.itineraryImages[dayKey].map((url) =>
-                url === loadingUrl ? data.data.url : url
+                url === previewUrl ? finalUrl : url
               ),
             },
           }));
@@ -144,7 +151,7 @@ const AllTours = () => {
           setFormData((prevData) => ({
             ...prevData,
             [fieldName]: prevData[fieldName].map((url) =>
-              url === loadingUrl ? data.data.url : url
+              url === previewUrl ? finalUrl : url
             ),
           }));
         }
@@ -153,6 +160,7 @@ const AllTours = () => {
       }
     }
   };
+  
 
   const handleRemoveImage = (fieldName, index, dayKey) => {
     if (dayKey) {
@@ -231,8 +239,7 @@ const AllTours = () => {
           throw new Error("Failed to delete the tour.");
         }
       } else {
-        // Optional: Handle the case where the user cancels the action
-        console.log("Tour deletion was canceled by the user.");
+        
       }
     } catch (error) {
       console.error("Error deleting tour:", error);

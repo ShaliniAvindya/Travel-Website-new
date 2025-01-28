@@ -61,12 +61,6 @@ const Login = () => {
     }
     setLoading(false);
   };
-
-  const handleSocialLogin = (provider) => {
-    const url = `http://localhost:8000/api/users/auth/${provider}`;
-    window.location.href = url;
-  };
-
   const handleSnackbarClose = () => {
     setOpenSnackbar(false);
   };

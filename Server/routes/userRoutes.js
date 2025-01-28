@@ -40,14 +40,10 @@ router.post('/login', async (req, res) => {
   try {
       const user = await User.findOne({ email });
       if (!user) {
-          console.log('User not found with email:', email); 
           return res.status(400).json({ message: 'Invalid email or password' });
       }
 
-      console.log('User retrieved from DB:', user);
-
       const isMatch = await user.matchPassword(password);
-      console.log('Password matches:', isMatch); 
       if (!isMatch) {
           return res.status(400).json({ message: 'Invalid email or password' });
       }
@@ -118,6 +114,16 @@ router.delete('/:id', async (req, res) => {
     res.status(200).json({ message: 'User deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Error deleting user', error });
+  }
+});
+
+router.get('/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const user = await User.findById(id); 
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching user', error });
   }
 });
 

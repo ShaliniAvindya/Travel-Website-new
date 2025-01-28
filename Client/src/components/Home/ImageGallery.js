@@ -28,8 +28,6 @@ const ImageGallery = ( {searchQuery = ''}) => {
   const [travellerCount, setTravellerCount] = useState('');
   const [message, setMessage] = useState('');
 
-  console.log(searchQuery);
-
   const query = new URLSearchParams(location.search);
   const searchTerm = searchQuery|| query.get('search') || '';
   const nights = query.get('nights') || '';

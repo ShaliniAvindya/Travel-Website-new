@@ -38,11 +38,6 @@ const TourForm = () => {
       itineraryImages: newItineraryImages,
       itineraryTitles: newItineraryTitles,
     }));
-    console.log("Updated itinerary data:", {
-      itinerary: newItinerary,
-      itineraryImages: newItineraryImages,
-      itineraryTitles: newItineraryTitles,
-    });
   }, [formData.nights]);
 
   const handleInputChange = (e) => {
@@ -110,7 +105,6 @@ const TourForm = () => {
         }
   
         const data = await response.json();
-        console.log('Uploaded image URL:', data.data.url); // Log the uploaded URL
         uploadedUrls.push(data.data.url); // Assuming the response contains the URL in `data.data.url`
   
         // Replace loading indicator with the actual uploaded image URL
@@ -136,8 +130,6 @@ const TourForm = () => {
         console.error('Error uploading image:', error);
       }
     }
-  
-    console.log('Updated formData:', formData); // Log the updated formData
   };
 
   const handleRemoveImage = (fieldName, index, dayKey) => {
@@ -251,8 +243,6 @@ const TourForm = () => {
         itinerary_images: formData.itineraryImages,
         itinerary_titles: formData.itineraryTitles,
       };
-
-      console.log("Request payload:", payload);
 
       const response = await fetch("/api/tours", {
         method: "POST",

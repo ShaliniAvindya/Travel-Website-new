@@ -6,6 +6,7 @@ import ContactInquiries from '../components/ContactInquiries';
 import TourInquiries from '../components/TourInquiries';
 import Footer from '../components/Footer';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 function useDeviceType() {
   const [deviceType, setDeviceType] = useState({
@@ -36,7 +37,17 @@ const AdminPanel = () => {
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('currentUser'));
-    if (!user || !user.isAdmin) {
+    const token = localStorage.getItem('token');
+    try{
+      axios.get(`http://localhost:8000/api/users/${user.id}`).then((res) => {
+        console.log(token.id)
+        if (res.data.isAdmin) {
+          console.log(res.data)
+          return;
+        }
+        navigate('/login');
+      });
+    } catch (error) { 
       navigate('/login');
     }
   }, []);
