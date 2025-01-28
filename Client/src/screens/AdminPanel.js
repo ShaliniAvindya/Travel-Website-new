@@ -7,11 +7,32 @@ import TourInquiries from '../components/TourInquiries';
 import Footer from '../components/Footer';
 import { useNavigate } from 'react-router-dom';
 
+function useDeviceType() {
+  const [deviceType, setDeviceType] = useState({
+    isMobile: window.innerWidth <= 768,
+    isTablet: window.innerWidth > 768 && window.innerWidth <= 1024,
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      setDeviceType({
+        isMobile: window.innerWidth <= 768,
+        isTablet: window.innerWidth > 768 && window.innerWidth <= 1024,
+      });
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  return deviceType;
+}
+
 const { TabPane } = Tabs;
 
 const AdminPanel = () => {
   const [activeTab, setActiveTab] = useState('1');
   const navigate = useNavigate();
+  const { isMobile, isTablet } = useDeviceType();
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('currentUser'));
@@ -34,7 +55,7 @@ const AdminPanel = () => {
         justifyContent: 'center',
         alignItems: 'center',
         width: '100vw',
-        background: 'linear-gradient(to bottom, #f0f2f5, #dfe7ec)',
+        background: 'white',
         fontFamily: 'Arial, sans-serif',
       }}
     >
@@ -43,7 +64,7 @@ const AdminPanel = () => {
           width: '100%',
           marginTop:'3vh',
           marginBottom:'50px',
-          maxWidth: '80vw',
+          maxWidth: isMobile? '100vw': '80vw',
           background: '#fff',
           boxShadow: '0 8px 20px rgba(0, 0, 0, 0.15)',
           overflow: 'hidden',
@@ -57,7 +78,7 @@ const AdminPanel = () => {
             background: '#e8f0fc',
             fontWeight: 'bold',
             fontSize: '20px',
-            padding: '0 22vw',
+            padding:isMobile? '0 2vw': '0 22vw',
             height: '7vh',
             margin: '0',
 
@@ -67,7 +88,7 @@ const AdminPanel = () => {
           }}
         >
           <TabPane tab="Tours" key="1">
-            <div style={{ padding: '30px' }}>
+            <div style={{ padding:'30px' }}>
               <AllTours />
             </div>
           </TabPane>
@@ -76,13 +97,13 @@ const AdminPanel = () => {
               <AddTour />
             </div>
           </TabPane>
-          <TabPane tab="Contact Form Inquiries" key="3">
-            <div style={{ padding: '30px' }}>
+          <TabPane tab="Contact Inquiries" key="3">
+            <div style={{ padding:  '30px' }}>
               <ContactInquiries />
             </div>
           </TabPane>
           <TabPane tab="Tour Inquiries" key='4'>
-            <div style={{ padding: '30px' }}>
+            <div style={{ padding:'30px' }}>
               <TourInquiries />
             </div>
           </TabPane>

@@ -222,7 +222,7 @@ const ImageGallery = ( {searchQuery = ''}) => {
       >
         <TextField
           fullWidth
-          label="Search for tours"
+          label="Search for packages"
           variant="outlined"
           value={search}
           onChange={(e) => setSearch(e.target.value)}

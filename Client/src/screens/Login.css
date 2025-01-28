@@ -166,6 +166,68 @@
     font-size: 14px;
   }
   
+/* Media Query for Mobile Devices */
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column; /* Stack left and right sections vertically */
+    height: auto;
+    margin-top: 0;
+  }
+
+  .left, .right {
+    flex: none;
+    width: 100%; /* Full width for both sections */
+    min-height: 50vh; /* Adjust height to take half of the viewport */
+  }
+
+  .left {
+    display: none; /* Hide the left section (image slider) for smaller screens */
+  }
+
+  .formContainer {
+    padding: 20px;
+  }
+
+  .input {
+    font-size: 14px;
+    padding: 12px;
+  }
+
+  .passwordField .icon {
+    right: 8px;
+  }
+
+  .loginButton, .googleButton, .facebookButton {
+    font-size: 14px;
+    padding: 12px;
+  }
+
+  .login-center-options {
+    flex-direction: column; /* Stack elements vertically */
+    align-items: flex-start; /* Align elements to the start */
+    gap: 10px; /* Add spacing between elements */
+  }
+
+  .remember-div label {
+    font-size: 14px; /* Adjust font size for labels */
+  }
+
+  .forgot-pass-link {
+    font-size: 12px; /* Adjust font size for smaller screens */
+  }
+
+  .heading {
+    font-size: 24px;
+  }
+
+  .subtext {
+    font-size: 14px;
+  }
+
+  .socialIcon {
+    width: 18px;
+  }
+}
 
 
 

@@ -1,6 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Modal, Form, Input, message, Space } from 'antd';
+import { Table, Button, Modal, Form, Input, message, Space, Card, Divider } from 'antd';
 import { DeleteOutlined } from '@ant-design/icons';
+
+function useDeviceType() {
+  const [deviceType, setDeviceType] = useState({
+    isMobile: window.innerWidth <= 768,
+    isTablet: window.innerWidth > 768 && window.innerWidth <= 1024,
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      setDeviceType({
+        isMobile: window.innerWidth <= 768,
+        isTablet: window.innerWidth > 768 && window.innerWidth <= 1024,
+      });
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  return deviceType;
+}
 
 const ContactInquiries = () => {
   const [inquiries, setInquiries] = useState([]);
@@ -9,6 +30,10 @@ const ContactInquiries = () => {
   const [currentInquiry, setCurrentInquiry] = useState(null);
   const [replyMessage, setReplyMessage] = useState('');
   const [subject, setSubject] = useState('');
+
+  // We get device information from the custom hook
+  const { isMobile, isTablet } = useDeviceType();
+  const isDesktop = !isMobile && !isTablet;
 
   useEffect(() => {
     fetchInquiries();
@@ -98,6 +123,7 @@ const ContactInquiries = () => {
     });
   };
 
+  // Table columns
   const columns = [
     {
       title: 'Name',
@@ -117,8 +143,6 @@ const ContactInquiries = () => {
       key: 'message',
       align: 'center',
     },
-    // The "Reply Status" column is removed.
-
     {
       title: 'Actions',
       key: 'actions',
@@ -164,6 +188,65 @@ const ContactInquiries = () => {
     },
   ];
 
+  // Render for mobile as cards
+  const renderMobileCards = () => {
+    return (
+      <>
+        {inquiries.map((inquiry) => {
+          // Determine any style for the "Reply" or "View Reply" button.
+          const replyButtonStyle = !inquiry.reply
+            ? { backgroundColor: 'blue', color: '#fff' }
+            : {};
+          const viewReplyButtonStyle = inquiry.reply
+            ? { backgroundColor: 'blue', color: '#fff' }
+            : {};
+
+          return (
+            <Card
+              key={inquiry._id}
+              style={{ marginBottom: 16, backgroundColor: '#f0f0f0', paddingTop: 8 }}
+              bodyStyle={{ padding: '0 24px 24px 24px' }}
+              title={(
+                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                  <span><strong>Name:</strong> {inquiry.name}</span>
+                  <span><strong>Email:</strong> {inquiry.email}</span>
+                </div>
+              )}
+            >
+              <Divider style={{margin: '12px 0'}}></Divider>
+              <p><strong>Message:</strong> {inquiry.message}</p>
+              <Divider></Divider>
+              <Space style={{ padding: '0 15%' }}>
+                <Button
+                  type="primary"
+                  style={replyButtonStyle}
+                  onClick={() => {
+                    setCurrentInquiry(inquiry);
+                    setReplyModalVisible(true);
+                  }}
+                >
+                  Reply
+                </Button>
+                <Button
+                  type="primary"
+                  style={viewReplyButtonStyle}
+                  onClick={() => handleViewReply(inquiry)}
+                >
+                  View Reply
+                </Button>
+                <Button
+                  icon={<DeleteOutlined />}
+                  style={{ border: '1px solid red', color: 'red' }}
+                  onClick={() => deleteInquiry(inquiry._id)}
+                />
+              </Space>
+            </Card>
+          );
+        })}
+      </>
+    );
+  };
+
   return (
     <div>
       <h2 className="text-5xl font-bold text-center mb-8">Contact Inquiries</h2>
@@ -176,13 +259,19 @@ const ContactInquiries = () => {
         {loading ? 'Reloading...' : 'Reload Inquiries'}
       </Button>
 
-      <Table
-        dataSource={inquiries}
-        columns={columns}
-        rowKey="_id"
-        loading={loading}
-        pagination={{ pageSize: 6 }}
-      />
+      {isDesktop ? (
+        /* DESKTOP VIEW: Show Table */
+        <Table
+          dataSource={inquiries}
+          columns={columns}
+          rowKey="_id"
+          loading={loading}
+          pagination={{ pageSize: 6 }}
+        />
+      ) : (
+        /* MOBILE VIEW: Show Card layout */
+        renderMobileCards()
+      )}
 
       <Modal
         title={`Reply to ${currentInquiry?.name}`}

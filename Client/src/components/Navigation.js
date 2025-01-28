@@ -240,7 +240,7 @@ const handleConnectWithUs = () => {
             }}
             onClick={handleExploreToures}
           >
-            Explore Tours
+            Explore Packages
           </button>
           <button
             style={{
@@ -338,7 +338,7 @@ const TabContent = ({ title, backgroundImage1, backgroundImage2 }) => {
 // ----------------------- Other Pages/Tab contents -----------------------
 export const ToursTabContent = () => (
   <TabContent
-    title="Explore Tours"
+    title="Explore Packages"
     backgroundImage1= "https://i.postimg.cc/Wb5WNvG7/pexels-asadphoto-1483053.jpg"
     backgroundImage2= "https://i.postimg.cc/L5Db3GNy/Untitled-design-6.png"
   />
@@ -506,7 +506,7 @@ const Navigation = () => {
         <Divider />
 
         <ListItemButton component={Link} to="/tours" onClick={() => setDrawerOpen(false)}>
-          <ListItemText primary="Tours" />
+          <ListItemText primary="Packages" />
         </ListItemButton>
         <Divider />
 
@@ -514,19 +514,6 @@ const Navigation = () => {
           <ListItemText primary="Contact" />
         </ListItemButton>
         <Divider />
-
-        {!user && (
-          <>
-            <ListItemButton component={Link} to="/login" onClick={() => setDrawerOpen(false)}>
-              <ListItemText primary="Login" />
-            </ListItemButton>
-            <Divider />
-            <ListItemButton component={Link} to="/register" onClick={() => setDrawerOpen(false)}>
-              <ListItemText primary="Register" />
-            </ListItemButton>
-            <Divider />
-          </>
-        )}
 
         {/* If user is logged in */}
         {user && !user.isAdmin && (
@@ -646,7 +633,7 @@ const Navigation = () => {
                   style={{ color: 'rgba(255,255,255,0.9)', marginLeft: '0vw', padding: isTablet? '0px 0px' : '0px 10px' }}
                 />
                 <Tab
-                  label="Tours"
+                  label="Packages"
                   component={Link}
                   to="/tours"
                   value={1}
@@ -696,7 +683,7 @@ const Navigation = () => {
                     }}
                   >
                     <InputBase
-                      placeholder="Search Tours ....."
+                      placeholder="Search Packages ....."
                       value={searchTerm}
                       onChange={handleSearchChange}
                       style={{

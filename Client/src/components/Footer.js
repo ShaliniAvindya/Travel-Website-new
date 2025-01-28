@@ -192,19 +192,21 @@ const Footer = () => {
                 <Box style={contactItemStyle}>
                   <HomeIcon style={contactIconStyle} />
                   <Typography variant="body1" style={contactTextStyle}>
-                    123 Main Street, Colombo, Sri Lanka
+                  Lot No. 10458
+                  Hulhumale'
+                  Maldives
                   </Typography>
                 </Box>
                 <Box style={contactItemStyle}>
                   <PhoneIcon style={contactIconStyle} />
                   <Typography variant="body1" style={contactTextStyle}>
-                    Phone: +94 91 565 8956
+                    Phone: +960-9969974
                   </Typography>
                 </Box>
                 <Box style={contactItemStyle}>
                   <EmailIcon style={contactIconStyle} />
                   <Typography variant="body1" style={contactTextStyle}>
-                    Email: example@example.com
+                    Email: sales@holidaylife.travel
                   </Typography>
                 </Box>
             </div>
@@ -277,10 +279,18 @@ const Footer = () => {
 
         {/* Footer Bottom */}
         <Box style={bottomBoxStyle}>
-          <Typography variant="body2" style={bottomTextStyle}>
-            &copy; {new Date().getFullYear()} The Holiday Life. All Rights Reserved.
-          </Typography>
-        </Box>
+        <Typography variant="body2" style={bottomTextStyle}>
+          &copy; Copyright {new Date().getFullYear()} - Holiday Life Developed by 
+          <a 
+            href="https://www.lushwebdesigners.com" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            style={{ color: '#fff', textDecoration: 'none', marginLeft: '5px' }}
+          >
+            Lush Web
+          </a>
+        </Typography>
+      </Box>
       </Container>
     </AppBar>
   );

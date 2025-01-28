@@ -11,6 +11,18 @@ import { Dialog, DialogActions, DialogContent, IconButton, TextField } from '@mu
 import CloseIcon from '@mui/icons-material/Close';
 import Swal from 'sweetalert2';
 
+const convertCurrency = (amount, currency) => {
+  const exchangeRates = {
+    USD: 1,
+    LKR: 200,
+    EUR: 0.85,
+    GBP: 0.75,
+    JPY: 110,
+  };
+  const rate = exchangeRates[currency] || 1;
+  return (amount * rate).toFixed(2);
+};
+
 
 function useDeviceType() {
   const [deviceType, setDeviceType] = useState({
@@ -48,6 +60,8 @@ const TourDetails = () => {
   const [message, setMessage] = useState('');
 
   const { isMobile, isTablet } = useDeviceType();
+
+  const selectedCurrency = localStorage.getItem('selectedCurrency') || 'USD';
 
 
   useEffect(() => {
@@ -152,7 +166,7 @@ const TourDetails = () => {
             {/* Price */}
             <Box className="inline-block bg-blue-900/40 py-3 w-full max-w-44 px-1 mb-8 shadow-xl text-center">
               <Typography className="text-white text-7xl font-[Domine]">
-                Price: USD {tour.price.toLocaleString()}
+                Price: {selectedCurrency} {Number(convertCurrency(tour.price, selectedCurrency)).toLocaleString()}
               </Typography>
             </Box>
           </Box>

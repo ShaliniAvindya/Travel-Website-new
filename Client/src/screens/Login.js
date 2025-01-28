@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import axios from 'axios';
 import { Snackbar, Slide } from '@mui/material';
@@ -6,6 +6,7 @@ import './Login.css';
 import { Link } from 'react-router-dom';
 
 import Footer from '../components/Footer';
+
 
 const Login = () => {
   const [formData, setFormData] = useState({
