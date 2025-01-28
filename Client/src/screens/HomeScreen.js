@@ -22,6 +22,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import TextField from '@mui/material/TextField';
+import { useCurrency } from './CurrencyContext'; 
 
 
 function useDeviceType() {
@@ -58,7 +59,13 @@ const HomeScreen = () => {
   const [travelDate, setTravelDate] = useState('');
   const [travellerCount, setTravellerCount] = useState('');
   const [message, setMessage] = useState('');
+  const [exchangeRates, setExchangeRates] = useState({});
+  const { currency } = useCurrency(); 
 
+  const convertPrice = (priceInUSD) => {
+    if (!exchangeRates[currency]) return priceInUSD.toLocaleString();
+    return (priceInUSD * exchangeRates[currency]).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  };
 
   useEffect(() => {
     const fetchTours = async () => {
@@ -71,9 +78,21 @@ const HomeScreen = () => {
         setLoading(false);
       }
     };
+
+    const fetchExchangeRates = async () => {
+      try {
+        const response = await axios.get('https://api.exchangerate-api.com/v4/latest/USD');
+        setExchangeRates(response.data.rates);
+      } catch (error) {
+        console.error('Error fetching exchange rates:', error);
+      }
+    };
+  
+    fetchExchangeRates();
   
     fetchTours();
   }, []);
+  
 
   const handleInquireNowClick = (tour) => {
     setSelectedTour(tour);
@@ -310,34 +329,33 @@ const HomeScreen = () => {
                         </Typography>
                       </Box>
                       <Box>
+                      <Typography
+                      variant="body1"
+                      sx={{
+                        color: 'text.primary',
+                        fontWeight: 'bold',
+                      }}
+                      gutterBottom
+                      display="flex"
+                      justifyContent="space-between"
+                      mb={1}
+                    >
+                      {currency} {tour.price && !isNaN(tour.price) ? convertPrice(tour.price) : 'N/A'} {' '}
+                      {tour.price && !isNaN(tour.price) && (
                         <Typography
+                          component="span"
                           variant="body1"
-                          sx={{
-                            color: 'text.primary',
-                            fontWeight: 'bold',
-                          }}
-                          gutterBottom
-                          display="flex"
-                          justifyContent="space-between"
-                          mb={1}
+                          sx={{ textDecoration: 'line-through', marginLeft: 1, color: 'text.secondary' }}
                         >
-                          {/* Check if price exists and is a valid number before calling toLocaleString */}
-                          USD {tour.price && !isNaN(tour.price) ? tour.price.toLocaleString() : 'N/A'} {' '}
-                          {tour.price && !isNaN(tour.price) && (
-                            <Typography
-                              component="span"
-                              variant="body1"
-                              sx={{ textDecoration: 'line-through', marginLeft: 1, color: 'text.secondary' }}
-                            >
-                              USD {(tour.price + 500).toLocaleString()}
-                            </Typography>
-                          )}
-                          {tour.price && !isNaN(tour.price) && (
-                            <Typography component="span" variant="body2" color="error" fontWeight="bold" backgroundColor="rgba(76, 175, 80, 0.1)" padding={0.5}>
-                              SAVE USD 500
-                            </Typography>
-                          )}
+                          {currency} {convertPrice(tour.price + 500)}
                         </Typography>
+                      )}
+                      {tour.price && !isNaN(tour.price) && (
+                        <Typography component="span" variant="body2" color="error" fontWeight="bold" backgroundColor="rgba(76, 175, 80, 0.1)" padding={0.5}>
+                          SAVE {currency} 500
+                        </Typography>
+                      )}
+                    </Typography>
                       </Box>
                       <Box display="flex" gap={2} mt={3}>
                         <Button
