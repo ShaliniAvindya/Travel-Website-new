@@ -247,9 +247,9 @@ const HomeScreen = () => {
         padding="30px"
         mt="30px"
         sx={{
-          width: '90%',
+          width: isMobile? '100%': '90%',
           position: 'relative',
-          left: '80px' ,
+          left: isMobile? 0 : '80px' ,
           boxSizing: 'border-box',
         }}
       >

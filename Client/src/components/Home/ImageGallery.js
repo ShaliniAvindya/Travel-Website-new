@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogActions, TextField } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import SearchIcon from '@mui/icons-material/Search';
+import Divider from '@mui/material/Divider';
 
 const ImageGallery = ( {searchQuery = ''}) => {
   const [tours, setTours] = useState([]);
@@ -39,6 +40,8 @@ const ImageGallery = ( {searchQuery = ''}) => {
   const [searchDays, setSearchDays] = useState(days);
   const [searchCountry, setSearchCountry] = useState(country);
 
+  const { isMobile, isTablet} = useDeviceType();
+
 
   useEffect(() => {
     const fetchTours = async () => {
@@ -54,6 +57,26 @@ const ImageGallery = ( {searchQuery = ''}) => {
 
     fetchTours();
   }, []);
+
+  function useDeviceType() {
+    const [deviceType, setDeviceType] = useState({
+      isMobile: window.innerWidth <= 768,
+      isTablet: window.innerWidth > 768 && window.innerWidth <= 1024,
+    });
+  
+    useEffect(() => {
+      const handleResize = () => {
+        setDeviceType({
+          isMobile: window.innerWidth <= 768,
+          isTablet: window.innerWidth > 768 && window.innerWidth <= 1024,
+        });
+      };
+      window.addEventListener('resize', handleResize);
+      return () => window.removeEventListener('resize', handleResize);
+    }, []);
+  
+    return deviceType;
+  }
 
   useEffect(() => {
     setSearch(searchTerm);
@@ -113,6 +136,26 @@ const ImageGallery = ( {searchQuery = ''}) => {
     setMessage('');
   };
 
+  function useDeviceType() {
+    const [deviceType, setDeviceType] = useState({
+      isMobile: window.innerWidth <= 768,
+      isTablet: window.innerWidth > 768 && window.innerWidth <= 1024,
+    });
+  
+    useEffect(() => {
+      const handleResize = () => {
+        setDeviceType({
+          isMobile: window.innerWidth <= 768,
+          isTablet: window.innerWidth > 768 && window.innerWidth <= 1024,
+        });
+      };
+      window.addEventListener('resize', handleResize);
+      return () => window.removeEventListener('resize', handleResize);
+    }, []);
+  
+    return deviceType;
+  }
+
   const handleSubmitInquiry = async () => {
     try {
       const payload = {
@@ -158,44 +201,70 @@ const ImageGallery = ( {searchQuery = ''}) => {
   }
 
   const handleWhatsAppClick = () => {
-    const whatsappUrl = `https://wa.me/9607699699`;
+    const whatsappUrl = `https://wa.me/9609969974`;
     window.open(whatsappUrl, '_blank');
   };
 
   return (
     <Box sx={{ width: '100%', minHeight: '65vh', padding: '20px 30px', backgroundColor: '#f9f9f9' }}>
-      <Box mb={3}>
-        <form onSubmit={handleSearchSubmit} style={{ display: 'flex', gap: '10px', backgroundColor: '#dfedf7', padding: '10px 20px', borderRadius: '8px' }}>
-          <TextField
-            fullWidth
-            label="Search for tours"
-            variant="outlined"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-          <TextField
-            label="Nights"
-            variant="outlined"
-            value={searchNights}
-            onChange={(e) => setSearchNights(e.target.value)}
-          />
-          <TextField
-            label="Days"
-            variant="outlined"
-            value={searchDays}
-            onChange={(e) => setSearchDays(e.target.value)}
-          />
-          <TextField
-            label="Country"
-            variant="outlined"
-            value={searchCountry}
-            onChange={(e) => setSearchCountry(e.target.value)}
-          />
-          <IconButton type="submit" color="primary" style={{ padding: '10px 15px', backgroundColor: '#2196F3', color: '#fff' }}>
-            <SearchIcon />
-          </IconButton>
-        </form>
+      <Box 
+        mb={3}
+        component="form"
+        onSubmit={handleSearchSubmit}
+        sx={{
+          display: 'flex',
+          flexDirection: { xs: 'column', sm: 'row' }, // Column layout for mobile, row for larger screens
+          gap: '10px',
+          backgroundColor: '#dfedf7',
+          padding: '10px 20px',
+          borderRadius: '8px',
+        }}
+      >
+        <TextField
+          fullWidth
+          label="Search for tours"
+          variant="outlined"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+        <TextField
+          fullWidth
+          label="Nights"
+          variant="outlined"
+          value={searchNights}
+          onChange={(e) => setSearchNights(e.target.value)}
+        />
+        <TextField
+          fullWidth
+          label="Days"
+          variant="outlined"
+          value={searchDays}
+          onChange={(e) => setSearchDays(e.target.value)}
+        />
+        <TextField
+          fullWidth
+          label="Country"
+          variant="outlined"
+          value={searchCountry}
+          onChange={(e) => setSearchCountry(e.target.value)}
+        />
+        <IconButton
+          type="submit"
+          color="primary"
+          sx={{
+            padding: '10px 15px',
+            backgroundColor: '#2196F3',
+            color: '#fff',
+            '&:hover': {
+              backgroundColor: '#1976D2',
+            },
+            alignSelf: { xs: 'center', sm: 'flex-start' }, // Center the button on mobile
+          }}
+        >
+          <SearchIcon />
+        </IconButton>
       </Box>
+
       <Grid container spacing={5}>
         {filteredTours.map((item) => (
           <Grid item xs={12} sm={6} md={4} key={item._id}>
@@ -319,90 +388,98 @@ const ImageGallery = ( {searchQuery = ''}) => {
         ))}
       </Grid>
 
-      <Dialog 
+      <Dialog
         open={openDialog}
         onClose={handleCloseDialog}
         PaperProps={{
           sx: {
-            width: '35vw',
-            borderRadius: '16px',
-            overflowX: 'hidden',
+            width: isMobile ? '95vw' : '35vw', // Responsive width
+            borderRadius: isMobile ? '10px' : '16px', // Responsive border radius
+            overflowX: 'hidden', // Prevent horizontal overflow
           },
-        }}>
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'flex-start',
-              padding: '16px',
-            }}
-          >
-            {/* Left: Image, Title, and Prices */}
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              {selectedTour?.tour_image && (
-                <img
-                  src={selectedTour.tour_image}
-                  alt={selectedTour.title}
-                  style={{
-                    width: '60px',
-                    height: '60px',
-                    objectFit: 'cover',
-                    borderRadius: '4px',
-                    marginRight: '16px',
+        }}
+      >
+        {/* Header Section */}
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'flex-start',
+            padding: '16px',
+          }}
+        >
+          {/* Left: Image, Title, and Prices */}
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            {selectedTour?.tour_image && (
+              <img
+                src={selectedTour.tour_image}
+                alt={selectedTour.title}
+                style={{
+                  width: '60px',
+                  height: '60px',
+                  objectFit: 'cover',
+                  borderRadius: '4px',
+                  marginRight: '16px',
+                }}
+              />
+            )}
+            <Box>
+              <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                {selectedTour?.title || 'Tour Title'}
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', mt: '4px' }}>
+                <Typography
+                  sx={{
+                    color: '#333',
+                    fontSize: '1.15rem',
+                    fontWeight: 700,
                   }}
-                />
-              )}
-              <Box>
-                <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                  {selectedTour?.title || 'Tour Title'}
+                >
+                  {selectedTour?.price
+                    ? `LKR ${Number(selectedTour.price).toLocaleString()}`
+                    : 'Price not available'}
                 </Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', mt: '4px' }}>
+                {selectedTour?.oldPrice && (
                   <Typography
                     sx={{
-                      color: '#333',
-                      fontSize: '1.15rem',
-                      fontWeight: 700,
+                      ml: '8px',
+                      color: '#888',
+                      textDecoration: 'line-through',
+                      fontSize: '0.9rem',
                     }}
                   >
-                    {selectedTour?.price
-                      ? `LKR ${Number(selectedTour.price).toLocaleString()}`
-                      : 'Price not available'}
+                    LKR {Number(selectedTour.oldPrice).toLocaleString()}
                   </Typography>
-                  {selectedTour?.oldPrice && (
-                    <Typography
-                      sx={{
-                        ml: '8px',
-                        color: '#888',
-                        textDecoration: 'line-through',
-                        fontSize: '0.9rem',
-                      }}
-                    >
-                      LKR {Number(selectedTour.oldPrice).toLocaleString()}
-                    </Typography>
-                  )}
-                  {selectedTour?.price && selectedTour?.oldPrice && (
-                    <Typography
-                      sx={{
-                        ml: '8px',
-                        backgroundColor: 'green',
-                        color: 'white',
-                        padding: '2px 6px',
-                        borderRadius: '4px',
-                        fontSize: '0.75rem',
-                        fontWeight: 'bold',
-                      }}
-                    >
-                      SAVE LKR {Number(selectedTour.oldPrice - selectedTour.price).toLocaleString()}
-                    </Typography>
-                  )}
-                </Box>
+                )}
+                {selectedTour?.price && selectedTour?.oldPrice && (
+                  <Typography
+                    sx={{
+                      ml: '8px',
+                      backgroundColor: 'green',
+                      color: 'white',
+                      padding: '2px 6px',
+                      borderRadius: '4px',
+                      fontSize: '0.75rem',
+                      fontWeight: 'bold',
+                    }}
+                  >
+                    SAVE LKR {Number(selectedTour.oldPrice - selectedTour.price).toLocaleString()}
+                  </Typography>
+                )}
               </Box>
             </Box>
-              <IconButton onClick={handleCloseDialog}>
-                  <CloseIcon />
-              </IconButton>
           </Box>
-          <DialogContent sx={{ pt: 0 , pb: '0px', px: '16px' }}>
+
+          {/* Close Button */}
+          <IconButton onClick={handleCloseDialog}>
+            <CloseIcon />
+          </IconButton>
+        </Box>
+
+        <Divider />
+
+        {/* Form Section */}
+        <DialogContent sx={{ pt: 0, pb: '0px', px: isMobile ? '10px' : '16px' }}>
           <TextField
             required
             label="Full Name"
@@ -420,7 +497,7 @@ const ImageGallery = ( {searchQuery = ''}) => {
           />
           <Box sx={{ display: 'flex', gap: '8px', mt: 2 }}>
             <TextField
-              label="country code"
+              label="Country Code"
               sx={{ width: '100px' }}
               onChange={(e) => setPhoneNumber(e.target.value)}
             />
@@ -464,10 +541,7 @@ const ImageGallery = ( {searchQuery = ''}) => {
         <DialogActions sx={{ justifyContent: 'center', pb: '16px' }}>
           <Button
             variant="contained"
-            onClick={() => {
-              // Handle form submission logic here
-              handleSubmitInquiry();
-            }}
+            onClick={() => handleSubmitInquiry()}
             sx={{
               backgroundColor: '#016170',
               color: '#fff',
@@ -483,6 +557,7 @@ const ImageGallery = ( {searchQuery = ''}) => {
           </Button>
         </DialogActions>
       </Dialog>
+
     </Box>
   );
 };

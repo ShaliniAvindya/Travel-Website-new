@@ -31,7 +31,7 @@ const Tours = () => {
 
   return (
     <div>
-      <Box bgcolor="#ffffff" mt="30px" sx={{ width: '90%', position: 'relative', left: '5vw', boxSizing: 'border-box' }}>
+      <Box bgcolor="#ffffff" mt="30px" sx={{ width: isMobile? '100%': '90%', position: 'relative', left: isMobile? '0' : '5vw', boxSizing: 'border-box' }}>
         <Typography variant="h3" component="div"
           sx={{
             color: '#0A369D',
