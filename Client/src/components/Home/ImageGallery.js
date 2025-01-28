@@ -11,6 +11,7 @@ import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import SearchIcon from '@mui/icons-material/Search';
 import Divider from '@mui/material/Divider';
+import { useCurrency } from '../../screens/CurrencyContext';
 
 const ImageGallery = ( {searchQuery = ''}) => {
   const [tours, setTours] = useState([]);
@@ -28,6 +29,7 @@ const ImageGallery = ( {searchQuery = ''}) => {
   const [travellerCount, setTravellerCount] = useState('');
   const [message, setMessage] = useState('');
 
+  
   const query = new URLSearchParams(location.search);
   const searchTerm = searchQuery|| query.get('search') || '';
   const nights = query.get('nights') || '';
@@ -38,8 +40,16 @@ const ImageGallery = ( {searchQuery = ''}) => {
   const [searchNights, setSearchNights] = useState(nights);
   const [searchDays, setSearchDays] = useState(days);
   const [searchCountry, setSearchCountry] = useState(country);
+  const [exchangeRates, setExchangeRates] = useState({});
 
   const { isMobile, isTablet} = useDeviceType();
+
+  const currency = useCurrency();
+
+  const convertPrice = (priceInUSD) => {
+    if (!exchangeRates[currency]) return priceInUSD.toLocaleString();
+    return (priceInUSD * exchangeRates[currency]).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  };
 
 
   useEffect(() => {
@@ -53,6 +63,17 @@ const ImageGallery = ( {searchQuery = ''}) => {
         setLoading(false);
       }
     };
+
+    const fetchExchangeRates = async () => {
+      try {
+        const response = await axios.get('https://api.exchangerate-api.com/v4/latest/USD');
+        setExchangeRates(response.data.rates);
+      } catch (error) {
+        console.error('Error fetching exchange rates:', error);
+      }
+    };
+  
+    fetchExchangeRates();
 
     fetchTours();
   }, []);
@@ -95,19 +116,8 @@ const ImageGallery = ( {searchQuery = ''}) => {
       (!searchCountry || tour.country.toLowerCase().includes(searchCountry.toLowerCase()))
     );
     });
-  // Function to handle currency conversion
-  const convertCurrency = (price) => {
-    const rates = {
-      USD: 1,
-      LKR: 200,
-      EUR: 0.85,
-      GBP: 0.75,
-      JPY: 110,
-      AUD: 1.35,
-      INR: 75,
-    };
-    return (price * rates[selectedCurrency]).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 3 });
-  };
+
+  
   const handleSearchSubmit = (event) => {
     event.preventDefault();
     const query = new URLSearchParams({
@@ -330,19 +340,19 @@ const ImageGallery = ( {searchQuery = ''}) => {
                     mb={1}
                   >
                     {/* Check if price exists and is a valid number before calling toLocaleString */}
-                    {selectedCurrency} {item.price && !isNaN(item.price) ? convertCurrency(item.price) : 'N/A'}
-                    {item.price && !isNaN(item.price) && (
+                    {selectedCurrency} {item.price && !isNaN(item.price) ? convertPrice(item.price) : ''}
+                    {item.oldPrice && !isNaN(item.oldPrice) && (
                       <Typography
                         component="span"
                         variant="body1"
                         sx={{ textDecoration: 'line-through', marginLeft: 1, color: 'text.secondary' }}
                       >
-                        {selectedCurrency} {convertCurrency(item.oldPrice)}
+                        {selectedCurrency} ${convertPrice(item.oldPrice)}
                       </Typography>
                     )}
-                    {item.price && !isNaN(item.price) && (
+                    {item.oldPrice && !isNaN(item.oldPrice) && (
                       <Typography component="span" variant="body2" color="error" fontWeight="bold" backgroundColor="rgba(76, 175, 80, 0.1)" padding={0.5}>
-                        SAVE {selectedCurrency} {convertCurrency(item.oldPrice - item.price)}
+                        SAVE {selectedCurrency} {convertPrice(item.oldPrice-item.price)}
                       </Typography>
                     )}
                   </Typography>
@@ -435,7 +445,7 @@ const ImageGallery = ( {searchQuery = ''}) => {
                   }}
                 >
                   {selectedTour?.price
-                    ? `LKR ${Number(selectedTour.price).toLocaleString()}`
+                    ? `${selectedCurrency} ${Number(convertPrice(selectedTour.price)).toLocaleString()}`
                     : 'Price not available'}
                 </Typography>
                 {selectedTour?.oldPrice && (
@@ -447,7 +457,7 @@ const ImageGallery = ( {searchQuery = ''}) => {
                       fontSize: '0.9rem',
                     }}
                   >
-                    LKR {Number(selectedTour.oldPrice).toLocaleString()}
+                    {selectedCurrency} ${convertPrice(selectedTour.oldPrice)}
                   </Typography>
                 )}
                 {selectedTour?.price && selectedTour?.oldPrice && (
@@ -462,7 +472,7 @@ const ImageGallery = ( {searchQuery = ''}) => {
                       fontWeight: 'bold',
                     }}
                   >
-                    SAVE {selectedCurrency} {Number(selectedTour.oldPrice - selectedTour.price).toLocaleString()}
+                    SAVE {selectedCurrency} {convertPrice(selectedTour.oldPrice-selectedTour.price)}
                   </Typography>
                 )}
               </Box>

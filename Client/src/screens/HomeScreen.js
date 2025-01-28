@@ -451,7 +451,7 @@ const HomeScreen = () => {
                     }}
                   >
                     {selectedTour?.price
-                      ? `LKR ${Number(selectedTour.price).toLocaleString()}`
+                      ? `${currency} ${Number(selectedTour.price).toLocaleString()}`
                       : 'Price not available'}
                   </Typography>
                   {selectedTour?.oldPrice && (
@@ -463,7 +463,7 @@ const HomeScreen = () => {
                         fontSize: '0.9rem',
                       }}
                     >
-                      LKR {Number(selectedTour.oldPrice).toLocaleString()}
+                      {currency} {Number(selectedTour.oldPrice).toLocaleString()}
                     </Typography>
                   )}
                   {selectedTour?.price && selectedTour?.oldPrice && (
