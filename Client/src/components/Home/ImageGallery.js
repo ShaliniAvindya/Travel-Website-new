@@ -338,12 +338,12 @@ const ImageGallery = ( {searchQuery = ''}) => {
                         variant="body1"
                         sx={{ textDecoration: 'line-through', marginLeft: 1, color: 'text.secondary' }}
                       >
-                        {selectedCurrency} {convertCurrency(item.price + 500)}
+                        {selectedCurrency} {convertCurrency(item.oldPrice)}
                       </Typography>
                     )}
                     {item.price && !isNaN(item.price) && (
                       <Typography component="span" variant="body2" color="error" fontWeight="bold" backgroundColor="rgba(76, 175, 80, 0.1)" padding={0.5}>
-                        SAVE {selectedCurrency} 500
+                        SAVE {selectedCurrency} {convertCurrency(item.oldPrice - item.price)}
                       </Typography>
                     )}
                   </Typography>
@@ -463,7 +463,7 @@ const ImageGallery = ( {searchQuery = ''}) => {
                       fontWeight: 'bold',
                     }}
                   >
-                    SAVE LKR {Number(selectedTour.oldPrice - selectedTour.price).toLocaleString()}
+                    SAVE {selectedCurrency} {Number(selectedTour.oldPrice - selectedTour.price).toLocaleString()}
                   </Typography>
                 )}
               </Box>
