@@ -347,12 +347,12 @@ const HomeScreen = () => {
                           variant="body1"
                           sx={{ textDecoration: 'line-through', marginLeft: 1, color: 'text.secondary' }}
                         >
-                          {currency} {convertPrice(tour.price + 500)}
+                          {currency} {convertPrice(tour.oldPrice)}
                         </Typography>
                       )}
                       {tour.price && !isNaN(tour.price) && (
                         <Typography component="span" variant="body2" color="error" fontWeight="bold" backgroundColor="rgba(76, 175, 80, 0.1)" padding={0.5}>
-                          SAVE {currency} 500
+                          SAVE {currency} {convertPrice(tour.oldPrice - tour.price)}
                         </Typography>
                       )}
                     </Typography>
@@ -478,7 +478,7 @@ const HomeScreen = () => {
                         fontWeight: 'bold',
                       }}
                     >
-                      SAVE LKR {Number(selectedTour.oldPrice - selectedTour.price).toLocaleString()}
+                      SAVE {currency} {Number(selectedTour.oldPrice - selectedTour.price).toLocaleString()}
                     </Typography>
                   )}
                 </Box>

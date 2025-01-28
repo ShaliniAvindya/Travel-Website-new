@@ -10,6 +10,7 @@ import SendIcon from '@mui/icons-material/Send';
 import { Dialog, DialogActions, DialogContent, IconButton, TextField } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import Swal from 'sweetalert2';
+import { useCurrency } from './CurrencyContext';
 
 const convertCurrency = (amount, currency) => {
   const exchangeRates = {
@@ -62,7 +63,7 @@ const TourDetails = () => {
   const { isMobile, isTablet } = useDeviceType();
 
   const selectedCurrency = localStorage.getItem('selectedCurrency') || 'USD';
-
+  const currency = selectedCurrency === 'USD' ? '$' : selectedCurrency;
 
   useEffect(() => {
     const fetchTourDetails = async () => {
@@ -384,7 +385,7 @@ const TourDetails = () => {
                             fontWeight: 'bold',
                           }}
                         >
-                          SAVE LKR {Number(tour.oldPrice - tour.price).toLocaleString()}
+                          SAVE {currency} {Number(tour.oldPrice - tour.price).toLocaleString()}
                         </Typography>
                       )}
                     </Box>
