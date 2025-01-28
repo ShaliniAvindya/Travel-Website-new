@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import "./Register.css";
 import Footer from "../components/Footer"; 
 import { Link } from 'react-router-dom';
-
+import { useEffect } from "react";
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -31,6 +31,13 @@ const Signup = () => {
       [e.target.name]: e.target.value,
     });
   };
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('currentUser'));
+    if (!user || !user.isAdmin) {
+      navigate('/login');
+    }
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -157,30 +164,6 @@ const Signup = () => {
 
               <button type="submit" className="signupButton" disabled={loading}>
                 {loading ? "Registering..." : "Sign Up"}
-              </button>
-              <button
-                type="button"
-                className="googleButton"
-                onClick={() => handleSocialRegister("google")}
-              >
-                <img
-                  src="https://developers.google.com/identity/images/g-logo.png"
-                  alt="Google"
-                  className="socialIcon"
-                />
-                Sign Up with Google
-              </button>
-              <button
-                type="button"
-                className="facebookButton"
-                onClick={() => handleSocialRegister("facebook")}
-              >
-                <img
-                  src="https://upload.wikimedia.org/wikipedia/commons/0/05/Facebook_Logo_%282019%29.png"
-                  alt="Facebook"
-                  className="socialIcon"
-                />
-                Sign Up with Facebook
               </button>
             </form>
             <p>

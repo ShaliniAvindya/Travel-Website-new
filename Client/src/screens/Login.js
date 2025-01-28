@@ -126,38 +126,11 @@ const Login = () => {
                     Remember me
                   </label>
                 </div>
-                <Link to="/forgot-password" className="forgot-pass-link">
-                  Forgot password?
-                </Link>
 
               </div>
 
               <button type="submit" className="loginButton" disabled={loading}>
                 {loading ? 'Logging In...' : 'Log In'}
-              </button>
-              <button
-                type="button"
-                className="googleButton"
-                onClick={() => handleSocialLogin('google')}
-              >
-                <img
-                  src="https://developers.google.com/identity/images/g-logo.png"
-                  alt="Google"
-                  className="socialIcon"
-                />
-                Log In with Google
-              </button>
-              <button
-                type="button"
-                className="facebookButton"
-                onClick={() => handleSocialLogin('facebook')}
-              >
-                <img
-                  src="https://upload.wikimedia.org/wikipedia/commons/0/05/Facebook_Logo_%282019%29.png"
-                  alt="Facebook"
-                  className="socialIcon"
-                />
-                Log In with Facebook
               </button>
             </form>
             <p>

@@ -64,7 +64,7 @@ const AdminPanel = () => {
           width: '100%',
           marginTop:'3vh',
           marginBottom:'50px',
-          maxWidth: isMobile? '100vw': '80vw',
+          maxWidth: isMobile? '100vw': isTablet? '90%': '80vw',
           background: '#fff',
           boxShadow: '0 8px 20px rgba(0, 0, 0, 0.15)',
           overflow: 'hidden',
@@ -78,7 +78,7 @@ const AdminPanel = () => {
             background: '#e8f0fc',
             fontWeight: 'bold',
             fontSize: '20px',
-            padding:isMobile? '0 2vw': '0 22vw',
+            padding:isMobile? '0 2vw': isTablet? '0 20vw': '0 22vw',
             height: '7vh',
             margin: '0',
 

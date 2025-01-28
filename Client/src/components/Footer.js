@@ -131,7 +131,7 @@ const Footer = () => {
   // Map container
   const mapContainerStyle = {
     width: '100%',
-    height: '300px',
+    height: '200px',
     borderRadius: '15px',
     overflow: 'hidden',
     boxShadow: '0 4px 15px rgba(0, 0, 0, 0.3)',
@@ -200,39 +200,16 @@ const Footer = () => {
                 <Box style={contactItemStyle}>
                   <PhoneIcon style={contactIconStyle} />
                   <Typography variant="body1" style={contactTextStyle}>
-                    Phone: +960-9969974
+                    +960-9969974
                   </Typography>
                 </Box>
                 <Box style={contactItemStyle}>
                   <EmailIcon style={contactIconStyle} />
                   <Typography variant="body1" style={contactTextStyle}>
-                    Email: sales@holidaylife.travel
+                    sales@holidaylife.travel
                   </Typography>
                 </Box>
             </div>
-            <Box>
-              <Typography variant="h5" gutterBottom style={sectionTitleStyle}>
-                Connect With Us
-              </Typography>
-              <div style={socialIconsContainerStyle}>
-                {[
-                  { icon: <Facebook />, label: 'facebook' },
-                  { icon: <Twitter />, label: 'twitter' },
-                  { icon: <Instagram />, label: 'instagram' },
-                  { icon: <LinkedIn />, label: 'linkedin' },
-                ].map(({ icon, label }, index) => (
-                  <IconButton
-                    key={index}
-                    aria-label={label}
-                    style={iconBtnStyle}
-                    onMouseEnter={handleIconMouseEnter}
-                    onMouseLeave={handleIconMouseLeave}
-                  >
-                    {icon}
-                  </IconButton>
-                ))}
-              </div>
-            </Box>
           </Grid>
           <Grid item xs={12} md={4} style={{  }}>
             <Box>
@@ -240,7 +217,7 @@ const Footer = () => {
                 Quick Links
               </Typography>
               <Grid container style={quickLinksContainerStyle}>
-                {['Home', 'Rooms', 'Contact Us'].map((link, index) => (
+                {['Home', 'Packages', 'Contact Us'].map((link, index) => (
                   <Button
                     key={index}
                     variant="text"
@@ -270,7 +247,7 @@ const Footer = () => {
                   center={center}
                   zoom={14}
                 >
-                  <Marker position={center} />
+                  <Marker position={{ lat: 4.217150, lng: 73.541300 }} />
                 </GoogleMap>
               </LoadScript>
             </Box>

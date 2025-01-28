@@ -271,7 +271,7 @@ const ImageGallery = ( {searchQuery = ''}) => {
             <Card
               sx={{
                 borderRadius: '16px',
-                height: '580px',
+                maxHeight: '580px',
                 boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
                 transition: 'transform 0.3s ease, box-shadow 0.3s ease',
                 '&:hover': {

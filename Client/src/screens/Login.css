@@ -20,6 +20,7 @@
     align-items: center;
     justify-content: center;
     background-color: white;
+    max-height: 95vh;
   }
   
   .formContainer {
