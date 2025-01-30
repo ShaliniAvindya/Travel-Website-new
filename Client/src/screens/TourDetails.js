@@ -12,19 +12,6 @@ import CloseIcon from '@mui/icons-material/Close';
 import Swal from 'sweetalert2';
 import { useCurrency } from './CurrencyContext';
 
-const convertCurrency = (amount, currency) => {
-  const exchangeRates = {
-    USD: 1,
-    LKR: 200,
-    EUR: 0.85,
-    GBP: 0.75,
-    JPY: 110,
-  };
-  const rate = exchangeRates[currency] || 1;
-  return (amount * rate).toFixed(2);
-};
-
-
 function useDeviceType() {
   const [deviceType, setDeviceType] = useState({
     isMobile: window.innerWidth <= 768,
@@ -59,11 +46,19 @@ const TourDetails = () => {
   const [travelDate, setTravelDate] = useState('');
   const [travellerCount, setTravellerCount] = useState('');
   const [message, setMessage] = useState('');
+  const [exchangeRates, setExchangeRates] = useState({});
 
   const { isMobile, isTablet } = useDeviceType();
 
   const selectedCurrency = localStorage.getItem('selectedCurrency') || 'USD';
-  const currency = selectedCurrency === 'USD' ? '$' : selectedCurrency;
+
+  const currency = useCurrency();
+
+  const convertPrice = (priceInUSD) => {
+    if (!exchangeRates[currency]) return priceInUSD.toLocaleString();
+    return (priceInUSD * exchangeRates[currency]).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  };
+
 
   useEffect(() => {
     const fetchTourDetails = async () => {
@@ -76,6 +71,17 @@ const TourDetails = () => {
         setLoading(false);  
       }
     };
+
+    const fetchExchangeRates = async () => {
+      try {
+        const response = await axios.get('https://api.exchangerate-api.com/v4/latest/USD');
+        setExchangeRates(response.data.rates);
+      } catch (error) {
+        console.error('Error fetching exchange rates:', error);
+      }
+    };
+  
+    fetchExchangeRates();
     window.scrollTo(0, 0);
     fetchTourDetails();
   }, [id]); 
@@ -167,7 +173,7 @@ const TourDetails = () => {
             {/* Price */}
             <Box className="inline-block bg-blue-900/40 py-3 w-full max-w-44 px-1 mb-8 shadow-xl text-center">
               <Typography className="text-white text-7xl font-[Domine]">
-                Price: {selectedCurrency} {Number(convertCurrency(tour.price, selectedCurrency)).toLocaleString()}
+                Price: {selectedCurrency} {tour.price && !isNaN(tour.price) ? convertPrice(tour.price) : ''}
               </Typography>
             </Box>
           </Box>
@@ -182,7 +188,7 @@ const TourDetails = () => {
           { !isMobile && (
             <Box className="inline-block bg-blue-900/40 py-3 px-5 mb-8 shadow-xl ml-2">
               <Typography className="text-white text-7xl font-[Domine]">
-                Price: USD {tour.price.toLocaleString()}
+                Price: {selectedCurrency} {tour.price && !isNaN(tour.price) ? convertPrice(tour.price) : ''}
               </Typography>
             </Box>  
           )}
