@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Grid, Card, CardMedia, CardContent, Typography, Box, Rating, Button, CircularProgress } from '@mui/material';
+import { Grid, Card, CardMedia, CardContent, Typography, Box, Button, CircularProgress } from '@mui/material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
@@ -44,7 +44,7 @@ const ImageGallery = ( {searchQuery = ''}) => {
 
   const { isMobile, isTablet} = useDeviceType();
 
-  const currency = useCurrency();
+  const {currency} = useCurrency();
 
   const convertPrice = (priceInUSD) => {
     if (!exchangeRates[currency]) return priceInUSD.toLocaleString();
@@ -144,26 +144,6 @@ const ImageGallery = ( {searchQuery = ''}) => {
     setTravellerCount('');
     setMessage('');
   };
-
-  function useDeviceType() {
-    const [deviceType, setDeviceType] = useState({
-      isMobile: window.innerWidth <= 768,
-      isTablet: window.innerWidth > 768 && window.innerWidth <= 1024,
-    });
-  
-    useEffect(() => {
-      const handleResize = () => {
-        setDeviceType({
-          isMobile: window.innerWidth <= 768,
-          isTablet: window.innerWidth > 768 && window.innerWidth <= 1024,
-        });
-      };
-      window.addEventListener('resize', handleResize);
-      return () => window.removeEventListener('resize', handleResize);
-    }, []);
-  
-    return deviceType;
-  }
 
   const handleSubmitInquiry = async () => {
     try {

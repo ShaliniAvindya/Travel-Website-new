@@ -1,7 +1,6 @@
 import React, { useEffect , useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Typography, Box, Button, Divider } from '@mui/material';
-import { PhoneInTalk as PhoneInTalkIcon, ArrowForward as ArrowForwardIcon } from '@mui/icons-material';
 import TourImages from './TourImages';
 import Itinerary from './Itinerary';
 import Footer from '../components/Footer';
@@ -55,8 +54,8 @@ const TourDetails = () => {
   const currency = useCurrency();
 
   const convertPrice = (priceInUSD) => {
-    if (!exchangeRates[currency]) return priceInUSD.toLocaleString();
-    return (priceInUSD * exchangeRates[currency]).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    if (!exchangeRates[selectedCurrency]) return priceInUSD.toLocaleString();
+    return (priceInUSD * exchangeRates[selectedCurrency]).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   };
 
 
@@ -102,7 +101,6 @@ const TourDetails = () => {
 
   const handleSubmit = async (e) => {
     try {
-      // Construct the object we want to send
       const payload = {
         name,
         email,

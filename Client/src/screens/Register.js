@@ -37,9 +37,7 @@ const Signup = () => {
     const token = localStorage.getItem('token');
     try{
       axios.get(`http://localhost:8000/api/users/${user.id}`).then((res) => {
-        console.log(token.id)
         if (res.data.isAdmin) {
-          console.log(res.data)
           return;
         }
         navigate('/login');

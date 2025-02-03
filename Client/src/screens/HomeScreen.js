@@ -1,6 +1,5 @@
 import React from 'react';
 import { Container, Typography, Button, Grid, Box } from '@mui/material';
-import ImageGallery from '../components/Home/ImageGallery';
 import Footer from '../components/Footer';
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -340,19 +339,19 @@ const HomeScreen = () => {
                       justifyContent="space-between"
                       mb={1}
                     >
-                      {currency} {tour.price && !isNaN(tour.price) ? convertPrice(tour.price) : 'N/A'} {' '}
-                      {tour.price && !isNaN(tour.price) && (
+                      {currency} {tour.price && !isNaN(tour.price) ? convertPrice(tour.price) : ''}
+                      {tour.oldPrice && !isNaN(tour.oldPrice) && (
                         <Typography
                           component="span"
                           variant="body1"
                           sx={{ textDecoration: 'line-through', marginLeft: 1, color: 'text.secondary' }}
                         >
-                          {currency} {convertPrice(tour.oldPrice)}
+                          {currency} ${convertPrice(tour.oldPrice)}
                         </Typography>
                       )}
-                      {tour.price && !isNaN(tour.price) && (
+                      {tour.oldPrice && !isNaN(tour.oldPrice) && (
                         <Typography component="span" variant="body2" color="error" fontWeight="bold" backgroundColor="rgba(76, 175, 80, 0.1)" padding={0.5}>
-                          SAVE {currency} {convertPrice(tour.oldPrice - tour.price)}
+                          SAVE {currency} {convertPrice(tour.oldPrice-tour.price)}
                         </Typography>
                       )}
                     </Typography>
