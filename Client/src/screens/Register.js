@@ -36,7 +36,7 @@ const Signup = () => {
     const user = JSON.parse(localStorage.getItem('currentUser'));
     const token = localStorage.getItem('token');
     try{
-      axios.get(`http://localhost:8000/api/users/${user.id}`).then((res) => {
+      axios.get(`/users/${user.id}`).then((res) => {
         if (res.data.isAdmin) {
           return;
         }
@@ -62,7 +62,7 @@ const Signup = () => {
     }
 
     try {
-      const response = await axios.post("http://localhost:8000/api/users/register", {
+      const response = await axios.post("/users/register", {
         name: formData.name,
         email: formData.email,
         password: formData.password,
@@ -92,7 +92,7 @@ const Signup = () => {
   };
 
   const handleSocialRegister = (provider) => {
-    const url = `http://localhost:8000/api/users/auth/${provider}`;
+    const url = `/users/auth/${provider}`;
     window.location.href = url;
   };
 

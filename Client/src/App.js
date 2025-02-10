@@ -10,6 +10,9 @@ import AdminPanel from './screens/AdminPanel';
 import TourDetails from './screens/TourDetails';
 import Itinerary from './screens/Itinerary'; 
 import { CurrencyProvider } from './screens/CurrencyContext'; 
+import axios from 'axios';
+
+axios.defaults.baseURL = "http://localhost:8000";
 
 const App = () => {
   return (
