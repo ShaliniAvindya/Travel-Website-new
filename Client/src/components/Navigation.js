@@ -14,8 +14,6 @@ import {
   InputBase,
   Select,
   MenuItem,
-  useMediaQuery,
-  useTheme,
   Divider
 } from '@mui/material';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
