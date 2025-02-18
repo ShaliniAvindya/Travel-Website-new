@@ -5,7 +5,6 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import FAQAccordion from './FAQAccordion';
 import ImageGal from '../components/Home/ImageGal';
-import LiveChat from '../components/Home/LiveChat';
 import Experience from '../components/Home/Experience';
 import HomeExperience from '../components/Home/HomeExperience';
 import OffersSection from '../components/Home/OffersSection';
@@ -252,7 +251,6 @@ const HomeScreen = () => {
 
   return (
     <div style={{ backgroundColor: '#caf0f8' }}>
-      <LiveChat />
 
       <Box bgcolor="#ffffff" padding={isMobile ? '10px' : '35px'} mt="30px" minWidth='98vw' marginTop={'1px'}><br></br>
         <div style={{ display: 'flex', flexDirection: isMobile || isTablet? 'column' : 'row' , marginBottom: '30px' }}>
@@ -710,6 +708,23 @@ const HomeScreen = () => {
       <FAQAccordion/>
       <Experience /><br></br><br></br>
       <Footer />
+
+      <IconButton
+        onClick={handleWhatsAppClick}
+        sx={{
+          position: 'fixed',
+          bottom: 16,
+          right: 16,
+          backgroundColor: '#25D366',
+          color: '#fff',
+          '&:hover': {
+            backgroundColor: '#128C7E',
+          },
+          zIndex: 1000,
+        }}
+      >
+        <WhatsAppIcon />
+      </IconButton>
     </div>
   );
 };
