@@ -132,11 +132,13 @@ const ImageGallery = ( {searchQuery = ''}) => {
   const nights = query.get('nights') || '';
   const days = query.get('days') || '';
   const country = query.get('country') || '';
+  const market = query.get('market') || '';
   const selectedCurrency = localStorage.getItem('selectedCurrency') || 'USD';
   const [search, setSearch] = useState(searchTerm);
   const [searchNights, setSearchNights] = useState(nights);
   const [searchDays, setSearchDays] = useState(days);
   const [searchCountry, setSearchCountry] = useState(country);
+  const [searchMarket, setSearchMarket] = useState('');
   const [exchangeRates, setExchangeRates] = useState({});
 
   const { isMobile, isTablet} = useDeviceType();
@@ -200,19 +202,49 @@ const ImageGallery = ( {searchQuery = ''}) => {
     setSearchNights(nights);
     setSearchDays(days);
     setSearchCountry(country);
-  }, [searchTerm, nights, days, country]);
+    setSearchMarket(market);
+  }, [searchTerm, nights, days, country, market]);
+
+  const marketMapping = {
+    1: 'Indian Market',
+    2: 'Chinese Market',
+    3: 'Asian Markets',
+    4: 'Middle East Markets',
+    5: 'Russia and CIS Markets',
+    6: 'All Markets'
+  };
+  
+  // Also create the inverse for easy lookup
+  const marketMappingInverse = Object.fromEntries(
+    Object.entries(marketMapping).map(([key, value]) => [value, Number(key)])
+  );
+  
   
   const filteredTours = tours.filter((tour) => {
+    const currentDate = new Date();
+    const tourExpiryDate = new Date(tour.expiry_date);
+
+    if (tourExpiryDate < currentDate) {
+      return false;
+    }
+
     const searchDaysValue = searchDays ? parseInt(searchDays) : null;
     const searchNightsValue = searchNights ? parseInt(searchNights) : null;
+  
+    const marketMatch =
+      !searchMarket ||
+      Number(searchMarket) === 6 ||
+      (Array.isArray(tour.markets) && tour.markets.includes(Number(searchMarket)));
   
     return (
       (!search || tour.title.toLowerCase().includes(search.toLowerCase())) &&
       (!searchNightsValue || tour.nights === searchNightsValue) &&
-      (!searchDaysValue || tour.nights +1 === searchDaysValue) &&
-      (!searchCountry || tour.country.toLowerCase().includes(searchCountry.toLowerCase()))
+      (!searchDaysValue || tour.nights + 1 === searchDaysValue) &&
+      (!searchCountry || tour.country.toLowerCase().includes(searchCountry.toLowerCase())) &&
+      marketMatch
     );
-    });
+  });
+  
 
   
   const handleSearchSubmit = (event) => {
@@ -221,7 +253,8 @@ const ImageGallery = ( {searchQuery = ''}) => {
       search,
       nights: searchNights,
       days: searchDays,
-      country: searchCountry
+      country: searchCountry,
+      markets: searchMarket
     }).toString();
     navigate(`/imagegallery?${query}`);
   };
@@ -294,18 +327,17 @@ const ImageGallery = ( {searchQuery = ''}) => {
   return (
     <Box sx={{ width: '100%', minHeight: '65vh', padding: '20px 30px', backgroundColor: '#f9f9f9' }}>
       <Box 
-        mb={3}
-        component="form"
-        onSubmit={handleSearchSubmit}
-        sx={{
-          display: 'flex',
-          flexDirection: { xs: 'column', sm: 'row' }, // Column layout for mobile, row for larger screens
+      mb={3}
+      component="form"
+      onSubmit={handleSearchSubmit}
+      sx={{
+        display: 'flex',
           gap: '10px',
           backgroundColor: '#dfedf7',
           padding: '10px 20px',
           borderRadius: '8px',
         }}
-      >
+        >
         <TextField
           fullWidth
           label="Search for packages"
@@ -334,281 +366,277 @@ const ImageGallery = ( {searchQuery = ''}) => {
           value={searchCountry}
           onChange={(e) => setSearchCountry(e.target.value)}
         />
-        <IconButton
-          type="submit"
-          color="primary"
-          sx={{
-            padding: '10px 15px',
-            backgroundColor: '#2196F3',
-            color: '#fff',
-            '&:hover': {
-              backgroundColor: '#1976D2',
-            },
-            alignSelf: { xs: 'center', sm: 'flex-start' }, // Center the button on mobile
+        <Autocomplete
+          options={Object.values(marketMapping)}
+          renderInput={(params) => (
+            <TextField {...params} label="Market" variant="outlined" />
+          )}
+          value={marketMapping[searchMarket] || ''}
+          onChange={(event, newValue) => {
+            setSearchMarket(marketMappingInverse[newValue] || '');
           }}
-        >
-          <SearchIcon />
-        </IconButton>
+          fullWidth
+        />
       </Box>
 
       <Grid container spacing={5}>
-        {filteredTours.map((item) => (
-          <Grid item xs={12} sm={6} md={4} key={item._id}>
-            <Card
-              sx={{
-                borderRadius: '16px',
-                maxHeight: '580px',
-                boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
-                transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                '&:hover': {
-                  transform: 'scale(1.03)',
-                  boxShadow: '0px 8px 20px rgba(0, 0, 0, 0.2)',
-                },
-                overflow: 'hidden',
-              }}
+      {filteredTours.map((item) => (
+        <Grid item xs={12} sm={6} md={4} key={item._id}>
+        <Card
+          sx={{
+          borderRadius: '16px',
+          maxHeight: '580px',
+          boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
+          transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+          '&:hover': {
+            transform: 'scale(1.03)',
+            boxShadow: '0px 8px 20px rgba(0, 0, 0, 0.2)',
+          },
+          overflow: 'hidden',
+          }}
+        >
+          <Box sx={{ position: 'relative' }}>
+          {/* Check if images array is empty and use a default placeholder image */}
+          <CardMedia
+            component="img"
+            height="200"
+            image={item.tour_image}
+            alt={item.title}
+            sx={{
+            cursor: 'pointer',
+            '&:hover': {
+              filter: 'brightness(0.85)',
+            },
+            }}
+            onClick={() => handleClick(item._id)}
+          />
+          <Box
+            sx={{
+            position: 'absolute',
+            bottom: 0,
+            width: '100%',
+            backgroundColor: 'rgba(0, 0, 0, 0.6)',
+            color: '#fff',
+            padding: '10px',
+            textAlign: 'center',
+            }}
+          >
+            <Typography variant="body2" fontWeight="bold">
+            {item.nights + 1} days & {item.nights} nights
+            </Typography>
+          </Box>
+          </Box>
+          <CardContent sx={{ backgroundColor: '#fff', padding: '20px' }}>
+          <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+            <Typography variant="h1" fontWeight="bold" fontSize={24}>
+            {item.title}
+            </Typography>
+          </Box>
+          <Box>
+            <Typography
+            variant="body1"
+            sx={{
+              color: 'text.primary',
+              fontWeight: 'bold',
+            }}
+            gutterBottom
+            display="flex"
+            justifyContent="space-between"
+            mb={1}
             >
-              <Box sx={{ position: 'relative' }}>
-                {/* Check if images array is empty and use a default placeholder image */}
-                <CardMedia
-                  component="img"
-                  height="200"
-                  image={item.tour_image}
-                  alt={item.title}
-                  sx={{
-                    cursor: 'pointer',
-                    '&:hover': {
-                      filter: 'brightness(0.85)',
-                    },
-                  }}
-                  onClick={() => handleClick(item._id)}
-                />
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    bottom: 0,
-                    width: '100%',
-                    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-                    color: '#fff',
-                    padding: '10px',
-                    textAlign: 'center',
-                  }}
-                >
-                  <Typography variant="body2" fontWeight="bold">
-                  {item.nights + 1} days & {item.nights} nights
-                  </Typography>
-                </Box>
-              </Box>
-              <CardContent sx={{ backgroundColor: '#fff', padding: '20px' }}>
-                <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-                  <Typography variant="h1" fontWeight="bold" fontSize={24}>
-                    {item.title}
-                  </Typography>
-                </Box>
-                <Box>
-                  <Typography
-                    variant="body1"
-                    sx={{
-                      color: 'text.primary',
-                      fontWeight: 'bold',
-                    }}
-                    gutterBottom
-                    display="flex"
-                    justifyContent="space-between"
-                    mb={1}
-                  >
-                    {/* Check if price exists and is a valid number before calling toLocaleString */}
-                    {selectedCurrency} {item.price && !isNaN(item.price) ? convertPrice(item.price) : ''}
-                    {item.oldPrice && !isNaN(item.oldPrice) && (
-                      <Typography
-                        component="span"
-                        variant="body1"
-                        sx={{ textDecoration: 'line-through', marginLeft: 1, color: 'text.secondary' }}
-                      >
-                        {selectedCurrency} ${convertPrice(item.oldPrice)}
-                      </Typography>
-                    )}
-                    {item.oldPrice && !isNaN(item.oldPrice) && (
-                      <Typography component="span" variant="body2" color="error" fontWeight="bold" backgroundColor="rgba(76, 175, 80, 0.1)" padding={0.5}>
-                        SAVE {selectedCurrency} {convertPrice(item.oldPrice-item.price)}
-                      </Typography>
-                    )}
-                  </Typography>
-                </Box>
-                <Box display="flex" gap={2} mt={3}>
-                  <Button
-                    variant="outlined"
-                    startIcon={<WhatsAppIcon />}
-                    sx={{
-                      borderColor: '#4CAF50',
-                      color: '#4CAF50',
-                      padding: '0px 15px',
-                      '&:hover': {
-                        backgroundColor: 'rgba(76, 175, 80, 0.1)',
-                        borderColor: '#4CAF50',
-                      },
-                    }}
-                    onClick={() => handleWhatsAppClick()}
-                  >
-                    Chat
-                  </Button>
-                  <Button
-                    variant="contained"
-                    fullWidth
-                    sx={{
-                      backgroundColor: '#2196F3',
-                      color: '#fff',
-                      padding: '5px 0',
-                      '&:hover': {
-                        backgroundColor: '#1976D2',
-                      },
-                    }}
-                    onClick={() => handleInquireNowClick(item)}
-                  >
-                     Inquire Now
-                     <SendIcon sx={{ marginLeft: '10px', fontSize: 'inherit' }} />
-                  </Button>
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-        ))}
+            {/* Check if price exists and is a valid number before calling toLocaleString */}
+            {selectedCurrency} {item.price && !isNaN(item.price) ? convertPrice(item.price) : ''}
+            {item.oldPrice && !isNaN(item.oldPrice) && (
+              <Typography
+              component="span"
+              variant="body1"
+              sx={{ textDecoration: 'line-through', marginLeft: 1, color: 'text.secondary' }}
+              >
+              {selectedCurrency} ${convertPrice(item.oldPrice)}
+              </Typography>
+            )}
+            {item.oldPrice && !isNaN(item.oldPrice) && (
+              <Typography component="span" variant="body2" color="error" fontWeight="bold" backgroundColor="rgba(76, 175, 80, 0.1)" padding={0.5}>
+              SAVE {selectedCurrency} {convertPrice(item.oldPrice-item.price)}
+              </Typography>
+            )}
+            </Typography>
+          </Box>
+          <Box display="flex" gap={2} mt={3}>
+            <Button
+            variant="outlined"
+            startIcon={<WhatsAppIcon />}
+            sx={{
+              borderColor: '#4CAF50',
+              color: '#4CAF50',
+              padding: '0px 15px',
+              '&:hover': {
+              backgroundColor: 'rgba(76, 175, 80, 0.1)',
+              borderColor: '#4CAF50',
+              },
+            }}
+            onClick={() => handleWhatsAppClick()}
+            >
+            Chat
+            </Button>
+            <Button
+            variant="contained"
+            fullWidth
+            sx={{
+              backgroundColor: '#2196F3',
+              color: '#fff',
+              padding: '5px 0',
+              '&:hover': {
+              backgroundColor: '#1976D2',
+              },
+            }}
+            onClick={() => handleInquireNowClick(item)}
+            >
+             Inquire Now
+             <SendIcon sx={{ marginLeft: '10px', fontSize: 'inherit' }} />
+            </Button>
+          </Box>
+          </CardContent>
+        </Card>
+        </Grid>
+      ))}
       </Grid>
 
       <Dialog
-        open={openDialog}
-        onClose={handleCloseDialog}
-        PaperProps={{
-          sx: {
-            width: isMobile ? '95vw' : '35vw', // Responsive width
-            borderRadius: isMobile ? '10px' : '16px', // Responsive border radius
-            overflowX: 'hidden', // Prevent horizontal overflow
-          },
+      open={openDialog}
+      onClose={handleCloseDialog}
+      PaperProps={{
+        sx: {
+        width: isMobile ? '95vw' : '35vw', // Responsive width
+        borderRadius: isMobile ? '10px' : '16px', // Responsive border radius
+        overflowX: 'hidden', // Prevent horizontal overflow
+        },
+      }}
+      >
+      {/* Header Section */}
+      <Box
+        sx={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        padding: '16px',
         }}
       >
-        {/* Header Section */}
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'flex-start',
-            padding: '16px',
+        {/* Left: Image, Title, and Prices */}
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+        {selectedTour?.tour_image && (
+          <img
+          src={selectedTour.tour_image}
+          alt={selectedTour.title}
+          style={{
+            width: '60px',
+            height: '60px',
+            objectFit: 'cover',
+            borderRadius: '4px',
+            marginRight: '16px',
           }}
-        >
-          {/* Left: Image, Title, and Prices */}
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            {selectedTour?.tour_image && (
-              <img
-                src={selectedTour.tour_image}
-                alt={selectedTour.title}
-                style={{
-                  width: '60px',
-                  height: '60px',
-                  objectFit: 'cover',
-                  borderRadius: '4px',
-                  marginRight: '16px',
-                }}
-              />
-            )}
-            <Box>
-              <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                {selectedTour?.title || 'Tour Title'}
-              </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', mt: '4px' }}>
-                <Typography
-                  sx={{
-                    color: '#333',
-                    fontSize: '1.15rem',
-                    fontWeight: 700,
-                  }}
-                >
-                  {selectedTour?.price
-                    ? `${selectedCurrency} ${selectedTour.price && !isNaN(selectedTour.price) ? convertPrice(selectedTour.price) : ''}`
-                    : 'Price not available'}
-                </Typography>
-                {selectedTour?.oldPrice && (
-                  <Typography
-                    sx={{
-                      ml: '8px',
-                      color: '#888',
-                      textDecoration: 'line-through',
-                      fontSize: '0.9rem',
-                    }}
-                  >
-                    {selectedCurrency} {selectedTour.oldPrice && !isNaN(selectedTour.oldPrice) ? convertPrice(selectedTour.oldPrice) : ''}
-                  </Typography>
-                )}
-                {selectedTour?.price && selectedTour?.oldPrice && (
-                  <Typography
-                    sx={{
-                      ml: '8px',
-                      backgroundColor: 'green',
-                      color: 'white',
-                      padding: '2px 6px',
-                      borderRadius: '4px',
-                      fontSize: '0.75rem',
-                      fontWeight: 'bold',
-                    }}
-                  >
-                    SAVE {selectedCurrency} {convertPrice(selectedTour.oldPrice-selectedTour.price)}
-                  </Typography>
-                )}
-              </Box>
-            </Box>
+          />
+        )}
+        <Box>
+          <Typography variant="h6" sx={{ fontWeight: 600 }}>
+          {selectedTour?.title || 'Tour Title'}
+          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', mt: '4px' }}>
+          <Typography
+            sx={{
+            color: '#333',
+            fontSize: '1.15rem',
+            fontWeight: 700,
+            }}
+          >
+            {selectedTour?.price
+            ? `${selectedCurrency} ${selectedTour.price && !isNaN(selectedTour.price) ? convertPrice(selectedTour.price) : ''}`
+            : 'Price not available'}
+          </Typography>
+          {selectedTour?.oldPrice && (
+            <Typography
+            sx={{
+              ml: '8px',
+              color: '#888',
+              textDecoration: 'line-through',
+              fontSize: '0.9rem',
+            }}
+            >
+            {selectedCurrency} {selectedTour.oldPrice && !isNaN(selectedTour.oldPrice) ? convertPrice(selectedTour.oldPrice) : ''}
+            </Typography>
+          )}
+          {selectedTour?.price && selectedTour?.oldPrice && (
+            <Typography
+            sx={{
+              ml: '8px',
+              backgroundColor: 'green',
+              color: 'white',
+              padding: '2px 6px',
+              borderRadius: '4px',
+              fontSize: '0.75rem',
+              fontWeight: 'bold',
+            }}
+            >
+            SAVE {selectedCurrency} {convertPrice(selectedTour.oldPrice-selectedTour.price)}
+            </Typography>
+          )}
           </Box>
-
-          {/* Close Button */}
-          <IconButton onClick={handleCloseDialog}>
-            <CloseIcon />
-          </IconButton>
+        </Box>
         </Box>
 
-        <Divider />
+        {/* Close Button */}
+        <IconButton onClick={handleCloseDialog}>
+        <CloseIcon />
+        </IconButton>
+      </Box>
 
-        {/* Form Section */}
-        <DialogContent sx={{ pt: 0, pb: '0px', px: isMobile ? '10px' : '16px' }}>
-          <TextField
-            required
-            label="Full Name"
-            fullWidth
-            margin="normal"
-            onChange={(e) => setName(e.target.value)}
-          />
-          <TextField
-            required
-            label="Email"
-            type="email"
-            fullWidth
-            margin="normal"
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <Box sx={{ display: 'flex', gap: '8px', mt: 2 }}>
-            <Autocomplete
-              options={countryCodes}
-              getOptionLabel={(option) => `${option.label} ${option.code}`}
-              renderOption={(props, option) => (
-                <Box component="li" {...props} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Typography>{option.label}</Typography>
-                  <Typography>{option.code}</Typography>
-                </Box>
-              )}
-              renderInput={(params) => <TextField {...params} label="Country Code" />}
-              onChange={(event, newValue) => setPhoneNumber(newValue ? newValue.code : '')}
-              sx={{ width: '200px' }}
-            />
-            <TextField
-              required
-              label="Your Phone"
-              fullWidth
-              type="tel"
-              onChange={(e) => setPhoneNumber1(e.target.value)}
-            />
+      <Divider />
+
+      {/* Form Section */}
+      <DialogContent sx={{ pt: 0, pb: '0px', px: isMobile ? '10px' : '16px' }}>
+        <TextField
+        required
+        label="Full Name"
+        fullWidth
+        margin="normal"
+        onChange={(e) => setName(e.target.value)}
+        />
+        <TextField
+        required
+        label="Email"
+        type="email"
+        fullWidth
+        margin="normal"
+        onChange={(e) => setEmail(e.target.value)}
+        />
+        <Box sx={{ display: 'flex', gap: '8px', mt: 2 }}>
+        <Autocomplete
+          options={countryCodes}
+          getOptionLabel={(option) => `${option.label} ${option.code}`}
+          renderOption={(props, option) => (
+          <Box component="li" {...props} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography>{option.label}</Typography>
+            <Typography>{option.code}</Typography>
           </Box>
-          <Box sx={{ display: 'flex', gap: '8px', mt: 2 }}>
-            <TextField
-              required
-              label="Travel Date"
-              fullWidth
-              type="date"
+          )}
+          renderInput={(params) => <TextField {...params} label="Country Code" />}
+          onChange={(event, newValue) => setPhoneNumber(newValue ? newValue.code : '')}
+          sx={{ width: '200px' }}
+        />
+        <TextField
+          required
+          label="Your Phone"
+          fullWidth
+          type="tel"
+          onChange={(e) => setPhoneNumber1(e.target.value)}
+        />
+        </Box>
+        <Box sx={{ display: 'flex', gap: '8px', mt: 2 }}>
+        <TextField
+          required
+          label="Travel Date"
+          fullWidth
+          type
               InputLabelProps={{ shrink: true }}
               onChange={(e) => setTravelDate(e.target.value)}
             />

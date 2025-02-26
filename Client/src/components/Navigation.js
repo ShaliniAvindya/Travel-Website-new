@@ -544,16 +544,6 @@ const Navigation = () => {
         </ListItemButton>
         <Divider />
 
-        {/* If user is logged in */}
-        {user && (
-          <>
-            <ListItemButton component={Link} to="/account" onClick={() => setDrawerOpen(false)}>
-              <ListItemText primary="Account" />
-            </ListItemButton>
-            <Divider />
-          </>
-        )}
-
         {user && (
           <>
             <ListItemButton component={Link} to="/admin" onClick={() => setDrawerOpen(false)}>
