@@ -230,7 +230,7 @@ const HomeScreen = () => {
   };
 
   const handleWhatsAppClick = () => {
-    const whatsappUrl = `https://wa.me/9607699699`;
+    const whatsappUrl = `https://wa.me/9609969974`;
     window.open(whatsappUrl, '_blank');
   };
   
