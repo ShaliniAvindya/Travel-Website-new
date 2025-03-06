@@ -378,30 +378,31 @@ const AllTours = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-600 mb-0">Markets</label>
-                <div className="mt-1 p-2 w-full border border-gray-300 rounded-md">
-                  {Object.entries(marketMapping).map(([key, value]) => (
-                    <div key={key} className="flex items-center space-x-4">
-                      <input
-                        type="checkbox"
-                        name="markets"
-                        value={key}
-                        checked={formData.markets.includes(Number(key))}
-                        onChange={(e) => {
-                          const { checked, value } = e.target;
-                          setFormData((prevData) => ({
-                            ...prevData,
-                            markets: checked
-                              ? [...prevData.markets, value]
-                              : prevData.markets.filter((market) => market !== value),
-                          }));
-                        }}
-                      />
-                      <label>{value}</label>
-                    </div>
-                  ))}
-                </div>
+              <label className="block text-sm font-medium text-gray-600 mb-0">Markets</label>
+              <div className="mt-1 p-2 w-full border border-gray-300 rounded-md">
+                {Object.entries(marketMapping).map(([key, value]) => (
+                  <div key={key} className="flex items-center space-x-4">
+                    <input
+                      type="checkbox"
+                      name="markets"
+                      value={key}
+                      checked={formData.markets.includes(Number(key))}
+                      onChange={(e) => {
+                        const { checked, value } = e.target;
+                        const numericValue = Number(value); // Convert string to number
+                        setFormData((prevData) => ({
+                          ...prevData,
+                          markets: checked
+                            ? [...prevData.markets, numericValue]
+                            : prevData.markets.filter((market) => market !== numericValue),
+                        }));
+                      }}
+                    />
+                    <label>{value}</label>
+                  </div>
+                ))}
               </div>
+            </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-0">Tour Summary</label>
