@@ -18,8 +18,8 @@ const transporter = nodemailer.createTransport({
 // Send Contact Email
 const sendContactEmail = async ({ name, email, message }) => {
   const mailOptions = {
-    from: `"${name}" <${email}>`, 
-    to: process.env.SMTP_USER, 
+    from: process.env.SMTP_USER,
+    to: email, 
     subject: `New Contact Inquiry from ${name}`,
     text: message, 
     html: `
@@ -44,7 +44,6 @@ router.post('/', async (req, res) => {
   try {
     const newSubmission = new ContactSubmission({ name, email, message });
     await newSubmission.save();
-
     // Send email notification
     await sendContactEmail({ name, email, message });
 
