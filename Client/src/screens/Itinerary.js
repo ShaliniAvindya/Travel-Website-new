@@ -33,7 +33,6 @@ const Itinerary = ({selectedNightsKey}) => {
 
   const { isMobile } = useDeviceType();
 
-  // Fetch tour data
   useEffect(() => {
     const fetchTourData = async () => {
       try {
@@ -50,7 +49,7 @@ const Itinerary = ({selectedNightsKey}) => {
     fetchTourData();
   }, [id]);
 
-  const nights = selectedNightsKey ? parseInt(selectedNightsKey, 10) : 4;
+  const nights = parseInt(selectedNightsKey, 10);
   const totalDays = nights + 1; // Days = nights + 1
   const middleDaysNeeded = totalDays - 2;
 
@@ -116,7 +115,6 @@ const Itinerary = ({selectedNightsKey}) => {
     }
   }, [itineraryDays.length]);
 
-  // Cycle images every 3 seconds
   useEffect(() => {
     if (!tourData) return;
 
@@ -146,8 +144,6 @@ const Itinerary = ({selectedNightsKey}) => {
   return (
     <div className="itinerary-wrap flex flex-col w-full">
       <Divider />
-
-      {/* Tabs */}
       <div className="tabs flex mb-6 mt-6 gap-2 w-full justify-between align-middle">
         {["itinerary", "fineprint"].map((tab) => (
           <div
@@ -166,9 +162,7 @@ const Itinerary = ({selectedNightsKey}) => {
         ))}
       </div>
 
-      {/* Tab Content */}
       <div className="tab-content px-2 md:px-6">
-        {/* ITINERARY TAB */}
         {activeTab === "itinerary" && (
           <div>
             {itineraryDays.map((dayItem, index) => (

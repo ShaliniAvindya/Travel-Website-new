@@ -1,14 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import {
   AppBar,
-  Toolbar,
   Typography,
   Container,
   Grid,
   Button,
-  IconButton,
   Box,
-  useMediaQuery
 } from '@mui/material';
 import { Facebook, Twitter, Instagram, LinkedIn } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
@@ -16,6 +13,7 @@ import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 import HomeIcon from '@mui/icons-material/Home';
 import PhoneIcon from '@mui/icons-material/Phone';
 import EmailIcon from '@mui/icons-material/Email';
+import { useNavigate } from 'react-router-dom';
 
 const center = {
   lat: 6.9271,
@@ -45,7 +43,10 @@ function useDeviceType() {
 const Footer = () => {
   const { isMobile, isTablet } = useDeviceType();
 
+  const navigate = useNavigate();
+
   const handleNavigation = (destination) => {
+    navigate('/');
   };
 
   // Inline style objects:
@@ -186,6 +187,8 @@ const Footer = () => {
                     src="https://i.postimg.cc/6Q1tcM0S/HL1.png"
                     alt="Holiday Life Logo"
                     style={logoImgStyle}
+                    onClick={() => handleNavigation('Home')}
+                    curse="pointer"
                   />
                 </div>
                 <Box style={contactItemStyle}>
