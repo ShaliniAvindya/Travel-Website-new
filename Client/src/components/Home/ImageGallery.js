@@ -4,7 +4,6 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import { useCurrency } from '../../screens/CurrencyContext';
-import InquiryForm from './InquiryForm';
 
 const ImageGallery = ({ searchQuery = '' }) => {
   // Tours and loading states
@@ -13,10 +12,6 @@ const ImageGallery = ({ searchQuery = '' }) => {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
-
-  // State for enquiry dialog
-  const [openDialog, setOpenDialog] = useState(false);
-  const [selectedTour, setSelectedTour] = useState(null);
 
   // Get query params and search filters
   const query = new URLSearchParams(location.search);
@@ -157,12 +152,6 @@ const ImageGallery = ({ searchQuery = '' }) => {
       maxPrice: searchMaxPrice,
     }).toString();
     navigate(`/imagegallery?${queryParams}`);
-  };
-
-  // Open enquiry dialog when user clicks "Inquire Now"
-  const handleInquireNowClick = (tour) => {
-    setSelectedTour(tour);
-    setOpenDialog(true);
   };
 
   // Open WhatsApp chat

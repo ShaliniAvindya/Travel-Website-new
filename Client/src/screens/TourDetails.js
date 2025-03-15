@@ -1,14 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Typography, Box, Button, Select, MenuItem } from '@mui/material';
+import { Typography, Box, Button } from '@mui/material';
 import TourImages from './TourImages';
 import Itinerary from './Itinerary';
 import Footer from '../components/Footer';
 import axios from 'axios';
 import SendIcon from '@mui/icons-material/Send';
 import { IconButton } from '@mui/material';
-import Swal from 'sweetalert2';
-import { useCurrency } from './CurrencyContext';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import InquiryForm from '../components/Home/InquiryForm';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
@@ -41,15 +39,6 @@ const TourDetails = () => {
   const navigate = useNavigate();
   const [tour, setTour] = useState(null);
   const [loading, setLoading] = useState(true);
-
-  // Inquiry form state
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [phoneNumbe1, setPhoneNumber1] = useState('');
-  const [travelDate, setTravelDate] = useState('');
-  const [travellerCount, setTravellerCount] = useState('');
-  const [message, setMessage] = useState('');
   const [exchangeRates, setExchangeRates] = useState({});
 
   const { isMobile, isTablet } = useDeviceType();

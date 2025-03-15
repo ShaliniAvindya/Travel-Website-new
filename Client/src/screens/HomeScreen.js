@@ -11,12 +11,9 @@ import OffersSection from '../components/Home/OffersSection';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import Swal from 'sweetalert2';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
-import SendIcon from '@mui/icons-material/Send';
 import IconButton from '@mui/material/IconButton';
 import { useCurrency } from './CurrencyContext'; 
-import EnquiryForm from '../components/Home/InquiryForm';
 
 function useDeviceType() {
   const [deviceType, setDeviceType] = useState({
@@ -43,15 +40,6 @@ const HomeScreen = () => {
   const [tours, setTours] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const [openDialog, setOpenDialog] = useState(false);
-  const [selectedTour, setSelectedTour] = useState(null);
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [phoneNumber1, setPhoneNumber1] = useState('');
-  const [travelDate, setTravelDate] = useState('');
-  const [travellerCount, setTravellerCount] = useState('');
-  const [message, setMessage] = useState('');
   const [exchangeRates, setExchangeRates] = useState({});
   const { currency } = useCurrency(); 
 
@@ -102,28 +90,8 @@ const HomeScreen = () => {
     fetchTours();
   }, []);
   
-
-  const handleInquireNowClick = (tour) => {
-    setSelectedTour(tour);
-    setOpenDialog(true);
-  };
-
-  const handleCloseDialog = () => {
-    setOpenDialog(false);
-    setName('');
-    setEmail('');
-    setPhoneNumber('');
-    setTravelDate('');
-    setTravellerCount('');
-    setMessage('');
-  };
-  
   const handleNavigate = () => {
     navigate('/tours'); 
-  };
-
-  const handleNavigateToTour = (tourId) => {
-    navigate(`/tours/${tourId}`);
   };
 
   const handleWhatsAppClick = () => {

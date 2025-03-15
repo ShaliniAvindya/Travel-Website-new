@@ -71,7 +71,6 @@ const TourForm = () => {
   });
 
   const [showItinerary, setShowItinerary] = useState(false);
-  const [isItinerarySubmitted, setIsItinerarySubmitted] = useState(false);
   const [errors, setErrors] = useState({});
 
   // When the base nights change, dynamically generate the itinerary fields.
@@ -453,7 +452,6 @@ const TourForm = () => {
   const handleSubmitItinerary = () => {
     if (validateForm()) {
       setShowItinerary(true);
-      setIsItinerarySubmitted(true);
       Swal.fire("Itinerary Submitted!", "Itinerary section submitted successfully.", "success");
     } else {
       Swal.fire("Error", "Please fill out all required fields.", "error");
@@ -503,7 +501,6 @@ const TourForm = () => {
     });
     setShowItinerary(false);
     setErrors({});
-    setIsItinerarySubmitted(false);
   };
 
   const handleSubmitTour = async () => {

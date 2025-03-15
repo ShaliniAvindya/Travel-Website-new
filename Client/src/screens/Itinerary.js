@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
-import { Typography, Box, Divider } from "@mui/material";
+import { Divider } from "@mui/material";
 
 function useDeviceType() {
   const [deviceType, setDeviceType] = useState({
@@ -31,7 +31,7 @@ const Itinerary = ({selectedNightsKey}) => {
   const [activeTab, setActiveTab] = useState("itinerary");
   const [imageIndices, setImageIndices] = useState([]);
 
-  const { isMobile, isTablet } = useDeviceType();
+  const { isMobile } = useDeviceType();
 
   // Fetch tour data
   useEffect(() => {
