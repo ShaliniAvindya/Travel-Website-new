@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Modal, Form, Input, message, Space, Card, Divider } from 'antd';
+import { Table, Button, Modal, Form, Input, message, Space, Card, Divider, Row, Col } from 'antd';
 import { DeleteOutlined } from '@ant-design/icons';
+import axios from 'axios';
 
-/**
- * Custom hook to detect device type (mobile, tablet, desktop).
- */
 function useDeviceType() {
   const [deviceType, setDeviceType] = useState({
     isMobile: window.innerWidth <= 768,
@@ -18,7 +16,6 @@ function useDeviceType() {
         isTablet: window.innerWidth > 768 && window.innerWidth <= 1024,
       });
     };
-
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -26,11 +23,16 @@ function useDeviceType() {
   return deviceType;
 }
 
-/**
- * TourInquiries component: Fetches and displays inquiries in both
- * a table (desktop) and card (mobile/tablet) view. Allows replying
- * to and deleting each inquiry.
- */
+// Conversion function: If the record currency is not USD, convert the price using exchangeRates from the API.
+// Assumes exchangeRates is relative to USD (e.g. { EUR: 0.85 } means 1 USD = 0.85 EUR).
+const convertToUSD = (price, currency, rates) => {
+  if (currency === 'USD') return price;
+  const rate = rates[currency];
+  if (!rate) return price; // Fallback if rate not available
+  // If rate is the amount of currency per 1 USD, then to convert price in that currency to USD:
+  return price / rate;
+};
+
 const TourInquiries = () => {
   const [inquiries, setInquiries] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -39,15 +41,25 @@ const TourInquiries = () => {
   const [replyMessage, setReplyMessage] = useState('');
   const [subject, setSubject] = useState('');
 
-  // Use the custom hook to determine device type
   const { isMobile, isTablet } = useDeviceType();
   const isDesktop = !isMobile && !isTablet;
 
+  const [exchangeRates, setExchangeRates] = useState({});
+
+  const fetchExchangeRates = async () => {
+    try {
+      const response = await axios.get('https://api.exchangerate-api.com/v4/latest/USD');
+      setExchangeRates(response.data.rates);
+    } catch (error) {
+      console.error('Error fetching exchange rates:', error);
+    }
+  };
+
   useEffect(() => {
     fetchInquiries();
+    fetchExchangeRates();
   }, []);
 
-  // Fetch inquiries from the backend
   const fetchInquiries = async () => {
     setLoading(true);
     try {
@@ -55,13 +67,11 @@ const TourInquiries = () => {
       if (!response.ok) throw new Error('Failed to fetch inquiries.');
       const data = await response.json();
 
-      // Transform data if needed (handle _id and travel_date)
       const transformed = data.map((item) => ({
         ...item,
         _id: item._id?.$oid || item._id,
         travel_date: item.travel_date ? new Date(item.travel_date) : null,
       }));
-
       setInquiries(transformed);
     } catch (error) {
       console.error('Error fetching inquiries:', error);
@@ -71,7 +81,6 @@ const TourInquiries = () => {
     }
   };
 
-  // Delete an inquiry
   const deleteInquiry = async (id) => {
     const confirmed = window.confirm('Are you sure you want to delete this inquiry?');
     if (!confirmed) return;
@@ -87,7 +96,6 @@ const TourInquiries = () => {
     }
   };
 
-  // Send reply to an inquiry
   const handleSendReply = async () => {
     if (!currentInquiry || !replyMessage) {
       message.error('Reply message cannot be empty.');
@@ -105,7 +113,6 @@ const TourInquiries = () => {
           replyMessage,
         }),
       });
-
       if (!response.ok) throw new Error('Failed to send reply.');
       message.success('Reply sent successfully.');
       setReplyModalVisible(false);
@@ -118,13 +125,11 @@ const TourInquiries = () => {
     }
   };
 
-  // View reply details
   const handleViewReply = (record) => {
     if (!record.reply) {
       message.info('No reply has been sent for this inquiry.');
       return;
     }
-
     const sentAt = record.reply.sentAt ? new Date(record.reply.sentAt) : null;
     const formattedDate = sentAt && !isNaN(sentAt) ? sentAt.toLocaleString() : 'Invalid Date';
 
@@ -140,10 +145,7 @@ const TourInquiries = () => {
     });
   };
 
-  /**
-   * Table columns for desktop view.
-   * Align each column to the center for consistency.
-   */
+  // Only keep a few columns in the top-level row
   const columns = [
     {
       title: 'Name',
@@ -158,43 +160,13 @@ const TourInquiries = () => {
       align: 'center',
     },
     {
-      title: 'Phone Number',
-      dataIndex: 'phone_number',
-      key: 'phone_number',
-      align: 'center',
-      render: (phone) => phone || 'N/A',
-    },
-    {
-      title: 'Travel Date',
-      dataIndex: 'travel_date',
-      key: 'travel_date',
-      align: 'center',
-      render: (date) => (date ? date.toLocaleDateString() : 'N/A'),
-    },
-    {
-      title: 'Traveller Count',
-      dataIndex: 'traveller_count',
-      key: 'traveller_count',
-      align: 'center',
-      render: (count) => count || 'N/A',
-    },
-    {
-      title: 'Message',
-      dataIndex: 'message',
-      key: 'message',
-      align: 'center',
-    },
-    {
       title: 'Actions',
       key: 'actions',
       align: 'center',
       render: (_, record) => {
-        // Highlight the 'Reply' button if there is no reply
         const replyButtonStyle = !record.reply
           ? { backgroundColor: 'blue', color: '#fff' }
           : {};
-
-        // Highlight the 'View Reply' button if there is a reply
         const viewReplyButtonStyle = record.reply
           ? { backgroundColor: 'blue', color: '#fff' }
           : {};
@@ -229,18 +201,49 @@ const TourInquiries = () => {
     },
   ];
 
-  /**
-   * Render mobile/tablet cards instead of a table.
-   */
+  // Provide a row expansion with all the other details and show final price converted to USD when needed.
+  const expandedRowRender = (record) => {
+    const formattedDate = record.travel_date
+      ? record.travel_date.toLocaleDateString()
+      : 'N/A';
+    const finalPriceInUSD =
+      record.final_price && record.currency !== 'USD'
+        ? convertToUSD(record.final_price, record.currency, exchangeRates)
+        : record.final_price;
+    return (
+      <div style={{ backgroundColor: '#fafafa', padding: '16px' }}>
+        <Row gutter={[16, 16]}>
+          <Col xs={24} sm={12} md={8}>
+            <p><strong>Phone Number:</strong> {record.phone_number || 'N/A'}</p>
+            <p><strong>Travel Date:</strong> {formattedDate}</p>
+            <p><strong>Traveller Count:</strong> {record.traveller_count || 'N/A'}</p>
+            <p><strong>Message:</strong> {record.message || 'N/A'}</p>
+          </Col>
+          <Col xs={24} sm={24} md={8}>
+            <p><strong>Tour:</strong> {record.tour || 'N/A'}</p>
+            <p><strong>Selected Nights:</strong> {record.selected_nights_key || 'N/A'} Nights</p>
+            <p><strong>Option:</strong> {record.selected_nights_option || 'N/A'}</p>
+            <p><strong>Food:</strong> {record.selected_food_category || 'N/A'}</p>
+            <p>
+              <strong>Final Price:</strong> USD{' '}
+              {finalPriceInUSD !== undefined
+                ? finalPriceInUSD.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                : '0'}
+            </p>
+          </Col>
+        </Row>
+      </div>
+    );
+  };
+
+  // For mobile/tablet, we can still show card layout
   const renderMobileCards = () => {
     return (
       <>
         {inquiries.map((inquiry) => {
-          // Highlight the 'Reply' button if there's no existing reply
           const replyButtonStyle = !inquiry.reply
             ? { backgroundColor: 'blue', color: '#fff' }
             : {};
-          // Highlight the 'View Reply' button if there's an existing reply
           const viewReplyButtonStyle = inquiry.reply
             ? { backgroundColor: 'blue', color: '#fff' }
             : {};
@@ -248,6 +251,11 @@ const TourInquiries = () => {
           const formattedTravelDate = inquiry.travel_date
             ? inquiry.travel_date.toLocaleDateString()
             : 'N/A';
+
+          const finalPriceInUSD =
+            inquiry.final_price && inquiry.currency !== 'USD'
+              ? convertToUSD(inquiry.final_price, inquiry.currency, exchangeRates)
+              : inquiry.final_price;
 
           return (
             <Card
@@ -258,17 +266,26 @@ const TourInquiries = () => {
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                   <strong>Name:</strong> {inquiry.name}
                   <strong>Email:</strong> {inquiry.email}
-                  <strong>Phone:</strong> {inquiry.phone_number || 'N/A'}
                 </div>
               )}
             >
               <Divider style={{ margin: '12px 0' }} />
+              <p><strong>Phone:</strong> {inquiry.phone_number || 'N/A'}</p>
               <p><strong>Travel Date:</strong> {formattedTravelDate}</p>
               <p><strong>Traveller Count:</strong> {inquiry.traveller_count || 'N/A'}</p>
               <p><strong>Message:</strong> {inquiry.message}</p>
-
               <Divider />
-
+              <p><strong>Tour:</strong> {inquiry.tour || 'N/A'}</p>
+              <p><strong>Nights:</strong> {inquiry.selected_nights_key || 'N/A'}</p>
+              <p><strong>Option:</strong> {inquiry.selected_nights_option || 'N/A'}</p>
+              <p><strong>Food:</strong> {inquiry.selected_food_category || 'N/A'}</p>
+              <p>
+                <strong>Final Price:</strong> USD{' '}
+                {finalPriceInUSD !== undefined
+                  ? finalPriceInUSD.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                  : '0'}
+              </p>
+              <Divider />
               <Space style={{ padding: '0 15%' }}>
                 <Button
                   type="primary"
@@ -313,16 +330,18 @@ const TourInquiries = () => {
       </Button>
 
       {isDesktop ? (
-        // DESKTOP VIEW: show Table
         <Table
           dataSource={inquiries}
           columns={columns}
           rowKey="_id"
           loading={loading}
           pagination={{ pageSize: 6 }}
+          expandable={{
+            expandedRowRender: (record) => expandedRowRender(record),
+            rowExpandable: (record) => true,
+          }}
         />
       ) : (
-        // MOBILE/TABLET VIEW: show Card layout
         renderMobileCards()
       )}
 

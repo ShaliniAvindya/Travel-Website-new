@@ -1,4 +1,3 @@
-// Model File: models/Tour.js
 const mongoose = require('mongoose');
 
 const tourSchema = new mongoose.Schema({
@@ -7,21 +6,35 @@ const tourSchema = new mongoose.Schema({
   expiry_date: { type: Date, required: true },
   valid_from: { type: Date, required: true },
   valid_to: { type: Date, required: true },
-  food_category: { type: String, required: true },
-  nights: { type: Number, required: true },
+  
+  food_category: { type: Map, of: mongoose.Schema.Types.Mixed, default: {} }, // Changed from String → Object
+
+  nights: { type: Map, of: Object, default: {} }, // Changed from Number → Object Map
+
   country: { type: String, required: true },
   markets: { type: [Number], default: [] },
+
   activity_images: { type: [String], default: [] },
   destination_images: { type: [String], default: [] },
   hotel_images: { type: [String], default: [] },
+
   exclusions: { type: [String], default: [] },
   inclusions: { type: [String], default: [] },
+
   tour_summary: { type: String, required: true },
-  itinerary: { type: Map, of: [String], default: {} },
+  
+  itinerary: { type: Map, of: mongoose.Schema.Types.Mixed, default: {} }, // Supports nested objects
+
   tour_image: { type: String, required: true },
-  itinerary_images: { type: Map, of: [String], default: {} },
-  oldPrice: { type: String, default: '' },
-  itinerary_titles: { type: Map, of: String, default: {} },
+
+  itinerary_images: { type: Map, of: mongoose.Schema.Types.Mixed, default: {} }, // Supports nested image arrays
+
+  oldPrice: { type: Number, default: 0 }, // Changed from String → Number
+
+  itinerary_titles: { type: Map, of: mongoose.Schema.Types.Mixed, default: {} },
+
+  facilities: { type: [String], default: [] },
+
 }, { timestamps: true });
 
 module.exports = mongoose.model('Tour', tourSchema);

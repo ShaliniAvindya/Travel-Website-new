@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
-import { Button, Typography, Box, Divider } from "@mui/material";
-import { PhoneInTalk as PhoneInTalkIcon, ArrowForward as ArrowForwardIcon } from "@mui/icons-material";
+import { Typography, Box, Divider } from "@mui/material";
 
 function useDeviceType() {
   const [deviceType, setDeviceType] = useState({
@@ -17,35 +16,30 @@ function useDeviceType() {
         isTablet: window.innerWidth > 768 && window.innerWidth <= 1024,
       });
     };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   return deviceType;
 }
 
-
-const Itinerary = () => {
+const Itinerary = ({selectedNightsKey}) => {
   const { id } = useParams();
   const [tourData, setTourData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
   const [activeTab, setActiveTab] = useState("itinerary");
   const [imageIndices, setImageIndices] = useState([]);
 
   const { isMobile, isTablet } = useDeviceType();
 
+  // Fetch tour data
   useEffect(() => {
     const fetchTourData = async () => {
       try {
         setLoading(true);
         const response = await axios.get(`/tours/${id}`);
         setTourData(response.data);
-
-        const totalDays = response.data.nights + 1; 
-        const initialIndices = Array(totalDays).fill(0);
-        setImageIndices(initialIndices);
       } catch (err) {
         console.error("Error fetching tour data:", err);
         setError("Failed to fetch tour details. Please try again.");
@@ -56,23 +50,90 @@ const Itinerary = () => {
     fetchTourData();
   }, [id]);
 
-  useEffect(() => {
-    if (!tourData || !tourData.itinerary_images) return;
+  const nights = selectedNightsKey ? parseInt(selectedNightsKey, 10) : 4;
+  const totalDays = nights + 1; // Days = nights + 1
+  const middleDaysNeeded = totalDays - 2;
 
-    const interval = setInterval(() => {
-      setImageIndices((prevIndices) => {
-        return prevIndices.map((currentIndex, dayIndex) => {
-          const imagesForDay = tourData.itinerary_images[`day_${dayIndex + 1}`];
-          if (imagesForDay && imagesForDay.length > 0) {
-            return (currentIndex + 1) % imagesForDay.length;
-          }
-          return currentIndex;
+  // Build a unified itinerary array
+  const itineraryDays = [];
+  if (tourData && tourData.itinerary) {
+    // 1) First Day
+    if (tourData.itinerary.first_day) {
+      itineraryDays.push({
+        day: 1,
+        title: tourData.itinerary_titles?.first_day || "Arrival Day",
+        // CHANGED: If details is a string, split it into an array; otherwise use it as-is.
+        details: typeof tourData.itinerary.first_day === "string"
+          ? tourData.itinerary.first_day.split("\n")
+          : tourData.itinerary.first_day || [],
+        images: tourData.itinerary_images?.first_day || [],
+      });
+    }
+
+    // 2) Middle Days (sort by the numeric part of "day_2", "day_3", etc.)
+    if (tourData.itinerary.middle_days) {
+      // Get all middle day keys (e.g., "day_2", "day_3", ...)
+      let middleKeys = Object.keys(tourData.itinerary.middle_days);
+      // Sort keys based on the numeric part (e.g., 2, 3, 4, 5)
+      middleKeys.sort((a, b) => {
+        const numA = parseInt(a.split("_")[1], 10);
+        const numB = parseInt(b.split("_")[1], 10);
+        return numA - numB;
+      });
+      // Slice the keys to get only the number needed (e.g., 3 for a 4-night tour)
+      middleKeys = middleKeys.slice(0, middleDaysNeeded);
+      middleKeys.forEach((key) => {
+        const dayNumber = itineraryDays.length + 1;
+        itineraryDays.push({
+          day: dayNumber,
+          title: tourData.itinerary_titles?.middle_days?.[key] || `Day ${dayNumber}`,
+          details: typeof tourData.itinerary.middle_days[key] === "string"
+            ? tourData.itinerary.middle_days[key].split("\n")
+            : tourData.itinerary.middle_days[key] || [],
+          images: tourData.itinerary_images?.middle_days?.[key] || [],
         });
       });
+    }
+
+    // 3) Last Day
+    if (tourData.itinerary.last_day) {
+      const dayNumber = itineraryDays.length + 1;
+      itineraryDays.push({
+        day: dayNumber,
+        title: tourData.itinerary_titles?.last_day || "Departure Day",
+        details: typeof tourData.itinerary.last_day === "string"
+          ? tourData.itinerary.last_day.split("\n")
+          : tourData.itinerary.last_day || [],
+        images: tourData.itinerary_images?.last_day || [],
+      });
+    }
+  }
+
+  // Initialize image indices (one per day)
+  useEffect(() => {
+    if (itineraryDays.length > 0) {
+      setImageIndices(Array(itineraryDays.length).fill(0));
+    }
+  }, [itineraryDays.length]);
+
+  // Cycle images every 3 seconds
+  useEffect(() => {
+    if (!tourData) return;
+
+    const interval = setInterval(() => {
+      setImageIndices((prevIndices) =>
+        prevIndices.map((currentIndex, i) => {
+          const { images } = itineraryDays[i];
+          if (images && images.length > 0) {
+            return (currentIndex + 1) % images.length;
+          }
+          return currentIndex;
+        })
+      );
     }, 3000);
 
     return () => clearInterval(interval);
-  }, [tourData]);
+  }, [tourData, itineraryDays]);
 
   if (loading) {
     return <div>Loading tour details...</div>;
@@ -82,24 +143,22 @@ const Itinerary = () => {
     return <div>{error || "Tour not found."}</div>;
   }
 
-  const totalDays = tourData.nights + 1;
-
-  const handleInquiryClick = () => {
-    window.location.href = "tel:+1234567890";
-  };
-
   return (
     <div className="itinerary-wrap flex flex-col w-full">
       <Divider />
+
+      {/* Tabs */}
       <div className="tabs flex mb-6 mt-6 gap-2 w-full justify-between align-middle">
         {["itinerary", "fineprint"].map((tab) => (
           <div
             key={tab}
-            className={`tab flex items-center justify-center px-2 py-2 text-lg md:text-2xl font-bold transition-all duration-300 transform border-2 rounded-lg cursor-pointer w-full ${
-              activeTab === tab
-                ? "bg-blue-600 text-white shadow-md border-blue-600"
-                : "bg-gray-100 text-gray-600 hover:bg-gray-200 border-gray-300"
-            }`}
+            className={`tab flex items-center justify-center px-2 py-2 text-lg md:text-2xl font-bold 
+              transition-all duration-300 transform border-2 rounded-lg cursor-pointer w-full 
+              ${
+                activeTab === tab
+                  ? "bg-blue-600 text-white shadow-md border-blue-600"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200 border-gray-300"
+              }`}
             onClick={() => setActiveTab(tab)}
           >
             {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -107,89 +166,89 @@ const Itinerary = () => {
         ))}
       </div>
 
+      {/* Tab Content */}
       <div className="tab-content px-2 md:px-6">
+        {/* ITINERARY TAB */}
         {activeTab === "itinerary" && (
           <div>
-            {Array.from({ length: totalDays }).map((_, dayIndex) => {
-              const dayDetails = tourData.itinerary?.[`day_${dayIndex + 1}`];
-              const imagesForDay = tourData.itinerary_images?.[`day_${dayIndex + 1}`];
-              const titleForDay = tourData.itinerary_titles?.[`day_${dayIndex + 1}`];
-
-              return (
-                <div
-                  key={dayIndex}
-                  className="itinerary-item flex flex-col lg:flex-row border border-gray-300 p-2 mb-6 bg-white shadow-lg transition-all"
-                >
-                  <div className="itinerary-desc-wrap flex flex-col gap-4 p-2 flex-1">
-                    <div className="flex items-center flex-wrap gap-2">
-                      <div className="itinerary-day-box px-4 py-2 bg-blue-500 text-white font-semibold text-xl md:text-2xl">
-                        Day {dayIndex + 1}
-                      </div>
-                      <div className="itinerary-title bg-gray-200 px-4 py-2 w-full md:w-auto text-lg md:text-2xl font-semibold text-blue-800">
-                        {titleForDay || `Day ${dayIndex + 1} - Title Not Available`}
-                      </div>
+            {itineraryDays.map((dayItem, index) => (
+              <div
+                key={index}
+                className="itinerary-item flex flex-col lg:flex-row border border-gray-300 p-2 mb-6 bg-white shadow-lg transition-all"
+              >
+                <div className="itinerary-desc-wrap flex flex-col gap-4 p-2 flex-1">
+                  <div className="flex items-center flex-wrap gap-2">
+                    <div className="itinerary-day-box px-4 py-2 bg-blue-500 text-white font-semibold text-xl md:text-2xl">
+                      Day {dayItem.day}
                     </div>
-                    <div className="itinerary-desc text-sm md:text-base leading-relaxed text-gray-700">
-                      {dayDetails ? (
-                        <ul className="list-disc pl-6">
-                          {dayDetails.map((detail, index) => (
-                            <li key={index} className="mb-2">
-                              {detail}
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p>No activities available for this day.</p>
-                      )}
+                    <div className="itinerary-title bg-gray-200 px-4 py-2 w-full md:w-auto text-lg md:text-2xl font-semibold text-blue-800">
+                      {dayItem.title}
                     </div>
                   </div>
 
-                  <div className="itinerary-images relative flex items-center justify-center w-full h-48 md:w-64 md:h-60 lg:h-auto lg:w-80 overflow-hidden">
-                    {imagesForDay && imagesForDay.length > 0 ? (
-                      <>
-                        <img
-                          src={imagesForDay[imageIndices[dayIndex]]}
-                          alt={`Day ${dayIndex + 1} image`}
-                          className="max-w-full max-h-full object-contain object-center transition-all duration-1000 ease-in-out"
-                        />
-                        <div
-                          className="absolute left-2 top-1/2 transform -translate-y-1/2 text-lg font-bold cursor-pointer z-10 select-none text-white"
-                          onClick={() =>
-                            setImageIndices((prev) => {
-                              const newIndices = [...prev];
-                              newIndices[dayIndex] =
-                                (newIndices[dayIndex] - 1 + imagesForDay.length) % imagesForDay.length;
-                              return newIndices;
-                            })
-                          }
-                        >
-                          &lt;
-                        </div>
-                        <div
-                          className="absolute right-2 top-1/2 transform -translate-y-1/2 text-lg font-bold cursor-pointer z-10 select-none text-white"
-                          onClick={() =>
-                            setImageIndices((prev) => {
-                              const newIndices = [...prev];
-                              newIndices[dayIndex] = (newIndices[dayIndex] + 1) % imagesForDay.length;
-                              return newIndices;
-                            })
-                          }
-                        >
-                          &gt;
-                        </div>
-                      </>
+                  <div className="itinerary-desc text-sm md:text-base leading-relaxed text-gray-700">
+                    {dayItem.details.length > 0 ? (
+                      <ul className="list-disc pl-6">
+                        {dayItem.details.map((detail, idx) => (
+                          <li key={idx} className="mb-2">
+                            {detail}
+                          </li>
+                        ))}
+                      </ul>
                     ) : (
-                      <p className="text-center">No images available for this day.</p>
+                      <p>No activities available for this day.</p>
                     )}
                   </div>
                 </div>
-              );
-            })}
+
+                <div className="itinerary-images relative flex items-center justify-center w-full h-48 md:w-64 md:h-60 lg:h-auto lg:w-80 overflow-hidden">
+                  {dayItem.images && dayItem.images.length > 0 ? (
+                    <>
+                      <img
+                        src={dayItem.images[imageIndices[index]]}
+                        alt={`Day ${dayItem.day} image`}
+                        className="max-w-full max-h-full object-contain object-center transition-all duration-1000 ease-in-out"
+                      />
+                      <div
+                        className="absolute left-2 top-1/2 transform -translate-y-1/2 text-lg font-bold cursor-pointer z-10 select-none text-white"
+                        onClick={() =>
+                          setImageIndices((prev) => {
+                            const newIndices = [...prev];
+                            newIndices[index] =
+                              (newIndices[index] - 1 + dayItem.images.length) %
+                              dayItem.images.length;
+                            return newIndices;
+                          })
+                        }
+                      >
+                        &lt;
+                      </div>
+                      <div
+                        className="absolute right-2 top-1/2 transform -translate-y-1/2 text-lg font-bold cursor-pointer z-10 select-none text-white"
+                        onClick={() =>
+                          setImageIndices((prev) => {
+                            const newIndices = [...prev];
+                            newIndices[index] = (newIndices[index] + 1) % dayItem.images.length;
+                            return newIndices;
+                          })
+                        }
+                      >
+                        &gt;
+                      </div>
+                    </>
+                  ) : (
+                    <p className="text-center">No images available for this day.</p>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
         )}
 
+        {/* FINE PRINT TAB */}
         {activeTab === "fineprint" && (
           <div className="overflow-x-auto bg-white p-0 lg:p-8">
+            {/* Tour summary & main image */}
             <div className="summary-item flex flex-wrap border border-gray-300 p-0 mb-6 bg-white shadow-lg transform">
               <div className="summary-desc-wrap flex flex-col gap-6 flex-1">
                 <div className="summary-desc text-lg text-gray-700 leading-relaxed text-justify lg:p-6 p-4">
@@ -197,7 +256,7 @@ const Itinerary = () => {
                 </div>
               </div>
               {tourData.tour_image && !isMobile && (
-                <div className="summary-item-img flex-shrink-0 justify-center align-middle w-64 h-fit lg:mx-0  overflow-hidden">
+                <div className="summary-item-img flex-shrink-0 justify-center align-middle w-64 h-fit lg:mx-0 overflow-hidden">
                   <img
                     src={tourData.tour_image}
                     alt="Tour Summary"
@@ -206,7 +265,7 @@ const Itinerary = () => {
                 </div>
               )}
               {tourData.tour_image && isMobile && (
-                <div className="summary-item-img flex-shrink-0 justify-center align-middle w-full h-44 lg:mx-0  overflow-hidden">
+                <div className="summary-item-img flex-shrink-0 justify-center align-middle w-full h-44 lg:mx-0 overflow-hidden">
                   <img
                     src={tourData.tour_image}
                     alt="Tour Summary"
@@ -216,13 +275,14 @@ const Itinerary = () => {
               )}
             </div>
 
+            {/* Inclusions & Exclusions */}
             <h2 className="text-4xl font-semibold mb-6 mt-6 text-center text-blue-900">
               What&apos;s Inside the Package?
             </h2>
             <div className="flex flex-col md:flex-row gap-4">
               <div className="inclusions w-full md:w-1/2 border p-4 bg-gray-100/50">
                 <h3 className="text-xl font-bold mb-4 text-gray-700">Inclusions</h3>
-                <Divider/>
+                <Divider />
                 {Array.isArray(tourData.inclusions) && tourData.inclusions.length > 0 ? (
                   <ul className="list-none gap-y-4 text-lg mt-4">
                     {tourData.inclusions.map((inc, index) => (
@@ -254,6 +314,7 @@ const Itinerary = () => {
               </div>
             </div>
 
+            {/* Payment & Refund Policies */}
             <div className="mt-12 space-y-12 lg:p-0 p-6">
               <div>
                 <h3 className="text-3xl font-semibold text-blue-900 mb-6">Refund Policies</h3>
