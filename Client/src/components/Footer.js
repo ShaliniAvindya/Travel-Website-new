@@ -7,13 +7,15 @@ import {
   Button,
   Box,
 } from '@mui/material';
-import { Facebook, Twitter, Instagram, LinkedIn } from '@mui/icons-material';
+import { Facebook, Instagram } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
-import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 import HomeIcon from '@mui/icons-material/Home';
 import PhoneIcon from '@mui/icons-material/Phone';
 import EmailIcon from '@mui/icons-material/Email';
 import { useNavigate } from 'react-router-dom';
+import { IconButton } from '@mui/material';
+import { FaTiktok, FaVk } from 'react-icons/fa';
+
 
 const center = {
   lat: 6.9271,
@@ -101,6 +103,8 @@ const Footer = () => {
   const socialIconsContainerStyle = {
     display: 'flex',
     alignItems: 'center',
+    columnGap: '10px',
+    justifyContent: 'center',
     padding: isMobile? '0 23vw' : isTablet? '0 34vw' : '0 5vw'
   };
 
@@ -213,6 +217,7 @@ const Footer = () => {
                 </Box>
             </div>
           </Grid>
+
           <Grid item xs={12} md={4} style={{  }}>
             <Box>
               <Typography variant="h5" gutterBottom style={sectionTitleStyle}>
@@ -240,21 +245,25 @@ const Footer = () => {
             </Box>
           </Grid>
 
-          {/* Map */}
           <Grid item xs={12} md={4}>
-            <Box textAlign="center">
-              <Typography variant="h5" gutterBottom style={mapTitleStyle}>
+            <Box>
+              <Typography variant="h5"gutterBottom style={sectionTitleStyle}>
                 Find Us Here
               </Typography>
-              <LoadScript googleMapsApiKey="AIzaSyBhJYhA-bRJgkniJETT1BY6I1C4fEexfdc">
-                <GoogleMap
-                  mapContainerStyle={mapContainerStyle}
-                  center={center}
-                  zoom={14}
-                >
-                  <Marker position={{ lat: 4.217150, lng: 73.541300 }} />
-                </GoogleMap>
-              </LoadScript>
+              <Box style={socialIconsContainerStyle}>
+                <IconButton href="https://www.instagram.com" target="_blank" style={{ color: '#fff' }}>
+                  <Instagram fontSize="large" />
+                </IconButton>
+                <IconButton href="https://www.facebook.com" target="_blank" style={{ color: '#fff' }}>
+                  <Facebook fontSize="large" />
+                </IconButton>
+                <IconButton href="https://www.tiktok.com" target="_blank" style={{ color: '#fff' }}>
+                  <FaTiktok size={30} />
+                </IconButton>
+                <IconButton href="https://www.vk.com" target="_blank" style={{ color: '#fff' }}>
+                  <FaVk size={30} />
+                </IconButton>
+              </Box>
             </Box>
           </Grid>
         </Grid>
