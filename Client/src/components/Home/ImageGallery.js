@@ -5,7 +5,7 @@ import axios from 'axios';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import { useCurrency } from '../../screens/CurrencyContext';
 
-const ImageGallery = ({ searchQuery = '' }) => {
+const ImageGallery = ({ searchQuery = '', passedCountry='' }) => {
   // Tours and loading states
   const [tours, setTours] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -17,7 +17,7 @@ const ImageGallery = ({ searchQuery = '' }) => {
   const query = new URLSearchParams(location.search);
   const searchTerm = searchQuery || query.get('search') || '';
   const nights = query.get('nights') || '';
-  const country = query.get('country') || '';
+  const country = passedCountry || query.get('country') || '';
   const market = query.get('market') || '';
   const minPrice = query.get('minPrice') || '';
   const maxPrice = query.get('maxPrice') || '';

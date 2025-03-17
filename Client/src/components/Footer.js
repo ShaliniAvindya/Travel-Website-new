@@ -254,7 +254,7 @@ const Footer = () => {
                 <IconButton href="https://www.instagram.com" target="_blank" style={{ color: '#fff' }}>
                   <Instagram fontSize="large" />
                 </IconButton>
-                <IconButton href="https://www.facebook.com" target="_blank" style={{ color: '#fff' }}>
+                <IconButton href="https://www.facebook.com/share/1F7uxkppRf/" target="_blank" style={{ color: '#fff' }}>
                   <Facebook fontSize="large" />
                 </IconButton>
                 <IconButton href="https://www.tiktok.com" target="_blank" style={{ color: '#fff' }}>

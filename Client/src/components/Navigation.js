@@ -8,7 +8,6 @@ import {
   Drawer,
   List,
   ListItemButton,
-  ListItemIcon,
   ListItemText,
   IconButton,
   InputBase,
