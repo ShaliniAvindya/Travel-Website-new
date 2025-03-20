@@ -597,6 +597,18 @@ const TourForm = () => {
           />
           {errors.price && <p className="text-red-500 text-sm">{errors.price}</p>}
         </div>
+
+        {/* Old Price */}
+        <div>
+          <label className="block text-lg font-medium">Old Price (Optional)</label>
+          <input
+            type="text"
+            name="oldPrice"
+            value={formData.oldPrice}
+            onChange={handleInputChange}
+            className="mt-0 p-2 w-full border border-gray-300 rounded-md"
+          />
+        </div>
         
         <div className="grid grid-cols-3 gap-4">
           {/* Expiry Date */}
@@ -1183,18 +1195,6 @@ const TourForm = () => {
             onChange={handleInputChange}
             className="mt-0 p-2 w-full border border-gray-300 rounded-md"
             placeholder="List of exclusions (ENTER for each item)"
-          />
-        </div>
-
-        {/* Old Price */}
-        <div>
-          <label className="block text-lg font-medium">Old Price (Optional)</label>
-          <input
-            type="text"
-            name="oldPrice"
-            value={formData.oldPrice}
-            onChange={handleInputChange}
-            className="mt-0 p-2 w-full border border-gray-300 rounded-md"
           />
         </div>
 

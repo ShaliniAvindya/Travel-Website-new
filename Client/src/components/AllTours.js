@@ -736,6 +736,17 @@ const AllTours = () => {
                   className="mt-1 p-2 w-full border border-gray-300 rounded-md"
                 />
               </div>
+              {/* Old Price */}
+              <div>
+                <label className="block text-sm font-medium text-gray-600">Old Price</label>
+                <input
+                  type="text"
+                  name="oldPrice"
+                  value={formData.oldPrice}
+                  onChange={handleInputChange}
+                  className="mt-1 p-2 w-full border border-gray-300 rounded-md"
+                />
+              </div>
               {/* Expiry Date */}
               <div>
                 <label className="block text-sm font-medium text-gray-600">Expiry Date</label>
@@ -1316,17 +1327,6 @@ const AllTours = () => {
                   onChange={handleInputChange}
                   className="mt-1 p-2 w-full border border-gray-300 rounded-md"
                   placeholder="List of exclusions (ENTER for each item)"
-                />
-              </div>
-              {/* Old Price */}
-              <div>
-                <label className="block text-sm font-medium text-gray-600">Old Price</label>
-                <input
-                  type="text"
-                  name="oldPrice"
-                  value={formData.oldPrice}
-                  onChange={handleInputChange}
-                  className="mt-1 p-2 w-full border border-gray-300 rounded-md"
                 />
               </div>
               {/* Save Button */}
