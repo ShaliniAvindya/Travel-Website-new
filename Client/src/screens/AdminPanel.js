@@ -38,23 +38,34 @@ const AdminPanel = () => {
   const { isMobile, isTablet } = useDeviceType();
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    try{
-      if (token) {
+    let token = localStorage.getItem('token');
+
+    const checkTokenExpiration = () => {
+      token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/login');
+        return;
+      }
+      try {
         const decodedToken = jwtDecode(token);
+        // Check if token is expired
         if (decodedToken.exp < Date.now() / 1000) {
           navigate('/login');
         }
-      }
-      else {
+      } catch (error) {
         navigate('/login');
       }
-    } catch (error) { 
-      navigate('/login');
-    }
-  }, []);
+    };
 
+    // Initial check on mount
+    checkTokenExpiration();
 
+    // Set an interval to check token expiration every second
+    const intervalId = setInterval(checkTokenExpiration, 1000);
+
+    // Clear the interval when component unmounts
+    return () => clearInterval(intervalId);
+  }, [navigate]);
 
   const handleTabChange = (key) => {
     setActiveTab(key);

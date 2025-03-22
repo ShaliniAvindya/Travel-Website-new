@@ -502,7 +502,6 @@ const TourForm = () => {
         const payload = {
           title: formData.title,
           price: formData.price,
-          // nightsOptions contains your add-on pricing groups keyed by the confirmed nights.
           nights: formData.nightsOptions,
           expiry_date: formData.expiry_date,
           valid_from: formData.valid_from,
