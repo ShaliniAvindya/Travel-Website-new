@@ -46,6 +46,7 @@ const ContactInquiries = () => {
       const response = await fetch('/contact/inquiries');
       if (!response.ok) throw new Error('Failed to fetch inquiries.');
       const data = await response.json();
+      data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       setInquiries(data);
     } catch (error) {
       console.error('Error fetching inquiries:', error);
