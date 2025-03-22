@@ -116,29 +116,34 @@ const ImageGallery = ({ searchQuery = '', passedCountry='' }) => {
     return localPrice / exchangeRates[currency];
   };
 
-  // Filter tours based on search criteria and expiry date
   const filteredTours = tours.filter((tour) => {
     const currentDate = new Date();
     const tourExpiryDate = new Date(tour.expiry_date);
     if (tourExpiryDate < currentDate) return false;
-
-    const searchNightsValue = searchNights ? parseInt(searchNights) : null;
-
+  
+    const searchNightsValue = searchNights ? parseInt(searchNights, 10) : null;
+  
     const marketMatch =
       !searchMarket ||
       (Array.isArray(tour.markets) && tour.markets.includes(Number(searchMarket)));
+  
     const minValUSD = searchMinPrice ? localToUSD(parseFloat(searchMinPrice)) : null;
     const maxValUSD = searchMaxPrice ? localToUSD(parseFloat(searchMaxPrice)) : null;
-
+  
+    // New logic to handle object-based "nights"
+    const hasMatchingNights =
+      !searchNightsValue ||
+      (tour.nights && Object.keys(tour.nights).includes(searchNightsValue.toString()));
+  
     return (
       (!search || tour.title.toLowerCase().includes(search.toLowerCase())) &&
-      (!searchNightsValue || tour.nights === searchNightsValue) &&
+      hasMatchingNights && // use the new boolean here
       (!minValUSD || tour.price >= minValUSD) &&
       (!maxValUSD || tour.price <= maxValUSD) &&
       (!searchCountry || tour.country.toLowerCase().includes(searchCountry.toLowerCase())) &&
       marketMatch
     );
-  });
+  });  
 
   // Handle search form submission
   const handleSearchSubmit = (event) => {

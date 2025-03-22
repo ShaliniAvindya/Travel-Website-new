@@ -8,7 +8,7 @@ const marketMapping = {
   3: "Asian Markets",
   4: "Middle East Markets",
   5: "Russia and CIS Markets",
-  6: "All Markets",
+  6: "Rest of the world",
 };
 
 const foodCategoryMapping = {

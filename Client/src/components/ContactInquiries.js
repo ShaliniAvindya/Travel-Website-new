@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Button, Modal, Form, Input, message, Space, Card, Divider } from 'antd';
 import { DeleteOutlined } from '@ant-design/icons';
+import axios from 'axios';
 
 function useDeviceType() {
   const [deviceType, setDeviceType] = useState({
@@ -43,9 +44,9 @@ const ContactInquiries = () => {
   const fetchInquiries = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/contact/inquiries');
-      if (!response.ok) throw new Error('Failed to fetch inquiries.');
-      const data = await response.json();
+      const response = await axios.get('/contact/inquiries');
+      if (!response || !response.data) throw new Error('Failed to fetch inquiries.');
+      const data = response.data;
       data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       setInquiries(data);
     } catch (error) {
