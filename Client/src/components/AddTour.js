@@ -270,7 +270,7 @@ const TourForm = () => {
             },
           }));
         } else if (
-          section === "tour_images" ||
+          section === "tour_image" ||
           section === "destination_images" ||
           section === "activity_images" ||
           section === "hotel_images"
@@ -318,7 +318,7 @@ const TourForm = () => {
         },
       }));
     } else if (
-      section === "tour_images" ||
+      section === "tour_image" ||
       section === "destination_images" ||
       section === "activity_images" ||
       section === "hotel_images"
@@ -558,11 +558,6 @@ const TourForm = () => {
   
       // 5) Send the request
       const response = await axios.post("/tours", payload);
-  
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to create the tour.");
-      }
   
       Swal.fire("Success!", "Tour has been created successfully.", "success");
       handleResetItinerary();
