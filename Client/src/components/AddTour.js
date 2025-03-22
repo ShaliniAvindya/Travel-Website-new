@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Swal from "sweetalert2";
 import { FaTrash } from "react-icons/fa";
+import axios from "axios";
 
 const marketMapping = {
   1: "Indian Market",
@@ -497,56 +498,77 @@ const TourForm = () => {
   };
 
   const handleSubmitTour = async () => {
-    if (validateForm()) {
-      try {
-        const payload = {
-          title: formData.title,
-          price: formData.price,
-          nights: formData.nightsOptions,
-          expiry_date: formData.expiry_date,
-          valid_from: formData.valid_from,
-          valid_to: formData.valid_to,
-          food_category: formData.food_category,
-          country: formData.country,
-          markets: formData.markets,
-          tour_summary: formData.tour_summary,
-          tour_image: formData.tour_image[0],
-          destination_images: formData.destination_images,
-          activity_images: formData.activity_images,
-          hotel_images: formData.hotel_images,
-          inclusions: formData.inclusions.split("\n"),
-          exclusions: formData.exclusions.split("\n"),
-          facilities: formData.facilities.split("\n"),
-          itinerary: formData.itinerary,
-          itinerary_images: formData.itineraryImages,
-          itinerary_titles: formData.itineraryTitles,
-          oldPrice: formData.oldPrice,
-        };
-
-        console.log("Payload:", JSON.stringify(payload));
-
-        const response = await fetch("/tours", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        });
-
-        if (response.ok) {
-          Swal.fire("Success!", "Tour has been created successfully.", "success");
-          handleResetItinerary();
-        } else {
-          const errorData = await response.json();
-          console.error("Response error:", errorData);
-          throw new Error(errorData.message || "Failed to create the tour.");
-        }
-      } catch (error) {
-        console.error("Error:", error);
-        Swal.fire("Error", error.message, "error");
-      }
-    } else {
+    if (!validateForm()) {
       Swal.fire("Error", "Please fill out all required fields.", "error");
+      return;
+    }
+  
+    try {
+      // 1) Parse top-level numeric fields
+      const priceInt = parseInt(formData.price, 10) || 0;
+      const oldPriceInt = parseInt(formData.oldPrice, 10) || 0;
+  
+      // 2) Parse food_category arrays (each is [addPrice, oldAddPrice])
+      const parsedFoodCategory = {};
+      Object.keys(formData.food_category).forEach((catKey) => {
+        const [val1, val2] = formData.food_category[catKey];
+        parsedFoodCategory[catKey] = [
+          parseInt(val1, 10) || 0,
+          parseInt(val2, 10) || 0,
+        ];
+      });
+  
+      // 3) Parse each "nightsOptions" entry (add_price & old_add_price)
+      const parsedNightsOptions = {};
+      Object.keys(formData.nightsOptions).forEach((nKey) => {
+        // each nightsOptions[nKey] is an array of option objects
+        parsedNightsOptions[nKey] = formData.nightsOptions[nKey].map((opt) => ({
+          ...opt,
+          add_price: parseInt(opt.add_price, 10) || 0,
+          old_add_price: parseInt(opt.old_add_price, 10) || 0,
+        }));
+      });
+  
+      // 4) Build the final payload with parsed values
+      const payload = {
+        title: formData.title,
+        price: priceInt,
+        nights: parsedNightsOptions,
+        expiry_date: formData.expiry_date,
+        valid_from: formData.valid_from,
+        valid_to: formData.valid_to,
+        food_category: parsedFoodCategory,
+        country: formData.country,
+        markets: formData.markets,
+        tour_summary: formData.tour_summary,
+        tour_image: formData.tour_image[0],
+        destination_images: formData.destination_images,
+        activity_images: formData.activity_images,
+        hotel_images: formData.hotel_images,
+        inclusions: formData.inclusions.split("\n"),
+        exclusions: formData.exclusions.split("\n"),
+        facilities: formData.facilities.split("\n"),
+        itinerary: formData.itinerary,
+        itinerary_images: formData.itineraryImages,
+        itinerary_titles: formData.itineraryTitles,
+        oldPrice: oldPriceInt,
+      };
+  
+      console.log("Final payload:", payload);
+  
+      // 5) Send the request
+      const response = await axios.post("/tours", payload);
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to create the tour.");
+      }
+  
+      Swal.fire("Success!", "Tour has been created successfully.", "success");
+      handleResetItinerary();
+    } catch (error) {
+      console.error("Error:", error);
+      Swal.fire("Error", error.message, "error");
     }
   };
 
