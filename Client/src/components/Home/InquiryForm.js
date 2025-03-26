@@ -186,7 +186,6 @@ const EnquiryForm = ({
         selected_food_category: foodCategoryLabel,
       };
 
-      console.log('Payload:', payload);
       await axios.post('/inquiries', payload);
       Swal.fire('Success!', 'Your inquiry has been submitted successfully.', 'success');
       handleClose();

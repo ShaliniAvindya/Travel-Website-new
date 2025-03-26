@@ -28,10 +28,11 @@ const TourForm = () => {
     expiry_date: "",
     valid_from: "",
     valid_to: "",
+    // Updated: now each array is [addPrice, oldAddPrice, isTourAvailable].
     food_category: {
-      0: [0, 0],
-      1: [0, 0],
-      2: [0, 0],
+      0: [0, 0, false],
+      1: [0, 0, false],
+      2: [0, 0, false],
     },
     country: "",
     markets: [],
@@ -279,9 +280,8 @@ const TourForm = () => {
             ...prevData,
             [section]: (Array.isArray(prevData[section])
               ? prevData[section]
-              : []).map((url) =>
-              url === loadingUrl ? uploadedUrl : url
-            ),
+              : []
+            ).map((url) => (url === loadingUrl ? uploadedUrl : url)),
           }));
         } else {
           setFormData((prevData) => ({
@@ -290,9 +290,8 @@ const TourForm = () => {
               ...prevData.itineraryImages,
               [key]: (Array.isArray(prevData.itineraryImages[key])
                 ? prevData.itineraryImages[key]
-                : []).map((url) =>
-                url === loadingUrl ? uploadedUrl : url
-              ),
+                : []
+              ).map((url) => (url === loadingUrl ? uploadedUrl : url)),
             },
           }));
         }
@@ -459,10 +458,11 @@ const TourForm = () => {
       expiry_date: "",
       valid_from: "",
       valid_to: "",
+      // Updated default with third element (boolean) as false
       food_category: {
-        0: [0, 0],
-        1: [0, 0],
-        2: [0, 0],
+        0: [0, 0, false],
+        1: [0, 0, false],
+        2: [0, 0, false],
       },
       country: "",
       markets: [],
@@ -497,6 +497,39 @@ const TourForm = () => {
     setNightsInput("");
   };
 
+  // NEW: handle the checkbox for the boolean attribute
+  const handleFoodCategoryCheckboxChange = (catKey, checked) => {
+    setFormData((prev) => {
+      const oldArray = prev.food_category[catKey] || [0, 0, false];
+      const newArray = [...oldArray];
+      newArray[2] = checked; // the third element is your boolean
+      return {
+        ...prev,
+        food_category: {
+          ...prev.food_category,
+          [catKey]: newArray,
+        },
+      };
+    });
+  };
+
+  // Provided in your code, unchanged except we parse the new boolean:
+  const handleFoodCategoryChange = (catKey, index, val) => {
+    const parsedVal = parseInt(val, 10) || 0;
+    setFormData((prev) => {
+      const oldArray = prev.food_category[catKey] || [0, 0, false];
+      const newArray = [...oldArray];
+      newArray[index] = parsedVal;
+      return {
+        ...prev,
+        food_category: {
+          ...prev.food_category,
+          [catKey]: newArray,
+        },
+      };
+    });
+  };
+
   const handleSubmitTour = async () => {
     if (!validateForm()) {
       Swal.fire("Error", "Please fill out all required fields.", "error");
@@ -508,13 +541,14 @@ const TourForm = () => {
       const priceInt = parseInt(formData.price, 10) || 0;
       const oldPriceInt = parseInt(formData.oldPrice, 10) || 0;
   
-      // 2) Parse food_category arrays (each is [addPrice, oldAddPrice])
+      // 2) Parse food_category arrays (each is [addPrice, oldAddPrice, boolVal])
       const parsedFoodCategory = {};
       Object.keys(formData.food_category).forEach((catKey) => {
-        const [val1, val2] = formData.food_category[catKey];
+        const [val1, val2, boolVal] = formData.food_category[catKey];
         parsedFoodCategory[catKey] = [
           parseInt(val1, 10) || 0,
           parseInt(val2, 10) || 0,
+          !!boolVal, // ensure it's a boolean
         ];
       });
   
@@ -566,23 +600,6 @@ const TourForm = () => {
       Swal.fire("Error", error.message, "error");
     }
   };
-
-  const handleFoodCategoryChange = (catKey, index, val) => {
-    const parsedVal = parseInt(val, 10) || 0;
-    setFormData((prev) => {
-      const oldArray = prev.food_category[catKey] || [0, 0];
-      const newArray = [...oldArray];
-      newArray[index] = parsedVal;
-      return {
-        ...prev,
-        food_category: {
-          ...prev.food_category,
-          [catKey]: newArray,
-        },
-      };
-    });
-  };
-  
 
   return (
     <div className="bg-white min-h-screen p-0">
@@ -695,6 +712,16 @@ const TourForm = () => {
                     className="p-2 border border-gray-300 rounded-md"
                   />
                 </div>
+
+                {/* NEW: Tour Availability Checkbox */}
+                <div className="flex items-center space-x-2 mt-4">
+                  <input
+                    type="checkbox"
+                    checked={!!formData.food_category[key]?.[2]}
+                    onChange={(e) => handleFoodCategoryCheckboxChange(key, e.target.checked)}
+                  />
+                  <label className="text-sm">Tour Available?</label>
+                </div>
               </div>
             </div>
           ))}
@@ -754,7 +781,9 @@ const TourForm = () => {
 
         {/* Tour Image */}
         <div>
-          <label className="block text-lg font-medium">Tour Image <span className="text-gray-500/50 text-sm"> (Size 1×1)</span></label>
+          <label className="block text-lg font-medium">
+            Tour Image <span className="text-gray-500/50 text-sm"> (Size 1×1)</span>
+          </label>
           <input
             type="file"
             multiple
@@ -764,7 +793,11 @@ const TourForm = () => {
           <div className="flex space-x-2 mt-4">
             {formData.tour_image.map((image, index) => (
               <div key={index} className="relative">
-                <img src={image} alt={`Tour Image ${index}`} className="w-48 h-48 object-cover rounded" />
+                <img
+                  src={image}
+                  alt={`Tour Image ${index}`}
+                  className="w-48 h-48 object-cover rounded"
+                />
                 <button
                   type="button"
                   onClick={() =>
@@ -784,7 +817,9 @@ const TourForm = () => {
 
         {/* Destination Images */}
         <div>
-          <label className="block text-lg font-medium">Destination Images <span className="text-gray-500/50 text-sm"> (Size 3×2)</span></label>
+          <label className="block text-lg font-medium">
+            Destination Images <span className="text-gray-500/50 text-sm"> (Size 3×2)</span>
+          </label>
           <input
             type="file"
             multiple
@@ -794,7 +829,11 @@ const TourForm = () => {
           <div className="flex space-x-2 mt-4">
             {formData.destination_images.map((image, index) => (
               <div key={index} className="relative">
-                <img src={image} alt={`Destination Image ${index}`} className="w-48 h-48 object-cover rounded" />
+                <img
+                  src={image}
+                  alt={`Destination Image ${index}`}
+                  className="w-48 h-48 object-cover rounded"
+                />
                 <button
                   type="button"
                   onClick={() =>
@@ -814,7 +853,9 @@ const TourForm = () => {
 
         {/* Activity Images */}
         <div>
-          <label className="block text-lg font-medium">Activity Images <span className="text-gray-500/50 text-sm"> (Size 3×2)</span></label>
+          <label className="block text-lg font-medium">
+            Activity Images <span className="text-gray-500/50 text-sm"> (Size 3×2)</span>
+          </label>
           <input
             type="file"
             multiple
@@ -824,7 +865,11 @@ const TourForm = () => {
           <div className="flex space-x-2 mt-4">
             {formData.activity_images.map((image, index) => (
               <div key={index} className="relative">
-                <img src={image} alt={`Activity Image ${index}`} className="w-48 h-48 object-cover rounded" />
+                <img
+                  src={image}
+                  alt={`Activity Image ${index}`}
+                  className="w-48 h-48 object-cover rounded"
+                />
                 <button
                   type="button"
                   onClick={() =>
@@ -844,7 +889,9 @@ const TourForm = () => {
 
         {/* Hotel Images */}
         <div>
-          <label className="block text-lg font-medium">Hotel Images <span className="text-gray-500/50 text-sm"> (Size 3×2)</span></label>
+          <label className="block text-lg font-medium">
+            Hotel Images <span className="text-gray-500/50 text-sm"> (Size 3×2)</span>
+          </label>
           <input
             type="file"
             multiple
@@ -854,7 +901,11 @@ const TourForm = () => {
           <div className="flex space-x-2 mt-4">
             {formData.hotel_images.map((image, index) => (
               <div key={index} className="relative">
-                <img src={image} alt={`Hotel Image ${index}`} className="w-48 h-48 object-cover rounded" />
+                <img
+                  src={image}
+                  alt={`Hotel Image ${index}`}
+                  className="w-48 h-48 object-cover rounded"
+                />
                 <button
                   type="button"
                   onClick={() =>
@@ -873,8 +924,6 @@ const TourForm = () => {
         </div>
 
         {/* --- Nights (for itinerary generation) --- */}
-        {/* Instead of immediately updating itinerary on every change, we let the user enter a nights count
-            into a separate field (nightsInput) and then click "Confirm Nights" to update the itinerary. */}
         <div>
           <label className="block text-lg font-medium">Number of Nights</label>
           <div className="flex space-x-2">
@@ -947,7 +996,10 @@ const TourForm = () => {
                         <span>
                           {opt.option} - Add Price: {opt.add_price}, Old Add Price: {opt.old_add_price}
                         </span>
-                        <button onClick={() => removeNightsOption(formData.nights.toString(), idx)} className="bg-red-500 text-white px-2 py-1 rounded">
+                        <button
+                          onClick={() => removeNightsOption(formData.nights.toString(), idx)}
+                          className="bg-red-500 text-white px-2 py-1 rounded"
+                        >
                           <FaTrash />
                         </button>
                       </li>

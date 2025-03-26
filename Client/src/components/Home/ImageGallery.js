@@ -250,7 +250,7 @@ const ImageGallery = ({ searchQuery = '', passedCountry='' }) => {
             <Card
               sx={{
                 borderRadius: '16px',
-                maxHeight: '580px',
+                height: '100%',
                 boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
                 transition: 'transform 0.3s ease, box-shadow 0.3s ease',
                 '&:hover': {
@@ -291,8 +291,8 @@ const ImageGallery = ({ searchQuery = '', passedCountry='' }) => {
                   </Typography>
                 </Box>
               </Box>
-              <CardContent sx={{ backgroundColor: '#fff', padding: '20px' }}>
-                <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+              <CardContent sx={{ backgroundColor: '#fff', padding: '10px 20px 20px 20px' }}>
+                <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
                   <Typography variant="h1" fontWeight="bold" fontSize={24}>
                     {item.title}
                   </Typography>

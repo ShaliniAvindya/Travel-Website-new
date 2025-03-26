@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Typography, Box, Button } from '@mui/material';
+import { Typography, Box, Button, IconButton } from '@mui/material';
 import TourImages from './TourImages';
 import Itinerary from './Itinerary';
 import Footer from '../components/Footer';
 import axios from 'axios';
 import SendIcon from '@mui/icons-material/Send';
-import { IconButton } from '@mui/material';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import InquiryForm from '../components/Home/InquiryForm';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
@@ -45,19 +44,20 @@ const TourDetails = () => {
   const { isMobile, isTablet } = useDeviceType();
   const selectedCurrency = localStorage.getItem('selectedCurrency') || 'USD';
 
-  // Update the food category map for the new object structure (keys: 0,1,2)
+  // Food category map remains unchanged.
   const foodCategoryMap = {
     0: 'Half Board',
     1: 'Full Board',
     2: 'All Inclusive'
   };
 
-  // New state for selections
+  // New state for selections.
   const [selectedNightsKey, setSelectedNightsKey] = useState(null);
   const [selectedNightsOption, setSelectedNightsOption] = useState(null);
+  // IMPORTANT: Only select a food category if its boolean value is true.
   const [selectedFoodCategory, setSelectedFoodCategory] = useState(null);
 
-  // Price conversion
+  // Price conversion function.
   const convertPrice = (priceInUSD) => {
     if (!exchangeRates[selectedCurrency]) return priceInUSD.toLocaleString();
     return (priceInUSD * exchangeRates[selectedCurrency]).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -94,10 +94,10 @@ const TourDetails = () => {
     fetchTourDetails();
   }, [id]); 
 
-  // Initialize selection defaults when tour data loads
+  // Initialize selection defaults when tour data loads.
   useEffect(() => {
     if (tour) {
-      // Initialize nights selection if the tour.nights is an object (new structure)
+      // Initialize nights selection if available.
       if (tour.nights && typeof tour.nights === 'object') {
         const nightsKeys = Object.keys(tour.nights);
         if (nightsKeys.length > 0) {
@@ -109,17 +109,19 @@ const TourDetails = () => {
           }
         }
       }
-      // Initialize food category selection
+      // Initialize food category selection only with those having boolean true.
       if (tour.food_category && typeof tour.food_category === 'object') {
-        const foodKeys = Object.keys(tour.food_category);
-        if (foodKeys.length > 0) {
-          setSelectedFoodCategory(foodKeys[0]);
+        const availableFoodKeys = Object.keys(tour.food_category).filter(
+          key => tour.food_category[key][2] === true
+        );
+        if (availableFoodKeys.length > 0) {
+          setSelectedFoodCategory(availableFoodKeys[0]);
         }
       }
     }
   }, [tour]);
 
-  // Compute total price based on selections
+  // Compute total price based on selections.
   const basePrice = tour ? tour.price : 0;
   const oldBasePrice = tour ? tour.oldPrice : 0;
   const nightsAddPrice = (selectedNightsKey && selectedNightsOption && tour && tour.nights[selectedNightsKey])
@@ -136,10 +138,9 @@ const TourDetails = () => {
   const foodOldPrice = (selectedFoodCategory && tour && tour.food_category)
     ? tour.food_category[selectedFoodCategory][1]
     : 0;
-
   const finalOldPrice = oldBasePrice + nightsOldPrice + foodOldPrice;
 
-  // Compute days and nights based on selection (if available)
+  // Compute days and nights.
   const nightsCount = selectedNightsKey ? parseInt(selectedNightsKey) : 0;
   const daysCount = nightsCount + 1;
 
@@ -153,7 +154,7 @@ const TourDetails = () => {
     return <div>Tour not found</div>;
   }
 
-  // Handlers to open/close inquiry dialog
+  // Handlers to open/close inquiry dialog.
   const handleOpenDialog = () => setOpenDialog(true);
 
   return (
@@ -179,18 +180,18 @@ const TourDetails = () => {
             display: 'flex',
             flexDirection: isMobile ? 'column' : 'row',
             justifyContent: 'space-between',
-            alignItems: isMobile ? 'flex-start' : 'flex-start',
-            gap: 0,
+            alignItems: 'center',
+            gap: 6,
             mb: 2,
             padding: '0 40px',
           }}
         >
-          {/* --- Selections for Nights and Food Category --- */}
-          <Box sx={{ marginBottom: '30px', display: 'flex',flexDirection: 'column', gap: 2}}>
+          {/* Left Column: Selections and Facilities */}
+          <Box sx={{ marginBottom: '30px' , display: 'flex', flexDirection: 'column', gap: 2, flex: 1 }}>
             {/* Nights selection */}
             {tour.nights && (
-              <Box sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
-                <Typography variant="h6" sx={{ mr: 2 }}>Select Nights:</Typography>
+              <Box sx={{ mb: 1, display: 'flex', alignItems: 'center' }}>
+                <Typography variant="h6" sx={{ mr: 2 }}>Nights</Typography>
                 {Object.keys(tour.nights).map((key) => (
                   <Box
                     key={key}
@@ -199,7 +200,8 @@ const TourDetails = () => {
                       setSelectedNightsOption(Object.keys(tour.nights[key])[0]);
                     }}
                     sx={{
-                      border: selectedNightsKey === key ? '2px solid blue' : '1px solid grey',
+                      border: selectedNightsKey === key ? '2px solid #2c69c9' : '1px solid grey',
+                      backgroundColor: selectedNightsKey === key ? 'rgba(0, 97, 252, 0.1)' : 'white',
                       borderRadius: 1,
                       p: 1,
                       mr: 1,
@@ -212,18 +214,19 @@ const TourDetails = () => {
               </Box>
             )}
 
+            <Divider style={{ margin: '0 0', color: 'black' }} />
+
             {/* Option selection for chosen nights */}
             {selectedNightsKey && tour.nights[selectedNightsKey] && (
-              <Box sx={{ mb: 2 }}>
-                <Typography variant="h6" sx={{ mb: 1 }}>
-                  Select Option for {selectedNightsKey} Nights:
-                </Typography>
+              <Box sx={{ mb: 1 }}>
+                <Typography variant="h6" sx={{ mb: 1 }}>Package Options</Typography>
                 {Object.keys(tour.nights[selectedNightsKey]).map((optKey) => (
                   <Box
                     key={optKey}
                     onClick={() => setSelectedNightsOption(optKey)}
                     sx={{
-                      border: selectedNightsOption === optKey ? '2px solid blue' : '1px solid grey',
+                      border: selectedNightsOption === optKey ? '2px solid #2c69c9' : '1px solid grey',
+                      backgroundColor: selectedNightsOption === optKey ? 'rgba(0, 97, 252, 0.1)' : 'white',
                       borderRadius: 1,
                       p: 1,
                       mb: 1,
@@ -232,65 +235,78 @@ const TourDetails = () => {
                     }}
                   >
                     <Typography>
-                      {tour.nights[selectedNightsKey][optKey].option} 
-                      <Typography
-                        component="span"
-                        sx={{ color: 'gray', ml: 1 }}
-                      >
-                        (+{selectedCurrency}{" "}
-                        {convertPrice(tour.nights[selectedNightsKey][optKey].add_price)}
-                        )
-                      </Typography>
+                      {tour.nights[selectedNightsKey][optKey].option}
                     </Typography>
                   </Box>
                 ))}
               </Box>
             )}
 
-            {/* Food Category selection */}
+            <Divider style={{ margin: '0 0', color: 'black' }} />
+
+            {/* Food Category selection: Only display categories where boolean is true */}
             {tour.food_category && (
-              <Box sx={{ mb: 2 }}>
-                <Typography variant="h6" sx={{ mb: 1 }}>Select Food Category:</Typography>
-                {Object.keys(tour.food_category).map((key) => (
-                  <Box
-                    key={key}
-                    onClick={() => setSelectedFoodCategory(key)}
-                    sx={{
-                      border: selectedFoodCategory === key ? '2px solid blue' : '1px solid grey',
-                      borderRadius: 1,
-                      p: 1,
-                      mb: 1,
-                      cursor: 'pointer',
-                      width: 'fit-content',
-                      minWidth: { xs: '100%', sm: 'auto'}
-                    }}
-                  >
-                    <Typography>
-                      {foodCategoryMap[key]} 
-                      <Typography
-                        component="span"
-                        sx={{ color: 'gray', ml: 1 }}
+              <Box sx={{ mb: 1 }}>
+                <Typography variant="h6" sx={{ mb: 1 }}>
+                  Food Category
+                </Typography>
+                <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2, flexWrap: 'wrap' }}>
+                  {Object.keys(tour.food_category)
+                    .filter(key => tour.food_category[key][2] === true)
+                    .map((key) => (
+                      <Box
+                        key={key}
+                        onClick={() => setSelectedFoodCategory(key)}
+                        sx={{
+                          border: selectedFoodCategory === key ? '2px solid #2c69c9' : '1px solid grey',
+                          backgroundColor: selectedFoodCategory === key ? 'rgba(0, 97, 252, 0.1)' : 'white',
+                          borderRadius: 1,
+                          p: 1,
+                          cursor: 'pointer',
+                          width: 'fit-content',
+                        }}
                       >
-                        (+{selectedCurrency}{" "}
-                        {convertPrice(tour.food_category[key][0])}
-                        )
-                      </Typography>
-                    </Typography>
-                  </Box>
-                ))}
+                        <Typography>
+                          {foodCategoryMap[key]}
+                        </Typography>
+                      </Box>
+                  ))}
+                </Box>
+              </Box>
+            )}
+
+            <Divider style={{ margin: '0 0', color: 'black' }} />
+
+            {/* Facilities Div inserted under Food Category */}
+            {tour.facilities && tour.facilities.length > 0 && (
+              <Box sx={{ mb: 2}}>
+                <Typography variant="h6" sx={{ mb: 1 }}>Facilities</Typography>
+                <Box sx={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)', 
+                  gap: 1 
+                }}>
+                  {tour.facilities.map((facility, index) => (
+                    <Box
+                      key={index}
+                      sx={{
+                        p: 1.5,
+                        border: '1px solid #e0e0e0',
+                        borderRadius: 1,
+                        backgroundColor: 'white',
+                      }}
+                    >
+                      <Typography>{facility}</Typography>
+                    </Box>
+                  ))}
+                </Box>
               </Box>
             )}
           </Box>
-          {/* RIGHT: Enhanced info cards */}
+
+          {/* RIGHT Column: Enhanced info cards */}
           {!isMobile && (
-            <Box
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 1,
-                width: '400px',
-              }}
-            >
+            <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-around',gap: 1, width: '400px' }}>
               {/* Days/Nights Card */}
               <Box
                 sx={{
@@ -299,7 +315,6 @@ const TourDetails = () => {
                   padding: '15px',
                   color: 'white',
                   boxShadow: '0 10px 20px rgba(37, 99, 235, 0.2)',
-                  transform: 'translateY(0)',
                   transition: 'transform 0.3s ease, box-shadow 0.3s ease',
                   '&:hover': {
                     transform: 'translateY(-5px)',
@@ -321,7 +336,6 @@ const TourDetails = () => {
                   padding: '15px',
                   color: 'white',
                   boxShadow: '0 10px 20px rgba(5, 150, 105, 0.2)',
-                  transform: 'translateY(0)',
                   transition: 'transform 0.3s ease, box-shadow 0.3s ease',
                   '&:hover': {
                     transform: 'translateY(-5px)',
@@ -331,20 +345,13 @@ const TourDetails = () => {
               >
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 0 }}>
                   <AttachMoneyIcon sx={{ fontSize: 32, mr: 1 }} />
-                  <Typography variant="h6" sx={{ fontWeight: 500 }}>
-                    Price
-                  </Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 500 }}>Price</Typography>
                 </Box>
                 <Typography variant="h4" sx={{ fontWeight: 700 }}>
                   {selectedCurrency} {convertPrice(totalPrice)}
                 </Typography>
                 {finalOldPrice > totalPrice && (
-                  <Typography 
-                    sx={{ 
-                      textDecoration: 'line-through',
-                      color: 'rgba(255,255,255,0.7)',
-                    }}
-                  >
+                  <Typography sx={{ textDecoration: 'line-through', color: 'rgba(255,255,255,0.7)' }}>
                     {selectedCurrency} {convertPrice(finalOldPrice)}
                   </Typography>
                 )}
@@ -358,7 +365,6 @@ const TourDetails = () => {
                   padding: '15px',
                   color: 'white',
                   boxShadow: '0 10px 20px rgba(220, 38, 38, 0.2)',
-                  transform: 'translateY(0)',
                   transition: 'transform 0.3s ease, box-shadow 0.3s ease',
                   '&:hover': {
                     transform: 'translateY(-5px)',
@@ -368,9 +374,7 @@ const TourDetails = () => {
               >
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                   <CalendarMonthIcon sx={{ fontSize: 32, mr: 1 }} />
-                  <Typography variant="h5" sx={{ fontWeight: 500 }}>
-                    Expires On
-                  </Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 500 }}>Expires On</Typography>
                 </Box>
                 <Typography variant="h4" sx={{ fontWeight: 700 }}>
                   {new Date(tour.expiry_date).toLocaleDateString('en-US', {
@@ -389,7 +393,6 @@ const TourDetails = () => {
                   padding: '15px',
                   color: 'white',
                   boxShadow: '0 10px 20px rgba(59, 130, 246, 0.2)',
-                  transform: 'translateY(0)',
                   transition: 'transform 0.3s ease, box-shadow 0.3s ease',
                   '&:hover': {
                     transform: 'translateY(-5px)',
@@ -399,27 +402,25 @@ const TourDetails = () => {
               >
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                   <DateRangeIcon sx={{ fontSize: 32, mr: 1 }} />
-                  <Typography variant="h5" sx={{ fontWeight: 500 }}>
-                    Valid Period
-                  </Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 500 }}>Valid Period</Typography>
                 </Box>
-                <Box sx={{ display: 'flex', flexDirection: 'row', gap: 1 }}>
-                  <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <Typography variant="h5" sx={{ fontWeight: 600 }}>
                     {new Date(tour.valid_from).toLocaleDateString('en-US', {
                       year: 'numeric',
                       month: 'long',
                       day: 'numeric'
                     })}
                   </Typography>
-                  -
-                  <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 600 }}>to</Typography>
+                  <Typography variant="h5" sx={{ fontWeight: 600 }}>
                     {new Date(tour.valid_to).toLocaleDateString('en-US', {
                       year: 'numeric',
                       month: 'long',
                       day: 'numeric'
                     })}
                   </Typography>
-                  </Box>
+                </Box>
               </Box>
             </Box>
           )}
@@ -558,9 +559,7 @@ const TourDetails = () => {
                     day: 'numeric'
                   })}
                 </Typography>
-                <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                  to
-                </Typography>
+                <Typography variant="h6" sx={{ fontWeight: 600 }}>to</Typography>
                 <Typography variant="h5" sx={{ fontWeight: 600 }}>
                   {new Date(tour.valid_to).toLocaleDateString('en-US', {
                     year: 'numeric',
@@ -600,25 +599,6 @@ const TourDetails = () => {
         )}
 
         <Divider style={{ margin: '0 0' }} />
-          <div>
-            <h2 className="text-2xl font-semibold text-gray-800 mb-6">
-              Facilities
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {tour.facilities.map((facility, index) => (
-                <div
-                  key={index}
-                  className="relative p-4 rounded-lg border border-gray-200 bg-white hover:shadow-md transition-shadow duration-200 group"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg" />
-                  <span className="relative text-gray-700 font-medium">
-                    {facility}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        <Divider style={{ margin: '20px 0 20px 0' }} />
 
 
         {/* Tour Images */}
@@ -712,22 +692,19 @@ const TourDetails = () => {
             <SendIcon sx={{ marginLeft: '10px', fontSize: 'inherit' }} />
           </Button>
         </div>
-        <div>
-        <InquiryForm
+        <div></div><InquiryForm
           open={openDialog}
           onClose={() => setOpenDialog(false)}
           selectedTour={tour}
           selectedCurrency={selectedCurrency}
           convertPrice={convertPrice}
           isMobile={isMobile}
-          // Add these new props:
           finalPrice={totalPrice} 
           finalOldPrice={finalOldPrice}
-          selectedNightsKey={selectedNightsKey}   // e.g. "4"
-          selectedNightsOption={selectedNightsOption} // e.g. "0"
-          selectedFoodCategory={selectedFoodCategory} // e.g. "1"
+          selectedNightsKey={selectedNightsKey}
+          selectedNightsOption={selectedNightsOption}
+          selectedFoodCategory={selectedFoodCategory}
         />
-        </div>
       </Box>
       <Footer />
       <IconButton
