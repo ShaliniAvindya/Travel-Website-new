@@ -26,6 +26,7 @@ const AllTours = () => {
   const [formData, setFormData] = useState({
     title: "",
     price: "",
+    person_count: "",
     nights: "", // confirmed base nights count (as string)
     nightsOptions: {},
     expiry_date: "",
@@ -173,9 +174,15 @@ const AllTours = () => {
   // When opening the edit modal, load tour data into formData.
   const handleEditOpen = (tour) => {
     setEditTour(tour);
-    const inclusionsString = Array.isArray(tour.inclusions) ? tour.inclusions.join("\n") : "";
-    const exclusionsString = Array.isArray(tour.exclusions) ? tour.exclusions.join("\n") : "";
-    const facilitiesString = Array.isArray(tour.facilities) ? tour.facilities.join("\n") : "";
+    const inclusionsString = Array.isArray(tour.inclusions)
+      ? tour.inclusions.join("\n")
+      : "";
+    const exclusionsString = Array.isArray(tour.exclusions)
+      ? tour.exclusions.join("\n")
+      : "";
+    const facilitiesString = Array.isArray(tour.facilities)
+      ? tour.facilities.join("\n")
+      : "";
     const fixFoodCategory = (arr) => {
       if (!Array.isArray(arr)) return [0, 0, false];
       const [val1, val2, val3] = arr;
@@ -191,6 +198,7 @@ const AllTours = () => {
     setFormData({
       title: tour.title,
       price: tour.price,
+      person_count: tour.person_count,
       nights: baseNightsKey,
       nightsOptions: nightsObject,
       expiry_date: formatDate(tour.expiry_date),
@@ -208,7 +216,9 @@ const AllTours = () => {
       inclusions: inclusionsString,
       exclusions: exclusionsString,
       facilities: facilitiesString,
-      tour_image: Array.isArray(tour.tour_image) ? tour.tour_image : [tour.tour_image],
+      tour_image: Array.isArray(tour.tour_image)
+        ? tour.tour_image
+        : [tour.tour_image],
       destination_images: tour.destination_images || [],
       activity_images: tour.activity_images || [],
       hotel_images: tour.hotel_images || [],
@@ -237,6 +247,7 @@ const AllTours = () => {
     setFormData({
       title: "",
       price: "",
+      person_count: "",
       nights: "",
       nightsOptions: {},
       expiry_date: "",
@@ -422,7 +433,8 @@ const AllTours = () => {
           "https://api.imgbb.com/1/upload?key=4e08e03047ee0d48610586ad270e2b39",
           { method: "POST", body: formDataToSend }
         );
-        if (!response.ok) throw new Error(`Failed to upload image: ${response.statusText}`);
+        if (!response.ok)
+          throw new Error(`Failed to upload image: ${response.statusText}`);
         const data = await response.json();
         const finalUrl = data.data.url;
         if (section === "middle_days" && key) {
@@ -503,6 +515,7 @@ const AllTours = () => {
     try {
       const priceInt = parseInt(formData.price, 10) || 0;
       const oldPriceInt = parseInt(formData.oldPrice, 10) || 0;
+      const personCoiuntInt = parseInt(formData.person_count, 10) || 0;
       const parsedFoodCategory = {};
       Object.keys(formData.food_category).forEach((catKey) => {
         const [val1, val2, boolVal] = formData.food_category[catKey];
@@ -523,6 +536,7 @@ const AllTours = () => {
       const payload = {
         title: formData.title,
         price: priceInt,
+        person_count: personCoiuntInt,
         baseNights: parseInt(formData.nights, 10) || 0,
         nights: parsedNightsOptions,
         expiry_date: formData.expiry_date,
@@ -558,6 +572,7 @@ const AllTours = () => {
     }
   };
 
+  // Delete a tour.
   const handleDelete = async (id) => {
     try {
       const result = await Swal.fire({
@@ -584,6 +599,25 @@ const AllTours = () => {
     }
   };
 
+  // Duplicate a tour.
+  const handleDuplicate = async (tour) => {
+    try {
+      // Destructure _id out of the tour and keep the rest of the data.
+      const { _id, ...duplicateData } = tour;
+      // Send a POST request to create a new tour.
+      const response = await axios.post("/tours", duplicateData);
+      if (response.status === 201) {
+        setTours([...tours, response.data]);
+        Swal.fire("Success!", "Tour duplicated successfully.", "success");
+      } else {
+        throw new Error("Failed to duplicate tour.");
+      }
+    } catch (error) {
+      console.error("Error duplicating tour:", error);
+      Swal.fire("Error", error.message, "error");
+    }
+  };
+
   return (
     <div className="bg-white min-h-screen p-0">
       <h1 className="text-5xl font-bold text-center mb-8">All Tours (Admin Panel)</h1>
@@ -600,12 +634,18 @@ const AllTours = () => {
             />
             <div className="p-4 text-center">
               <h3 className="text-xl font-semibold">{tour.title}</h3>
-              <div className="mt-4 flex justify-center space-x-4">
+              <div className="mt-4 flex justify-center space-x-2">
                 <button
-                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                  className="bg-blue-500 text-white w-full  px-4 py-2 rounded hover:bg-blue-600"
                   onClick={() => handleEditOpen(tour)}
                 >
                   Edit
+                </button>
+                <button
+                  className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                  onClick={() => handleDuplicate(tour)}
+                >
+                  Duplicate
                 </button>
                 <button
                   className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
@@ -664,6 +704,18 @@ const AllTours = () => {
                   className="mt-1 p-2 w-full border border-gray-300 rounded-md"
                 />
               </div>
+              {/* Person Count */}
+              <div>
+                <label className="block text-sm font-medium text-gray-600">Person Count</label>
+                <input
+                  type="number"
+                  name="person_count"
+                  value={formData.person_count}
+                  onChange={handleInputChange}
+                  className="mt-1 p-2 w-full border border-gray-300 rounded-md"
+                />
+              </div>
+              
               {/* Expiry Date */}
               <div>
                 <label className="block text-sm font-medium text-gray-600">Expiry Date</label>

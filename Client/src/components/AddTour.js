@@ -23,7 +23,7 @@ const TourForm = () => {
   const [formData, setFormData] = useState({
     title: "",
     price: "",
-    // Confirmed base nights count (as string). Updated only after confirmation.
+    person_count: "",
     nights: "",
     expiry_date: "",
     valid_from: "",
@@ -454,6 +454,7 @@ const TourForm = () => {
     setFormData({
       title: "",
       price: "",
+      person_count: "",
       nights: "",
       expiry_date: "",
       valid_from: "",
@@ -540,6 +541,7 @@ const TourForm = () => {
       // 1) Parse top-level numeric fields
       const priceInt = parseInt(formData.price, 10) || 0;
       const oldPriceInt = parseInt(formData.oldPrice, 10) || 0;
+      const personCountInt = parseInt(formData.person_count, 10) || 0;
   
       // 2) Parse food_category arrays (each is [addPrice, oldAddPrice, boolVal])
       const parsedFoodCategory = {};
@@ -567,6 +569,7 @@ const TourForm = () => {
       const payload = {
         title: formData.title,
         price: priceInt,
+        person_count: personCountInt,
         nights: parsedNightsOptions,
         expiry_date: formData.expiry_date,
         valid_from: formData.valid_from,
@@ -629,6 +632,19 @@ const TourForm = () => {
             className="mt-0 p-2 w-full border border-gray-300 rounded-md"
           />
           {errors.price && <p className="text-red-500 text-sm">{errors.price}</p>}
+        </div>
+
+        {/* Person Count */}
+        <div>
+          <label className="block text-lg font-medium">Person Count</label>
+          <input
+            type="number"
+            name="person_count"
+            value={formData.person_count}
+            onChange={handleInputChange}
+            className="mt-0 p-2 w-full border border-gray-300 rounded-md"
+          />
+          {errors.person_count && <p className="text-red-500 text-sm">{errors.person_count}</p>}
         </div>
 
         {/* Old Price */}
