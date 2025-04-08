@@ -138,7 +138,7 @@ const TourImages = ({ destinations, activities, hotels, deviceType }) => {
     maxHeight: '800px',
     margin: 'auto',
     position: 'relative',
-    overflowY: 'auto', // so user can scroll if content is tall
+    overflowY: 'auto', 
   };
 
   const modalCloseStyle = {
@@ -161,7 +161,8 @@ const TourImages = ({ destinations, activities, hotels, deviceType }) => {
 
   const modalGalleryImageStyle = {
     width: '100%',
-    height: 'auto',
+    aspectRatio: '3 / 2',
+    objectFit: 'cover',
     borderRadius: '8px',
     transition: 'transform 0.3s ease',
   };
