@@ -1,299 +1,73 @@
-import React, { useEffect, useState } from 'react';
-import {
-  AppBar,
-  Typography,
-  Container,
-  Grid,
-  Button,
-  Box,
-} from '@mui/material';
-import { Facebook, Instagram } from '@mui/icons-material';
-import { Link } from 'react-router-dom';
-import HomeIcon from '@mui/icons-material/Home';
-import PhoneIcon from '@mui/icons-material/Phone';
-import EmailIcon from '@mui/icons-material/Email';
-import { useNavigate } from 'react-router-dom';
-import { IconButton } from '@mui/material';
-import { FaTiktok, FaVk } from 'react-icons/fa';
+import { MapPin, Phone, Mail, Facebook, Instagram, Twitter } from 'lucide-react';
 
-
-const center = {
-  lat: 6.9271,
-  lng: 79.8612,
-};
-
-function useDeviceType() {
-  const [deviceType, setDeviceType] = useState({
-    isMobile: window.innerWidth <= 768,
-    isTablet: window.innerWidth > 768 && window.innerWidth <= 1024,
-  });
-
-  useEffect(() => {
-    const handleResize = () => {
-      setDeviceType({
-        isMobile: window.innerWidth <= 768,
-        isTablet: window.innerWidth > 768 && window.innerWidth <= 1024,
-      });
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  return deviceType;
-}
-
-const Footer = () => {
-  const { isMobile, isTablet } = useDeviceType();
-
-  const navigate = useNavigate();
-
-  const handleNavigation = (destination) => {
-    navigate('/');
-  };
-
-  // Inline style objects:
-  const appBarStyle = {
-    backgroundColor: '#023e8a',
-    padding: isMobile || isTablet ? '20px 0' : '0px 0 30px 0',
-    marginTop: 'auto', 
-  };
-
-  const containerStyle = {
-    maxWidth: '1200px', 
-    margin: '0 auto',
-  };
-
-  const logoContainerStyle = {
-    marginBottom: '20px',
-    marginLeft: isMobile ? '0px' : '40px',
-    textAlign: isMobile ? 'center' : 'left',
-  };
-
-  const logoImgStyle = {
-    height: isMobile ? '60px' : '80px',
-    objectFit: 'contain',
-    padding: isMobile? '0 30vw' : isTablet? '0 30vw' : 'none'
-  };
-
-  const contactItemStyle = {
-    color: '#fff',
-    marginBottom: '20px',
-    display: 'flex',
-    alignItems: 'center',
-    padding: isMobile? '0 12vw' : isTablet? '0 28vw' : '0'
-  };
-
-  const contactIconStyle = {
-    marginRight: '15px',
-    fontSize: '28px',
-  };
-
-  const contactTextStyle = {
-    fontSize: isMobile ? '14px' : '16px',
-  };
-
-  const sectionTitleStyle = {
-    color: '#fff',
-    fontWeight: 'bold',
-    marginBottom: isMobile|| isTablet ? '10px' : '20px',
-    marginTop: isMobile? '40px' :isTablet ? '0' : '15px',
-    textAlign: 'center',
-  };
-
-  const socialIconsContainerStyle = {
-    display: 'flex',
-    alignItems: 'center',
-    columnGap: '10px',
-    justifyContent: 'center',
-    padding: isMobile? '0 23vw' : isTablet? '0 34vw' : '0 5vw'
-  };
-
-  const iconBtnStyle = {
-    color: '#fff',
-    marginRight: '15px',
-    transition: 'transform 0.3s ease',
-  };
-
-  // Quick links
-  const quickLinksContainerStyle = {
-    display: 'flex',
-    flexDirection: isMobile || isTablet? 'row' : 'column',
-    alignItems: 'center',
-    textAlign: 'center',
-    padding: isMobile? '0 16vw' : isTablet? '0 30vw' : '0'
-  };
-
-  const quickLinkBtnStyle = {
-    color: '#fff',
-    fontSize: isMobile ? '14px' : '16px',
-    margin: '5px 0',
-    fontWeight: 500,
-    transition: 'color 0.3s ease',
-    textTransform: 'none', // ensure normal text
-  };
-
-  // Map container
-  const mapContainerStyle = {
-    width: '100%',
-    height: '200px',
-    borderRadius: '15px',
-    overflow: 'hidden',
-    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.3)',
-  };
-
-  const mapTitleStyle = {
-    color: '#fff',
-    fontWeight: 'bold',
-    marginTop: isTablet || isMobile ? '30px' : '0',
-    marginBottom: '20px',
-    textAlign: 'center',
-  };
-
-  // Bottom text
-  const bottomBoxStyle = {
-    textAlign: 'center',
-    marginTop: isMobile ? '20px' : '40px',
-  };
-
-  const bottomTextStyle = {
-    color: '#fff',
-    fontSize: '14px',
-  };
-
-  // For hover effects on social icons:
-  const handleIconMouseEnter = (e) => {
-    e.currentTarget.style.transform = 'scale(1.2)';
-  };
-  const handleIconMouseLeave = (e) => {
-    e.currentTarget.style.transform = 'scale(1)';
-  };
-
-  // For hover effects on "Quick Links" buttons (change color):
-  const handleQuickLinkHoverEnter = (e) => {
-    e.currentTarget.style.color = '#90e0ef'; // lighten on hover
-  };
-  const handleQuickLinkHoverLeave = (e) => {
-    e.currentTarget.style.color = '#fff';
-  };
-
+export default function Footer() {
   return (
-    <AppBar position="static" style={appBarStyle}>
-      <Container style={containerStyle}>
-        <Grid
-          container
-          spacing={isMobile ? 2 : 6} 
-          style={{ marginTop: 0 }}
-        >
-          <Grid item xs={12} md={4}>
-            <div style={{ padding: isMobile ? '0 0vw' : isTablet ? '0 0vw' : '0 0 0 2vw' }}>
-              <div style={logoContainerStyle}>
-                  <img
-                    src="https://i.postimg.cc/6Q1tcM0S/HL1.png"
-                    alt="Holiday Life Logo"
-                    style={logoImgStyle}
-                    onClick={() => handleNavigation('Home')}
-                    curse="pointer"
-                  />
-                </div>
-                <Box style={contactItemStyle}>
-                  <HomeIcon style={contactIconStyle} />
-                  <Typography variant="body1" style={contactTextStyle}>
-                  Lot No. 10458
-                  Hulhumale'
-                  Maldives
-                  </Typography>
-                </Box>
-                <Box style={contactItemStyle}>
-                  <PhoneIcon style={contactIconStyle} />
-                  <Typography variant="body1" style={contactTextStyle}>
-                    +960-9969974
-                  </Typography>
-                </Box>
-                <Box style={contactItemStyle}>
-                  <EmailIcon style={contactIconStyle} />
-                  <Typography variant="body1" style={contactTextStyle}>
-                    sales@holidaylife.travel
-                  </Typography>
-                </Box>
+    <footer className="bg-blue-950 text-white pt-16 pb-8 w-full">
+      <div className="max-w-7xl mx-auto px-4 md:px-8 lg:px-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-12">
+          <div className="md:col-span-1">
+            <div className="text-2xl font-bold mb-6">
+              <span className="text-cyan-300">Travel</span> Paradise
             </div>
-          </Grid>
-
-          <Grid item xs={12} md={4} style={{  }}>
-            <Box>
-              <Typography variant="h5" gutterBottom style={sectionTitleStyle}>
-                Quick Links
-              </Typography>
-              <Grid container style={quickLinksContainerStyle}>
-              {['Home', 'Packages', 'Contact'].map((link, index) => {
-                const path = link === 'Packages' ? '/tours' : link === 'Home' ? '/' : link === 'Contact' ? '/contact' : '/';
-                return (
-                  <Button
-                    key={index}
-                    variant="text"
-                    component={Link}
-                    to={path}
-                    style={quickLinkBtnStyle}
-                    onMouseEnter={handleQuickLinkHoverEnter}
-                    onMouseLeave={handleQuickLinkHoverLeave}
-                    onClick={() => handleNavigation(link)}
-                  >
-                    {link}
-                  </Button>
-                );
-              })}
-              </Grid>
-            </Box>
-          </Grid>
-
-          <Grid item xs={12} md={4}>
-            <Box>
-              <Typography variant="h5"gutterBottom style={sectionTitleStyle}>
-                Find Us Here
-              </Typography>
-              <Box style={socialIconsContainerStyle}>
-                <IconButton href="https://www.instagram.com" target="_blank" style={{ color: '#fff' }}>
-                  <Instagram fontSize="large" />
-                </IconButton>
-                <IconButton href="https://www.facebook.com/share/1F7uxkppRf/" target="_blank" style={{ color: '#fff' }}>
-                  <Facebook fontSize="large" />
-                </IconButton>
-                <IconButton href="https://www.tiktok.com" target="_blank" style={{ color: '#fff' }}>
-                  <FaTiktok size={30} />
-                </IconButton>
-                <IconButton href="https://www.vk.com" target="_blank" style={{ color: '#fff' }}>
-                  <FaVk size={30} />
-                </IconButton>
-              </Box>
-            </Box>
-          </Grid>
-        </Grid>
-
-        {/* Footer Bottom */}
-        <Box style={bottomBoxStyle}>
-        <Typography variant="body2" style={bottomTextStyle}>
-          &copy; Copyright {new Date().getFullYear()} - Holiday Life Developed by 
-          <a 
-            href="https://www.lushwebdesigners.com" 
-            target="_blank" 
-            rel="noopener noreferrer" 
-            style={{ color: '#fff', textDecoration: 'none', marginLeft: '5px' }}
-          >
-            Lush Web Designers 
-          </a>
-          by
-          <a 
-            href="https://www.lushware.org" 
-            target="_blank" 
-            rel="noopener noreferrer" 
-            style={{ color: '#fff', textDecoration: 'none', marginLeft: '5px' }}
-          >
-            Lushware Org
-          </a>
-        </Typography>
-      </Box>
-      </Container>
-    </AppBar>
+            <p className="text-cyan-100 mb-6">
+              Your gateway to unforgettable experiences in the breathtaking Maldives islands.
+            </p>
+            <div className="flex space-x-4">
+              <a href="#" className="bg-blue-900 p-2 rounded-full hover:bg-blue-800 transition-colors hover:text-cyan-300">
+                <Facebook size={20} />
+              </a>
+              <a href="#" className="bg-blue-900 p-2 rounded-full hover:bg-blue-800 transition-colors hover:text-cyan-300">
+                <Instagram size={20} />
+              </a>
+              <a href="#" className="bg-blue-900 p-2 rounded-full hover:bg-blue-800 transition-colors hover:text-cyan-300">
+                <Twitter size={20} />
+              </a>
+            </div>
+          </div>
+          
+          <div className="md:col-span-1">
+            <h4 className="text-lg font-semibold mb-6">Quick Links</h4>
+            <ul className="space-y-3">
+              <li><a href="/" className="text-cyan-100 hover:text-white transition">Home</a></li>
+              <li><a href="/tours" className="text-cyan-100 hover:text-white transition">Tours</a></li>
+              <li><a href="#about" className="text-cyan-100 hover:text-white transition">About Us</a></li>
+              <li><a href="#testimonials" className="text-cyan-100 hover:text-white transition">Testimonials</a></li>
+              <li><a href="/contact" className="text-cyan-100 hover:text-white transition">Contact</a></li>
+            </ul>
+          </div>
+          
+          <div className="md:col-span-1">
+            <h4 className="text-lg font-semibold mb-6">Contact Info</h4>
+            <ul className="space-y-4">
+              <li className="flex items-start">
+                <MapPin size={20} className="mr-3 mt-1 flex-shrink-0 text-cyan-300" />
+                <span className="text-cyan-100">123 Paradise Avenue, Malé, Maldives</span>
+              </li>
+              <li className="flex items-center">
+                <Phone size={20} className="mr-3 flex-shrink-0 text-cyan-300" />
+                <a href="tel:+1234567890" className="text-cyan-100 hover:text-white transition">+1 (234) 567-890</a>
+              </li>
+              <li className="flex items-center">
+                <Mail size={20} className="mr-3 flex-shrink-0 text-cyan-300" />
+                <a href="mailto:info@maldivesparadise.com" className="text-cyan-100 hover:text-white transition">info@maldivesparadise.com</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+        
+        <div className="border-t border-blue-800 pt-8">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <p className="text-cyan-200 text-sm mb-4 md:mb-0">
+              &copy; {new Date().getFullYear()} Maldives Paradise Travels. All rights reserved.
+            </p>
+            <div className="flex space-x-3">
+              <a href="#" className="text-cyan-200 hover:text-white text-sm transition">Privacy Policy</a>
+              <a href="#" className="text-cyan-200 hover:text-white text-sm transition">Terms & Conditions</a>
+              <a href="#" className="text-cyan-200 hover:text-white text-sm transition">Cookie Policy</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
   );
-};
-
-export default Footer;
+}

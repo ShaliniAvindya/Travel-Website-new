@@ -1,379 +1,205 @@
-import React, { useState, useEffect } from 'react';
-import { Grid, Card, CardMedia, CardContent, Typography, Box, Button, CircularProgress, TextField, Autocomplete} from '@mui/material';
-import { useNavigate, useLocation } from 'react-router-dom';
-import axios from 'axios';
-import WhatsAppIcon from '@mui/icons-material/WhatsApp';
-import { useCurrency } from '../../screens/CurrencyContext';
+import React, { useEffect, useState } from 'react';
+import { Calendar, Heart, Star } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { tourGallery } from './imageGalleryData';
 
-const ImageGallery = ({ searchQuery = '', passedCountry='' }) => {
-  // Tours and loading states
-  const [tours, setTours] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const navigate = useNavigate();
-  const location = useLocation();
+function useDeviceType() {
+  const [deviceType, setDeviceType] = useState({
+    isMobile: window.innerWidth <= 768,
+    isTablet: window.innerWidth > 768 && window.innerWidth <= 1024,
+  });
 
-  // Get query params and search filters
-  const query = new URLSearchParams(location.search);
-  const searchTerm = searchQuery || query.get('search') || '';
-  const nights = query.get('nights') || '';
-  const country = passedCountry || query.get('country') || '';
-  const market = query.get('market') || '';
-  const minPrice = query.get('minPrice') || '';
-  const maxPrice = query.get('maxPrice') || '';
-  const selectedCurrency = localStorage.getItem('selectedCurrency') || 'USD';
-
-  // Search filters
-  const [search, setSearch] = useState(searchTerm);
-  const [searchNights, setSearchNights] = useState(nights);
-  const [searchCountry, setSearchCountry] = useState(country);
-  const [searchMarket, setSearchMarket] = useState('');
-  const [searchMinPrice, setSearchMinPrice] = useState(minPrice);
-  const [searchMaxPrice, setSearchMaxPrice] = useState(maxPrice);
-  const [exchangeRates, setExchangeRates] = useState({});
-
-  const { currency } = useCurrency();
-
-  // Price conversion
-  const convertPrice = (priceInUSD) => {
-    if (!exchangeRates[currency]) return priceInUSD.toLocaleString();
-    return (priceInUSD * exchangeRates[currency]).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2});
-  };
-
-  // A simple hook to detect mobile view
-  function useDeviceType() {
-    const [deviceType, setDeviceType] = useState({
-      isMobile: window.innerWidth <= 768,
-      isTablet: window.innerWidth > 768 && window.innerWidth <= 1024,
-    });
-
-    useEffect(() => {
-      const handleResize = () => {
-        setDeviceType({
-          isMobile: window.innerWidth <= 768,
-          isTablet: window.innerWidth > 768 && window.innerWidth <= 1024,
-        });
-      };
-      window.addEventListener('resize', handleResize);
-      return () => window.removeEventListener('resize', handleResize);
-    }, []);
-
-    return deviceType;
-  }
-  const { isMobile } = useDeviceType();
-
-  // Fetch tours and exchange rates on mount
   useEffect(() => {
-    const fetchTours = async () => {
-      try {
-        const response = await axios.get('/tours');
-        setTours(response.data);
-        setLoading(false);
-      } catch (err) {
-        setError('Failed to fetch tours. Please try again later.');
-        setLoading(false);
-      }
+    const handleResize = () => {
+      setDeviceType({
+        isMobile: window.innerWidth <= 768,
+        isTablet: window.innerWidth > 768 && window.innerWidth <= 1024,
+      });
     };
-
-    const fetchExchangeRates = async () => {
-      try {
-        const response = await axios.get('https://api.exchangerate-api.com/v4/latest/USD');
-        setExchangeRates(response.data.rates);
-      } catch (error) {
-        console.error('Error fetching exchange rates:', error);
-      }
-    };
-
-    fetchExchangeRates();
-    fetchTours();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Sync search filter state with query params
+  return deviceType;
+}
+
+const ImageGallery = ({ searchQuery = '', selectedFilters = { categories: [], priceRange: [], duration: [] }, setAvailableToursCount = () => {} }) => {
+  const { isMobile } = useDeviceType();
+  const [activeTab, setActiveTab] = useState('all');
+  const navigate = useNavigate();
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+  };
+
+  const handleClick = (id) => {
+    navigate(`/tours/${id.$oid}`);
+  };
+
+  // Filter tours based on searchQuery, selectedFilters, and activeTab
+  const filteredTours = (() => {
+    let results = tourGallery;
+
+    if (searchQuery && searchQuery.trim() !== '') {
+      const term = searchQuery.toLowerCase();
+      results = results.filter(tour => 
+        tour.title.toLowerCase().includes(term) || 
+        tour.sum.toLowerCase().includes(term) ||
+        tour.category.toLowerCase().includes(term)
+      );
+    }
+
+    if (selectedFilters.categories?.length > 0) {
+      results = results.filter(tour => selectedFilters.categories.includes(tour.category));
+    }
+
+    if (selectedFilters.priceRange?.length > 0) {
+      results = results.filter(tour => {
+        return selectedFilters.priceRange.some(range => {
+          if (range === '$0 - $1000') return tour.price <= 1000;
+          if (range === '$1000 - $2000') return tour.price > 1000 && tour.price <= 2000;
+          if (range === '$2000 - $3000') return tour.price > 2000 && tour.price <= 3000;
+          if (range === '$3000+') return tour.price > 3000;
+          return false;
+        });
+      });
+    }
+
+    if (selectedFilters.duration?.length > 0) {
+      results = results.filter(tour => {
+        return selectedFilters.duration.some(range => {
+          if (range === '1-3 Days') return tour.days >= 1 && tour.days <= 3;
+          if (range === '4-7 Days') return tour.days >= 4 && tour.days <= 7;
+          if (range === '8-14 Days') return tour.days >= 8 && tour.days <= 14;
+          if (range === '15+ Days') return tour.days >= 15;
+          return false;
+        });
+      });
+    }
+
+    if (activeTab !== 'all') {
+      results = results.filter(tour => tour.category === activeTab);
+    }
+
+    return results;
+  })();
+
   useEffect(() => {
-    setSearch(searchTerm);
-    setSearchNights(nights);
-    setSearchCountry(country);
-    setSearchMarket(market);
-    setSearchMinPrice(minPrice);
-    setSearchMaxPrice(maxPrice);
-  }, [searchTerm, nights, country, market, minPrice, maxPrice]);
-
-  // Market mapping
-  const marketMapping = {
-    1: 'Indian Market',
-    2: 'Chinese Market',
-    3: 'Asian Markets',
-    4: 'Middle East Markets',
-    5: 'Russia and CIS Markets',
-    6: 'Rest of the World',
-  };
-  const marketMappingInverse = Object.fromEntries(
-    Object.entries(marketMapping).map(([key, value]) => [value, Number(key)])
-  );
-
-  const localToUSD = (localPrice) => {
-    if (!exchangeRates[currency]) return localPrice;
-    return localPrice / exchangeRates[currency];
-  };
-
-  const filteredTours = tours.filter((tour) => {
-    const currentDate = new Date();
-    const tourExpiryDate = new Date(tour.expiry_date);
-    if (tourExpiryDate < currentDate) return false;
-  
-    const searchNightsValue = searchNights ? parseInt(searchNights, 10) : null;
-  
-    const marketMatch =
-      !searchMarket ||
-      (Array.isArray(tour.markets) && tour.markets.includes(Number(searchMarket)));
-  
-    const minValUSD = searchMinPrice ? localToUSD(parseFloat(searchMinPrice)) : null;
-    const maxValUSD = searchMaxPrice ? localToUSD(parseFloat(searchMaxPrice)) : null;
-  
-    // New logic to handle object-based "nights"
-    const hasMatchingNights =
-      !searchNightsValue ||
-      (tour.nights && Object.keys(tour.nights).includes(searchNightsValue.toString()));
-  
-    return (
-      (!search || tour.title.toLowerCase().includes(search.toLowerCase())) &&
-      hasMatchingNights && // use the new boolean here
-      (!minValUSD || tour.price >= minValUSD) &&
-      (!maxValUSD || tour.price <= maxValUSD) &&
-      (!searchCountry || tour.country.toLowerCase().includes(searchCountry.toLowerCase())) &&
-      marketMatch
-    );
-  });  
-
-  // Handle search form submission
-  const handleSearchSubmit = (event) => {
-    event.preventDefault();
-    const queryParams = new URLSearchParams({
-      search,
-      nights: searchNights,
-      country: searchCountry,
-      markets: searchMarket,
-      minPrice: searchMinPrice,
-      maxPrice: searchMaxPrice,
-    }).toString();
-    navigate(`/imagegallery?${queryParams}`);
-  };
-
-  // Open WhatsApp chat
-  const handleWhatsAppClick = () => {
-    const whatsappUrl = `https://wa.me/9609969974`;
-    window.open(whatsappUrl, '_blank');
-  };
-
-  if (loading) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="70vh">
-        <CircularProgress />
-      </Box>
-    );
-  }
-
-  if (error) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="70vh">
-        <Typography variant="h6" color="error">
-          {error}
-        </Typography>
-      </Box>
-    );
-  }
+    setAvailableToursCount(filteredTours.length);
+  }, [filteredTours, setAvailableToursCount]);
 
   return (
-    <Box sx={{ width: '100%', minHeight: '65vh', padding: '20px 30px', backgroundColor: '#f9f9f9' }}>
-      <Box
-        mb={3}
-        component="form"
-        onSubmit={handleSearchSubmit}
-        sx={{
-          display: 'flex',
-          flexDirection: isMobile ? 'column' : 'row',
-          gap: '10px',
-          backgroundColor: '#dfedf7',
-          padding: '10px 20px',
-          borderRadius: '8px',
-        }}
-      >
-        <TextField
-          fullWidth
-          label="Search for packages"
-          variant="outlined"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-        <TextField
-          fullWidth
-          label="Nights"
-          variant="outlined"
-          value={searchNights}
-          onChange={(e) => setSearchNights(e.target.value)}
-        />
-        <TextField
-          fullWidth
-          label="Min Price"
-          variant="outlined"
-          value={searchMinPrice}
-          onChange={(e) => setSearchMinPrice(e.target.value)}
-        />
-        <TextField
-          fullWidth
-          label="Max Price"
-          variant="outlined"
-          value={searchMaxPrice}
-          onChange={(e) => setSearchMaxPrice(e.target.value)}
-        />
-        <TextField
-          fullWidth
-          label="Country"
-          variant="outlined"
-          value={searchCountry}
-          onChange={(e) => setSearchCountry(e.target.value)}
-        />
-        <Autocomplete
-          options={Object.values(marketMapping)}
-          renderInput={(params) => <TextField {...params} label="Market" variant="outlined" />}
-          value={marketMapping[searchMarket] || ''}
-          onChange={(event, newValue) => {
-            setSearchMarket(marketMappingInverse[newValue] || '');
-          }}
-          fullWidth
-        />
-      </Box>
+    <section id="tours" className="py-16">
+      <div className="container mx-auto px-4 md:px-8">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold text-blue-900 mb-4">Explore Our Tours</h2>
+          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+            Discover the perfect package for your dream Maldives vacation
+          </p>
+        </div>
 
-      <Grid container spacing={5}>
-        {filteredTours.map((item) => (
-          <Grid item xs={12} sm={6} md={4} key={item._id}>
-            <Card
-              sx={{
-                borderRadius: '16px',
-                height: '100%',
-                boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
-                transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                '&:hover': {
-                  transform: 'scale(1.03)',
-                  boxShadow: '0px 8px 20px rgba(0, 0, 0, 0.2)',
-                },
-                overflow: 'hidden',
-              }}
-            >
-              <Box sx={{ position: 'relative' }}>
-                <CardMedia
-                  component="div"
-                  sx={{
-                    width: '100%',
-                    paddingTop: '100%', // forces a square aspect ratio
-                    backgroundImage: `url(${item.tour_image})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    cursor: 'pointer',
-                    '&:hover': {
-                      filter: 'brightness(0.85)',
-                    },
-                  }}
-                  onClick={() => navigate(`/tours/${item._id}`)}
+        <div className="flex flex-wrap justify-center mb-8 gap-2">
+          <button 
+            onClick={() => handleTabChange('all')}
+            className={`px-4 py-2 rounded-full transition ${
+              activeTab === 'all' ? 'bg-blue-900 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            All Tours
+          </button>
+          <button 
+            onClick={() => handleTabChange('Luxury')}
+            className={`px-4 py-2 rounded-full transition ${
+              activeTab === 'Luxury' ? 'bg-blue-900 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            Luxury
+          </button>
+          <button 
+            onClick={() => handleTabChange('Adventure')}
+            className={`px-4 py-2 rounded-full transition ${
+              activeTab === 'Adventure' ? 'bg-blue-900 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            Adventure
+          </button>
+          <button 
+            onClick={() => handleTabChange('Family')}
+            className={`px-4 py-2 rounded-full transition ${
+              activeTab === 'Family' ? 'bg-blue-900 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            Family
+          </button>
+          <button 
+            onClick={() => handleTabChange('Wellness')}
+            className={`px-4 py-2 rounded-full transition ${
+              activeTab === 'Wellness' ? 'bg-blue-900 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            Wellness
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {filteredTours.map((tour) => (
+            <div key={tour._id.$oid} className="bg-white rounded-xl overflow-hidden shadow-lg transition-transform duration-300 hover:shadow-2xl hover:translate-y-1">
+              <div className="relative">
+                <img 
+                  src={tour.images[0]} 
+                  alt={tour.title} 
+                  className="w-full h-64 object-cover"
+                  onClick={() => handleClick(tour._id)}
                 />
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    bottom: 0,
-                    width: '100%',
-                    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-                    color: '#fff',
-                    padding: '10px',
-                    textAlign: 'center',
-                  }}
+                <button className="absolute top-4 right-4 bg-white p-2 rounded-full text-gray-600 hover:text-red-500 transition">
+                  <Heart size={20} />
+                </button>
+                <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white py-2 text-center">
+                  <p className="text-sm font-medium">
+                    {tour.days} days & {tour.days - 1} nights
+                  </p>
+                </div>
+              </div>
+              <div className="p-5">
+                <div className="flex justify-between items-center mb-3">
+                  <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                    {tour.category}
+                  </span>
+                  <div className="flex items-center">
+                    <Star size={16} className="text-yellow-400" />
+                    <span className="text-gray-700 ml-1">{(Math.random() * (5 - 4) + 4).toFixed(1)}</span>
+                  </div>
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">{tour.title}</h3>
+                <p className="text-gray-600 mb-4 line-clamp-2">{tour.sum}</p>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center text-gray-700">
+                    <Calendar size={16} className="mr-1" />
+                    <span>{tour.days} days</span>
+                  </div>
+                  <div className="text-blue-900 font-bold text-lg">
+                    ${tour.price.toLocaleString()}
+                    <span className="text-gray-500 font-normal text-sm">/person</span>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => handleClick(tour._id)}
+                  className="w-full bg-blue-900 hover:bg-blue-800 text-white py-2 rounded-lg transition duration-300"
                 >
-                  <Typography variant="body2" fontWeight="bold">
-                    {item.nights && typeof item.nights === 'object' && Object.keys(item.nights).length > 0
-                      ? `${Object.keys(item.nights)[0]} Days/${Object.keys(item.nights)[0]} Nights`  // Get the first key
-                      : 'N/A'}
-                  </Typography>
-                </Box>
-              </Box>
-              <CardContent sx={{ backgroundColor: '#fff', padding: '10px 20px 20px 20px' }}>
-                <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                  <Typography variant="h1" fontWeight="bold" fontSize={24}>
-                    {item.title}
-                  </Typography>
-                </Box>
-                <Box>
-                  <Typography
-                    variant="body1"
-                    sx={{ color: 'text.primary', fontWeight: 'bold' }}
-                    gutterBottom
-                    display="flex"
-                    justifyContent="space-between"
-                    mb={1}
-                  >
-                    {selectedCurrency}{' '}
-                    {item.price && !isNaN(item.price) ? convertPrice(item.price) : ''}
-                    {item.oldPrice && !isNaN(item.oldPrice) && (
-                      <Typography
-                        component="span"
-                        variant="body1"
-                        sx={{ textDecoration: 'line-through', marginLeft: 1, color: 'text.secondary' }}
-                      >
-                        {selectedCurrency} {convertPrice(item.oldPrice)}
-                      </Typography>
-                    )}
-                    {item.oldPrice && !isNaN(item.oldPrice) && (
-                      <Typography
-                        component="span"
-                        variant="body2"
-                        color="error"
-                        fontWeight="bold"
-                        backgroundColor="rgba(76, 175, 80, 0.1)"
-                        padding={0.5}
-                      >
-                        SAVE {selectedCurrency}{' '}
-                        {convertPrice(item.oldPrice - item.price)}
-                      </Typography>
-                    )}
-                  </Typography>
-                </Box>
-                <Box display="flex" gap={2} mt={3}>
-                  <Button
-                    variant="outlined"
-                    startIcon={<WhatsAppIcon />}
-                    sx={{
-                      borderColor: '#4CAF50',
-                      color: '#4CAF50',
-                      padding: '0px 15px',
-                      '&:hover': {
-                        backgroundColor: 'rgba(76, 175, 80, 0.1)',
-                        borderColor: '#4CAF50',
-                      },
-                    }}
-                    onClick={handleWhatsAppClick}
-                  >
-                    Chat
-                  </Button>
-                  <Button
-                    variant="contained"
-                    fullWidth
-                    sx={{
-                      backgroundColor: '#2196F3',
-                      color: '#fff',
-                      padding: '5px 0',
-                      '&:hover': {
-                        backgroundColor: '#1976D2',
-                      },
-                    }}
-                    onClick={() => navigate(`/tours/${item._id}`)}
-                  >
-                    View Details
-                  </Button>
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
-    </Box>
+                  Book Now
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {filteredTours.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-gray-600 text-lg">No tours found matching your criteria. Please try a different search.</p>
+          </div>
+        )}
+      </div>
+    </section>
   );
 };
 

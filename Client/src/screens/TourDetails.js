@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Typography, Box, Button, IconButton } from '@mui/material';
+import { Typography, Box, Button, IconButton, CircularProgress } from '@mui/material';
 import TourImages from './TourImages';
 import Itinerary from './Itinerary';
 import Footer from '../components/Footer';
@@ -10,9 +10,13 @@ import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import InquiryForm from '../components/Home/InquiryForm';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
-import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import DateRangeIcon from '@mui/icons-material/DateRange';
-import { Divider } from 'antd';
+import { tourGallery } from '../components/Home/imageGalleryData';
+import { 
+  Star, MapPin, Users, Clock, Shield, Calendar, Award, Anchor, ArrowLeft, Check,
+  ChevronRight, Phone
+} from 'lucide-react';
+import throttle from 'lodash.throttle';
 
 function useDeviceType() {
   const [deviceType, setDeviceType] = useState({
@@ -35,29 +39,18 @@ function useDeviceType() {
 }
 
 const TourDetails = () => {
-  const { id } = useParams(); 
+  const { id } = useParams();
   const navigate = useNavigate();
   const [tour, setTour] = useState(null);
   const [loading, setLoading] = useState(true);
   const [exchangeRates, setExchangeRates] = useState({});
+  const [scrollY, setScrollY] = useState(0);
+  const [selectedNightsKey, setSelectedNightsKey] = useState(null);
+  const [imageError, setImageError] = useState(false);
 
   const { isMobile, isTablet } = useDeviceType();
   const selectedCurrency = localStorage.getItem('selectedCurrency') || 'USD';
 
-  // Food category map remains unchanged.
-  const foodCategoryMap = {
-    0: 'Half Board',
-    1: 'Full Board',
-    2: 'All Inclusive'
-  };
-
-  // New state for selections.
-  const [selectedNightsKey, setSelectedNightsKey] = useState(null);
-  const [selectedNightsOption, setSelectedNightsOption] = useState(null);
-  // IMPORTANT: Only select a food category if its boolean value is true.
-  const [selectedFoodCategory, setSelectedFoodCategory] = useState(null);
-
-  // Price conversion function.
   const convertPrice = (priceInUSD) => {
     if (!exchangeRates[selectedCurrency]) return priceInUSD.toLocaleString();
     return (priceInUSD * exchangeRates[selectedCurrency]).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -68,15 +61,35 @@ const TourDetails = () => {
     window.open(whatsappUrl, '_blank');
   };
 
+  const handleImageError = () => {
+    console.error('Primary image failed to load:', tour?.tour_image);
+    setImageError(true);
+  };
+
+  useEffect(() => {
+    const handleScroll = throttle(() => {
+      setScrollY(window.scrollY);
+    }, 100);
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      handleScroll.cancel();
+    };
+  }, []);
+
   useEffect(() => {
     const fetchTourDetails = async () => {
       try {
-        const response = await axios.get(`/tours/${id}`); 
+        const response = await axios.get(`/tours/${id}`);
+        console.log('Tour data:', response.data); // Debug tour.tour_image
         setTour(response.data);
-        setLoading(false);
       } catch (error) {
         console.error('Error fetching tour details:', error);
-        setLoading(false);  
+        const foundTour = tourGallery.find(t => t._id.$oid === id);
+        console.log('Fallback tour:', foundTour); // Debug fallback
+        setTour(foundTour || null);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -88,659 +101,314 @@ const TourDetails = () => {
         console.error('Error fetching exchange rates:', error);
       }
     };
-  
+
     fetchExchangeRates();
     window.scrollTo(0, 0);
     fetchTourDetails();
-  }, [id]); 
+  }, [id]);
 
-  // Initialize selection defaults when tour data loads.
   useEffect(() => {
-    if (tour) {
-      // Initialize nights selection if available.
-      if (tour.nights && typeof tour.nights === 'object') {
-        const nightsKeys = Object.keys(tour.nights);
-        if (nightsKeys.length > 0) {
-          setSelectedNightsKey(nightsKeys[0]);
-          const firstOptions = tour.nights[nightsKeys[0]];
-          const optionKeys = Object.keys(firstOptions);
-          if (optionKeys.length > 0) {
-            setSelectedNightsOption(optionKeys[0]);
-          }
-        }
-      }
-      // Initialize food category selection only with those having boolean true.
-      if (tour.food_category && typeof tour.food_category === 'object') {
-        const availableFoodKeys = Object.keys(tour.food_category).filter(
-          key => tour.food_category[key][2] === true
-        );
-        if (availableFoodKeys.length > 0) {
-          setSelectedFoodCategory(availableFoodKeys[0]);
-        }
+    if (tour && tour.nights && typeof tour.nights === 'object') {
+      const nightsKeys = Object.keys(tour.nights);
+      if (nightsKeys.length > 0) {
+        setSelectedNightsKey(nightsKeys[0]);
       }
     }
   }, [tour]);
 
-  // Compute total price based on selections.
   const basePrice = tour ? tour.price : 0;
-  const oldBasePrice = tour ? tour.oldPrice : 0;
-  const nightsAddPrice = (selectedNightsKey && selectedNightsOption && tour && tour.nights[selectedNightsKey])
-    ? tour.nights[selectedNightsKey][selectedNightsOption].add_price
-    : 0;
-  const foodAddPrice = (selectedFoodCategory && tour && tour.food_category)
-    ? tour.food_category[selectedFoodCategory][0]
-    : 0;
-  const totalPrice = basePrice + nightsAddPrice + foodAddPrice;
+  const oldBasePrice = tour ? tour.oldPrice || tour.price * 1.2 : 0;
+  const totalPrice = basePrice;
+  const finalOldPrice = oldBasePrice;
 
-  const nightsOldPrice = (selectedNightsKey && selectedNightsOption && tour && tour.nights[selectedNightsKey])
-    ? tour.nights[selectedNightsKey][selectedNightsOption].old_add_price
-    : 0;
-  const foodOldPrice = (selectedFoodCategory && tour && tour.food_category)
-    ? tour.food_category[selectedFoodCategory][1]
-    : 0;
-  const finalOldPrice = oldBasePrice + nightsOldPrice + foodOldPrice;
-
-  // Compute days and nights.
   const nightsCount = selectedNightsKey ? parseInt(selectedNightsKey) : 0;
   const daysCount = nightsCount + 1;
-
-  const personCount = tour ? tour.person_count : 0;
+  const personCount = tour ? tour.person_count || 2 : 0;
 
   const [openDialog, setOpenDialog] = useState(false);
+  const handleOpenDialog = () => setOpenDialog(true);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-cyan-50 to-teal-50 flex items-center justify-center">
+        <div className="text-center bg-white rounded-3xl shadow-2xl p-12 max-w-md mx-4">
+          <div className="relative mb-8">
+            <CircularProgress size={80} className="text-blue-600" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Anchor className="w-8 h-8 text-blue-600 animate-pulse" />
+            </div>
+          </div>
+          <Typography variant="h5" className="text-blue-900 font-bold mb-2">Exploring Paradise</Typography>
+          <Typography variant="body1" className="text-gray-600">Loading your dream experience...</Typography>
+        </div>
+      </div>
+    );
   }
 
   if (!tour) {
-    return <div>Tour not found</div>;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-cyan-50 to-teal-50 flex items-center justify-center">
+        <div className="text-center bg-white rounded-3xl shadow-2xl p-12 max-w-md mx-4">
+          <div className="text-red-500 text-8xl mb-6">⚠️</div>
+          <Typography variant="h4" className="text-red-600 font-bold mb-4">
+            Oops! Tour Not Found
+          </Typography>
+          <Typography variant="body1" className="text-gray-600 mb-8">
+            The paradise you're looking for seems to have sailed away. Let's find you another slice of heaven!
+          </Typography>
+          <Button
+            variant="contained"
+            className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white px-8 py-4 rounded-full font-bold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all"
+            onClick={() => navigate('/tours')}
+          >
+            <ArrowLeft className="mr-2 w-5 h-5" />
+            Explore All Tours
+          </Button>
+        </div>
+      </div>
+    );
   }
 
-  // Handlers to open/close inquiry dialog.
-  const handleOpenDialog = () => setOpenDialog(true);
-
   return (
-    <>
-      <Box padding={isMobile ? '3vw' : '2vw'} sx={{ margin: '0 6vw', backgroundColor: '#f0f0f0' }}>
-        {/* Tour Title */}
-        <Typography
-          variant={isMobile ? 'h4' : isTablet ? 'h3' : "h2"}
-          sx={{
-            fontFamily: 'Dancing Script',
-            color: '#023047',
-            marginBottom: '40px',
-            marginTop: '20px',
-            textAlign: 'center',
-            fontWeight: 'bold',
-          }}
-        >
-          {tour.title}
-        </Typography>
-
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: isMobile ? 'column' : 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            gap: 6,
-            mb: 2,
-            padding: '0 40px',
-          }}
-        >
-          {/* Left Column: Selections and Facilities */}
-          <Box sx={{ marginBottom: '30px' , display: 'flex', flexDirection: 'column', gap: 2, flex: 1 }}>
-            {/* Nights selection */}
-            {tour.nights && (
-              <Box sx={{ mb: 1, display: 'flex', alignItems: 'center' }}>
-                <Typography variant="h6" sx={{ mr: 2 }}>Nights</Typography>
-                {Object.keys(tour.nights).map((key) => (
-                  <Box
-                    key={key}
-                    onClick={() => {
-                      setSelectedNightsKey(key);
-                      setSelectedNightsOption(Object.keys(tour.nights[key])[0]);
-                    }}
-                    sx={{
-                      border: selectedNightsKey === key ? '2px solid #2c69c9' : '1px solid grey',
-                      backgroundColor: selectedNightsKey === key ? 'rgba(0, 97, 252, 0.1)' : 'white',
-                      borderRadius: 1,
-                      p: 1,
-                      mr: 1,
-                      cursor: 'pointer'
-                    }}
-                  >
-                    <Typography>{key} Nights</Typography>
-                  </Box>
-                ))}
-              </Box>
-            )}
-
-            <Divider style={{ margin: '0 0', color: 'black' }} />
-
-            {/* Option selection for chosen nights */}
-            {selectedNightsKey && tour.nights[selectedNightsKey] && (
-              <Box sx={{ mb: 1 }}>
-                <Typography variant="h6" sx={{ mb: 1 }}>Package Options</Typography>
-                {Object.keys(tour.nights[selectedNightsKey]).map((optKey) => (
-                  <Box
-                    key={optKey}
-                    onClick={() => setSelectedNightsOption(optKey)}
-                    sx={{
-                      border: selectedNightsOption === optKey ? '2px solid #2c69c9' : '1px solid grey',
-                      backgroundColor: selectedNightsOption === optKey ? 'rgba(0, 97, 252, 0.1)' : 'white',
-                      borderRadius: 1,
-                      p: 1,
-                      mb: 1,
-                      cursor: 'pointer',
-                      width: '100%'
-                    }}
-                  >
-                    <Typography>
-                      {tour.nights[selectedNightsKey][optKey].option}
-                    </Typography>
-                  </Box>
-                ))}
-              </Box>
-            )}
-
-            <Divider style={{ margin: '0 0', color: 'black' }} />
-
-            {/* Food Category selection: Only display categories where boolean is true */}
-            {tour.food_category && (
-              <Box sx={{ mb: 1 }}>
-                <Typography variant="h6" sx={{ mb: 1 }}>
-                  Food Category
-                </Typography>
-                <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2, flexWrap: 'wrap' }}>
-                  {Object.keys(tour.food_category)
-                    .filter(key => tour.food_category[key][2] === true)
-                    .map((key) => (
-                      <Box
-                        key={key}
-                        onClick={() => setSelectedFoodCategory(key)}
-                        sx={{
-                          border: selectedFoodCategory === key ? '2px solid #2c69c9' : '1px solid grey',
-                          backgroundColor: selectedFoodCategory === key ? 'rgba(0, 97, 252, 0.1)' : 'white',
-                          borderRadius: 1,
-                          p: 1,
-                          cursor: 'pointer',
-                          width: 'fit-content',
-                        }}
-                      >
-                        <Typography>
-                          {foodCategoryMap[key]}
-                        </Typography>
-                      </Box>
-                  ))}
-                </Box>
-              </Box>
-            )}
-
-            <Divider style={{ margin: '0 0', color: 'black' }} />
-
-            {/* Facilities Div inserted under Food Category */}
-            {tour.facilities && tour.facilities.length > 0 && (
-              <Box sx={{ mb: 2}}>
-                <Typography variant="h6" sx={{ mb: 1 }}>Facilities</Typography>
-                <Box sx={{ 
-                  display: 'grid', 
-                  gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)', 
-                  gap: 1 
-                }}>
-                  {tour.facilities.map((facility, index) => (
-                    <Box
-                      key={index}
-                      sx={{
-                        p: 1.5,
-                        border: '1px solid #e0e0e0',
-                        borderRadius: 1,
-                        backgroundColor: 'white',
-                      }}
-                    >
-                      <Typography>{facility}</Typography>
-                    </Box>
-                  ))}
-                </Box>
-              </Box>
-            )}
-          </Box>
-
-          {/* RIGHT Column: Enhanced info cards */}
-          {!isMobile && (
-            <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-around',gap: 1, width: '400px' }}>
-              {/* Days/Nights Card */}
-              <Box
-                sx={{
-                  background: 'linear-gradient(135deg, #1a365d 0%, #2563eb 100%)',
-                  borderRadius: '16px',
-                  padding: '15px',
-                  color: 'white',
-                  boxShadow: '0 10px 20px rgba(37, 99, 235, 0.2)',
-                  transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                  '&:hover': {
-                    transform: 'translateY(-5px)',
-                    boxShadow: '0 15px 30px rgba(37, 99, 235, 0.3)',
-                  },
-                }}
-              >
-                <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                  <AccessTimeIcon sx={{ fontSize: 32, mr: 1 }} />
-                  {daysCount} Days / {nightsCount} Nights
-                </Typography>
-              </Box>
-
-              {/* Price Card */}
-              <Box
-                sx={{
-                  background: 'linear-gradient(135deg, #065f46 0%, #059669 100%)',
-                  borderRadius: '16px',
-                  padding: '15px',
-                  color: 'white',
-                  boxShadow: '0 10px 20px rgba(5, 150, 105, 0.2)',
-                  transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                  '&:hover': {
-                    transform: 'translateY(-5px)',
-                    boxShadow: '0 15px 30px rgba(5, 150, 105, 0.3)',
-                  },
-                }}
-              >
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 0 }}>
-                  <AttachMoneyIcon sx={{ fontSize: 32, mr: 1 }} />
-                  <Typography variant="h6" sx={{ fontWeight: 500 }}>Price</Typography>
-                </Box>
-                <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                  {selectedCurrency} {convertPrice(totalPrice)}
-                </Typography>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                  {finalOldPrice > totalPrice && (
-                    <Typography sx={{ textDecoration: 'line-through', color: 'rgba(255,255,255,0.7)' }}>
-                      {selectedCurrency} {convertPrice(finalOldPrice)}
-                    </Typography>
-                  )}
-                  <Typography variant="h6" sx={{ fontWeight: 500, color: 'rgba(255,255,255,0.7)' }}>
-                    For {personCount} Person(s)
-                  </Typography>
-                </Box>
-              </Box>
-
-              {/* Expiry Card */}
-              <Box
-                sx={{
-                  background: 'linear-gradient(135deg, #991b1b 0%, #dc2626 100%)',
-                  borderRadius: '16px',
-                  padding: '15px',
-                  color: 'white',
-                  boxShadow: '0 10px 20px rgba(220, 38, 38, 0.2)',
-                  transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                  '&:hover': {
-                    transform: 'translateY(-5px)',
-                    boxShadow: '0 15px 30px rgba(220, 38, 38, 0.3)',
-                  },
-                }}
-              >
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                  <CalendarMonthIcon sx={{ fontSize: 32, mr: 1 }} />
-                  <Typography variant="h6" sx={{ fontWeight: 500 }}>Expires On</Typography>
-                </Box>
-                <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                  {new Date(tour.expiry_date).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                  })}
-                </Typography>
-              </Box>
-
-              {/* Validity Card */}
-              <Box
-                sx={{
-                  background: 'linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)',
-                  borderRadius: '16px',
-                  padding: '15px',
-                  color: 'white',
-                  boxShadow: '0 10px 20px rgba(59, 130, 246, 0.2)',
-                  transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                  '&:hover': {
-                    transform: 'translateY(-5px)',
-                    boxShadow: '0 15px 30px rgba(59, 130, 246, 0.3)',
-                  },
-                }}
-              >
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                  <DateRangeIcon sx={{ fontSize: 32, mr: 1 }} />
-                  <Typography variant="h6" sx={{ fontWeight: 500 }}>Valid Period</Typography>
-                </Box>
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  <Typography variant="h5" sx={{ fontWeight: 600 }}>
-                    {new Date(tour.valid_from).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}
-                  </Typography>
-                  <Typography variant="h6" sx={{ fontWeight: 600 }}>to</Typography>
-                  <Typography variant="h5" sx={{ fontWeight: 600 }}>
-                    {new Date(tour.valid_to).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}
-                  </Typography>
-                </Box>
-              </Box>
-            </Box>
-          )}
-        </Box>
-
-        {isMobile && (
-          <Box 
-            sx={{ 
-              display: 'flex', 
-              flexDirection: 'column',
-              gap: 1,
-              mb: 5
-            }}
-          >
-            {/* Days/Nights Card */}
-            <Box
-              sx={{
-                background: 'linear-gradient(135deg, #1a365d 0%, #2563eb 100%)',
-                borderRadius: '16px',
-                padding: '15px',
-                color: 'white',
-                boxShadow: '0 10px 20px rgba(37, 99, 235, 0.2)',
-                transform: 'translateY(0)',
-                transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                '&:hover': {
-                  transform: 'translateY(-5px)',
-                  boxShadow: '0 15px 30px rgba(37, 99, 235, 0.3)',
-                },
-                textAlign: 'center',
-              }}
-            >
-              <Typography variant="h5" sx={{ fontWeight: 700 }}>
-                <AccessTimeIcon sx={{ fontSize: 25, mr: 1 }} />
-                {daysCount} Days / {nightsCount} Nights
-              </Typography>
-            </Box>
-
-            {/* Price Card */}
-            <Box
-              sx={{
-                background: 'linear-gradient(135deg, #065f46 0%, #059669 100%)',
-                borderRadius: '16px',
-                padding: '15px',
-                color: 'white',
-                boxShadow: '0 10px 20px rgba(5, 150, 105, 0.2)',
-                transform: 'translateY(0)',
-                transition: 'transform 0.3s ease, boxShadow 0.3s ease',
-                '&:hover': {
-                  transform: 'translateY(-5px)',
-                  boxShadow: '0 15px 30px rgba(5, 150, 105, 0.3)',
-                },
-                textAlign: 'center',
-              }}
-            >
-              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mb: 1 }}>
-                <AttachMoneyIcon sx={{ fontSize: 25, mr: 1 }} />
-                <Typography variant="h5" sx={{ fontWeight: 500 }}>
-                  Price
-                </Typography>
-              </Box>
-              <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                {selectedCurrency} {convertPrice(totalPrice)}
-              </Typography>
-              {finalOldPrice > totalPrice && (
-                <Typography 
-                  sx={{ 
-                    textDecoration: 'line-through',
-                    color: 'rgba(255,255,255,0.7)',
-                  }}
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-cyan-50 to-teal-50">
+     {/* Hero Section with Parallax */}
+      <div className="relative h-[75vh] min-h-[95vh] overflow-hidden mt-0 bg-gray-900 z-0">
+        <div className="absolute inset-0 bg-gray-900 z-0"></div>
+        
+          <img
+            src={tour?.tour_image || 'https://i.postimg.cc/50CFBvJT/abdulla-faiz-0-DGZu-Jxta3k-unsplash.jpg'}
+            alt={`${tour?.title || 'Tour'} Background`}
+            className="absolute inset-0 w-full h-full object-cover object-center z-10"
+            style={{ transform: `translateY(${scrollY * 0.2}px)` }}
+            onError={handleImageError}
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/50 to-black/70 z-20"></div>
+          
+          {/* Hero Content */}
+          <div className="absolute inset-0 flex items-center justify-center z-30">
+            <div className="text-center text-white max-w-4xl mx-4">
+              <div className="mb-6">
+                <div className="inline-flex items-center bg-cyan-600/90 backdrop-blur-sm rounded-full px-6 py-3 text-lg font-medium mb-6">
+                  <MapPin className="w-5 h-5 mr-2" />
+                  Maldives Paradise
+                </div>
+              </div>
+              <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight animate-fadeInUp">
+                {tour.title || 'Your Dream Tour'}
+              </h1>
+              <p className="text-xl md:text-2xl text-cyan-100 mb-8 max-w-3xl mx-auto">
+                Discover the ultimate tropical escape where luxury meets nature in perfect harmony
+              </p>
+              <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6">
+                <button
+                  onClick={handleOpenDialog}
+                  className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white px-8 py-4 rounded-full text-lg font-bold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all flex items-center"
                 >
-                  {selectedCurrency} {convertPrice(finalOldPrice)}
-                </Typography>
-              )}
-              <Typography variant="h6" sx={{ fontWeight: 500 }}>
-                {personCount} Person(s)
-              </Typography>
-            </Box>
-
-            {/* Expires On Card */}
-            <Box
-              sx={{
-                background: 'linear-gradient(135deg, #991b1b 0%, #dc2626 100%)',
-                borderRadius: '16px',
-                padding: '15px',
-                color: 'white',
-                boxShadow: '0 10px 20px rgba(220, 38, 38, 0.2)',
-                transform: 'translateY(0)',
-                transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                '&:hover': {
-                  transform: 'translateY(-5px)',
-                  boxShadow: '0 15px 30px rgba(220, 38, 38, 0.3)',
-                },
-                textAlign: 'center',
-              }}
-            >
-              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mb: 1 }}>
-                <CalendarMonthIcon sx={{ fontSize: 32, mr: 1 }} />
-                <Typography variant="h6" sx={{ fontWeight: 500 }}>
-                  Expires On
-                </Typography>
-              </Box>
-              <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                {new Date(tour.expiry_date).toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric'
-                })}
-              </Typography>
-            </Box>
-
-            {/* Valid Period Card */}
-            <Box
-              sx={{
-                background: 'linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)',
-                borderRadius: '16px',
-                padding: '15px',
-                color: 'white',
-                boxShadow: '0 10px 20px rgba(59, 130, 246, 0.2)',
-                transform: 'translateY(0)',
-                transition: 'transform 0.3s ease, boxShadow 0.3s ease',
-                '&:hover': {
-                  transform: 'translateY(-5px)',
-                  boxShadow: '0 15px 30px rgba(59, 130, 246, 0.3)',
-                },
-                textAlign: 'center',
-              }}
-            >
-              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mb: 1 }}>
-                <DateRangeIcon sx={{ fontSize: 32, mr: 1 }} />
-                <Typography variant="h6" sx={{ fontWeight: 500 }}>
-                  Valid Period
-                </Typography>
-              </Box>
-              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <Typography variant="h5" sx={{ fontWeight: 600 }}>
-                  {new Date(tour.valid_from).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                  })}
-                </Typography>
-                <Typography variant="h6" sx={{ fontWeight: 600 }}>to</Typography>
-                <Typography variant="h5" sx={{ fontWeight: 600 }}>
-                  {new Date(tour.valid_to).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                  })}
-                </Typography>
-              </Box>
-            </Box>
-
-            {/* Inquire Now Button */}
-            <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-              <Button
-                sx={{
-                  background: 'linear-gradient(to right, #1e3a8a, #4f46e5)',
-                  color: 'white',
-                  padding: '10px 20px',
-                  fontSize: '20px',
-                  fontWeight: 'bold',
-                  fontFamily: 'Domine',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  marginTop: '10px',
-                  width: '100%',
-                  '&:hover': {
-                    background: 'linear-gradient(to right, #1e40af, #3730a3)',
-                  },
-                }}
-                onClick={handleOpenDialog}
-              >
-                Inquire Now
-                <SendIcon sx={{ marginLeft: '10px', fontSize: 'inherit' }} />
-              </Button>
-            </Box>
-          </Box>
-        )}
-
-        <Divider style={{ margin: '0 0' }} />
-
-
-        {/* Tour Images */}
-        {tour.tour_image && (
-          <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: 'flex-start', gap: '20px' }}>
-            <div
-              className="main-image-container"
-              style={{
-                position: 'relative',
-                width: isMobile ? '100%' : '65vw',
-                aspectRatio: '1 / 1', // forces a square container
-                borderRadius: '10px',
-                overflow: 'hidden', // hide any overflow from the image
-              }}
-            >
-              <img
-                src={tour.tour_image}
-                alt={tour.title}
-                className="main-image"
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover', // ensures the image covers the container, cropping if needed
-                  transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-                }}
-              />
-              <div
-                className="main-image-overlay"
-                style={{
-                  position: 'absolute',
-                  bottom: 0,
-                  left: 0,
-                  width: '100%',
-                  height: '50px',
-                  borderRadius: '0 0 10px 10px',
-                }}
-              />
+                  <Calendar className="mr-2 w-5 h-5" />
+                  Book This Experience
+                </button>
+                <div className="text-center">
+                  <div className="text-3xl font-bold">
+                    {selectedCurrency} {convertPrice(totalPrice || 0)}
+                  </div>
+                  <div className="text-cyan-200">for {personCount || 2} person(s)</div>
+                </div>
+              </div>
             </div>
+          </div>
 
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '10px',
-                width: '60%',
-                height: 'auto',
-              }}
-            >
-              <TourImages
-                destinations={tour.destination_images}
-                activities={tour.activity_images}
-                hotels={tour.hotel_images}
-                deviceType={isMobile ? 'mobile' : isTablet ? 'tablet' : 'desktop'}
+          {/* Scroll Indicator */}
+          <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 text-white animate-bounce z-30">
+            <div className="flex flex-col items-center">
+              <span className="text-sm mb-2">Scroll to explore</span>
+              <ChevronRight className="w-6 h-6 transform rotate-90" />
+            </div>
+          </div>
+        </div>
+
+      {/* Quick Stats Bar */}
+      <div className="bg-white shadow-xl border-t border-blue-100">
+        <div className="max-w-7xl mx-auto px-4 py-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div className="text-center">
+              <div className="flex items-center justify-center mb-2">
+                <Clock className="w-6 h-6 text-blue-600 mr-2" />
+                <span className="text-2xl font-bold text-blue-900">{daysCount}</span>
+              </div>
+              <span className="text-gray-600 font-medium">Days / {nightsCount} Nights</span>
+            </div>
+            <div className="text-center">
+              <div className="flex items-center justify-center mb-2">
+                <Users className="w-6 h-6 text-emerald-600 mr-2" />
+                <span className="text-2xl font-bold text-emerald-900">{personCount}</span>
+              </div>
+              <span className="text-gray-600 font-medium">Travelers</span>
+            </div>
+            <div className="text-center">
+              <div className="flex items-center justify-center mb-2">
+                <Star className="w-6 h-6 text-yellow-500 mr-2" />
+                <span className="text-2xl font-bold text-yellow-600">4.9</span>
+              </div>
+              <span className="text-gray-600 font-medium">Rating</span>
+            </div>
+            <div className="text-center">
+              <div className="flex items-center justify-center mb-2">
+                <Award className="w-6 h-6 text-purple-600 mr-2" />
+                <span className="text-2xl font-bold text-purple-900">Premium</span>
+              </div>
+              <span className="text-gray-600 font-medium">Experience</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+     
+      {/* Main Content with Booking Card */}
+      <div className="max-w-10xl mx-auto px-4 py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Itinerary Section  */}
+          <div className="lg:col-span-2">
+            <div className="bg-white rounded-3xl shadow-xl border border-white/50 p-8">
+              <h2 className="text-3xl font-bold text-blue-900 mb-6 text-center">Your Journey Day by Day</h2>
+              <Itinerary 
+                tourData={tour} 
+                selectedNightsKey={selectedNightsKey}
+                deviceType={isTablet ? 'tablet' : 'desktop'}
               />
             </div>
           </div>
-        )}
 
-        {/* Itinerary Section */}
-        <div><br /><br />
-          <Itinerary selectedNightsKey={selectedNightsKey}/>
+            {/* Booking Sidebar */}
+            <div className="lg:col-span-1">
+              <div className="sticky top-8 space-y-6">
+                <div className="bg-white rounded-3xl shadow-xl border border-white/50 p-8">
+                  <div className="text-center mb-8">
+                    <h3 className="text-2xl font-bold text-blue-900 mb-2">Reserve Your Paradise</h3>
+                    <p className="text-gray-600">Limited availability - Book now!</p>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-blue-600 to-cyan-600 text-white p-6 rounded-2xl mb-6">
+                    <div className="text-center">
+                      <div className="text-sm font-medium opacity-90 mb-2">Total Price</div>
+                      <div className="text-4xl font-bold mb-1">
+                        {selectedCurrency} {convertPrice(totalPrice)}
+                      </div>
+                      {finalOldPrice > totalPrice && (
+                        <div className="text-lg opacity-75 line-through">
+                          {selectedCurrency} {convertPrice(finalOldPrice)}
+                        </div>
+                      )}
+                      <div className="text-sm opacity-90 mt-2">
+                        For {personCount} person(s) • {daysCount} days
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Quick Info Cards Grid */}
+                  <div className="grid grid-cols-2 gap-4 mb-6">
+                    <div className="bg-gradient-to-br from-emerald-50 to-teal-50 p-4 rounded-xl border border-emerald-200">
+                      <div className="flex items-center mb-2">
+                        <AccessTimeIcon className="w-5 h-5 text-emerald-600 mr-2" />
+                        <span className="text-sm font-medium text-emerald-800">Duration</span>
+                      </div>
+                      <div className="text-lg font-bold text-emerald-900">
+                        {nightsCount} Nights
+                      </div>
+                    </div>
+
+                    <div className="bg-gradient-to-br from-purple-50 to-indigo-50 p-4 rounded-xl border border-purple-200">
+                      <div className="flex items-center mb-2">
+                        <CalendarMonthIcon className="w-5 h-5 text-purple-600 mr-2" />
+                        <span className="text-sm font-medium text-purple-800">Available</span>
+                      </div>
+                      <div className="text-sm font-bold text-purple-900">
+                        Year Round
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Validity Period */}
+                  <div className="bg-gradient-to-r from-orange-50 to-amber-50 p-6 rounded-2xl border border-orange-200 mb-6">
+                    <div className="text-center">
+                      <DateRangeIcon className="w-8 h-8 text-orange-600 mx-auto mb-3" />
+                      <div className="text-sm font-medium text-orange-800 mb-2">Package Valid</div>
+                      <div className="space-y-1">
+                        <div className="font-bold text-orange-900">
+                          {new Date(tour.valid_from || '2025-01-01').toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric',
+                          })}
+                        </div>
+                        <div className="text-sm text-orange-700">to</div>
+                        <div className="font-bold text-orange-900">
+                          {new Date(tour.valid_to || '2025-04-14').toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric',
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="space-y-4">
+                    <button
+                      onClick={handleOpenDialog}
+                      className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-4 rounded-2xl font-bold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all flex items-center justify-center"
+                    >
+                      <SendIcon className="mr-2" />
+                      Book This Experience
+                    </button>
+                    
+                    <button
+                      onClick={handleWhatsAppClick}
+                      className="w-full bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-2xl font-medium transition-all flex items-center justify-center"
+                    >
+                      <WhatsAppIcon className="mr-2" />
+                      Chat on WhatsApp
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        const phone = '+9609969974';
+                        window.open(`tel:${phone}`, '_self');
+                      }}
+                      className="w-full bg-white border-2 border-gray-300 hover:border-blue-500 text-gray-800 px-6 py-3 rounded-2xl font-medium transition-all flex items-center justify-center"
+                    >
+                      <Phone className="mr-2 w-5 h-5" />
+                      Call Us
+                    </button>
+                  </div>
+
+                  {/* Guarantee Note */}
+                  <div className="mt-6 text-center">
+                    <div className="flex items-center justify-center text-blue-600 mb-2">
+                      <Shield className="w-5 h-5 mr-2" />
+                      <span className="font-medium">Best Price Guarantee</span>
+                    </div>
+                    <p className="text-sm text-gray-600">
+                      Find a better price? We'll match it!
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Back & Inquire Buttons */}
-        <div className='flex flex-col lg:flex-row justify-center gap-2 mt-6 pb-6'>
-          <Button
-            variant="contained"
-            sx={{
-              display: 'block',
-              backgroundColor: 'rgba(68, 114, 202, 0.3)',
-              color: '#041e6b',
-              ':hover': { backgroundColor: '#4472CA' },
-            }}
-            onClick={() => navigate('/tours')}
-          >
-            Back to Tours
-          </Button>
-          <Button
-            sx={{
-              background: "linear-gradient(to right, #1e3a8a, #4f46e5)",
-              color: "white",
-              padding: "7px 20px",
-              fontSize: "20px",
-              fontWeight: "bold",
-              fontFamily: "Domine",
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: "auto",
-              "&:hover": {
-                background: "linear-gradient(to right, #1e40af, #3730a3)",
-              },
-            }}
-            onClick={handleOpenDialog}
-          >
-            Inquire Now
-            <SendIcon sx={{ marginLeft: '10px', fontSize: 'inherit' }} />
-          </Button>
-        </div>
-        <div></div><InquiryForm
-          open={openDialog}
-          onClose={() => setOpenDialog(false)}
-          selectedTour={tour}
-          selectedCurrency={selectedCurrency}
-          convertPrice={convertPrice}
-          isMobile={isMobile}
-          finalPrice={totalPrice} 
-          finalOldPrice={finalOldPrice}
-          selectedNightsKey={selectedNightsKey}
-          selectedNightsOption={selectedNightsOption}
-          selectedFoodCategory={selectedFoodCategory}
-        />
-      </Box>
-      <Footer />
-      <IconButton
-        onClick={handleWhatsAppClick}
-        sx={{
-          position: 'fixed',
-          bottom: 16,
-          right: 16,
-          backgroundColor: '#25D366',
-          color: '#fff',
-          '&:hover': {
-            backgroundColor: '#128C7E',
-          },
-          zIndex: 1000,
-        }}
-      >
-        <WhatsAppIcon />
-      </IconButton>
-    </>
+      {/* Inquiry Form Modal */}
+      <InquiryForm 
+        open={openDialog} 
+        onClose={() => setOpenDialog(false)} 
+        tourName={tour.title}
+        selectedNights={nightsCount}
+        selectedFood={''}
+        totalPrice={totalPrice}
+      />
+
+    </div>
   );
 };
 

@@ -1,844 +1,550 @@
-import React, { useState, useEffect } from 'react';
-import {
-  AppBar,
-  Toolbar,
-  Typography,
-  Tabs,
-  Tab,
-  Drawer,
-  List,
-  ListItemButton,
-  ListItemText,
-  IconButton,
-  InputBase,
-  Select,
-  MenuItem,
-  Divider
-} from '@mui/material';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { animated, useSpring } from 'react-spring';
-import Slider from "react-slick";
-import "slick-carousel/slick/slick.css";
-import "slick-carousel/slick/slick-theme.css";
-import MenuIcon from '@mui/icons-material/Menu';
-import SearchIcon from '@mui/icons-material/Search';
-import {jwtDecode} from 'jwt-decode';
+import { useState, useRef, useEffect } from 'react';
+import { Search, Menu, X, ArrowRight, Filter } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { jwtDecode } from 'jwt-decode';
 
-function useDeviceType() {
-  const [deviceType, setDeviceType] = useState({
-    isMobile: window.innerWidth <= 768,
-    isTablet: window.innerWidth > 768 && window.innerWidth <= 1024,
+export default function Header({ scrollToBooking }) {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [activeFilterTab, setActiveFilterTab] = useState('categories');
+  const [selectedFilters, setSelectedFilters] = useState({
+    priceRange: [],
+    duration: [],
+    categories: [],
   });
-
-  useEffect(() => {
-    const handleResize = () => {
-      setDeviceType({
-        isMobile: window.innerWidth <= 768,
-        isTablet: window.innerWidth > 768 && window.innerWidth <= 1024,
-      });
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  return deviceType;
-}
-
-
-// ----------------------- AnimatedText -----------------------
-const AnimatedText = ({ children }) => {
-  const [prevScrollPos, setPrevScrollPos] = useState(0);
-  const [visible, setVisible] = useState(true);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollPos = window.pageYOffset;
-      setVisible(prevScrollPos > currentScrollPos || currentScrollPos < 200);
-      setPrevScrollPos(currentScrollPos);
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
-  }, [prevScrollPos]);
-
-  const props = useSpring({
-    opacity: visible ? 1 : 0,
-    transform: 'scale(1)',
-    from: { opacity: 0, transform: 'scale(1.5)' }
-  });
-
-  return <animated.div style={props}>{children}</animated.div>;
-};
-
-// ----------------------- Home Tab Content (Slider) -----------------------
-const HomeTabContent = () => {
-  const settings = {
-    dots: true,
-    infinite: true,
-    speed: 500,
-    slidesToShow: 1,
-    slidesToScroll: 1,
-    autoplay: true,
-    autoplaySpeed: 3000,
-  };
-
-  const { isMobile, isTablet } = useDeviceType();
-
+  const [activeTab, setActiveTab] = useState('/');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const headerRef = useRef(null);
   const navigate = useNavigate();
-  
-const handleExploreToures = () =>{
-  navigate('/tours');
-}
-
-const handleConnectWithUs = () => {
-  navigate('/contact');
-}
-
-  return (
-    <div style={{ position: 'relative', minHeight: '98vh', opacity: '0.9' }} >
-      <Slider {...settings} dots={false}>
-        <div style={{ position: 'relative' }}>
-          <img
-            src= {isMobile? 'https://i.postimg.cc/9ft5kn0j/Untitled-design-1.png' : "https://i.postimg.cc/8CYsNjcV/pexels-asadphoto-3426880.jpg"}
-            alt="ocean"
-            style={{ width: '100%', height: isMobile ? '92.5vh' : '100vh', objectFit: 'cover' }}
-          />
-          <div
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: '100%',
-              background: isMobile? 'linear-gradient(to bottom, rgba(0, 0, 0, 0.0), transparent 30%, transparent 10%, rgba(0, 0, 0, 0.6))' : 'linear-gradient(to bottom, rgba(0, 0, 0, 0.5), transparent 30%, transparent 70%, rgba(0, 0, 0, 0.5))',
-            }}
-          ></div>
-        </div>
-        <div>
-          <img
-            src={isMobile? 'https://i.postimg.cc/bJmXyS1C/Untitled-design-2.png'  :"https://i.postimg.cc/yY3gdh9r/maldives-2299563-1280.jpg"}
-            alt="sea boat"
-            style={{ width: '100%', height: isMobile ? '92.5vh' : '100vh' }}
-          />
-        </div>
-        <div>
-          <img
-            src={isMobile? 'https://i.postimg.cc/JnrVC5HH/Untitled-design-3.png' : "https://i.postimg.cc/3RXf6xpz/Untitled-design-1.jpg"}
-            alt="events"
-            style={{ width: '100%', height:isMobile ? '92.5vh' : '100vh' }}
-          />
-        </div>
-        <div>
-          <img
-            src={isMobile? 'https://i.postimg.cc/hGqRpBSr/Untitled-design.png' : "https://i.postimg.cc/3w8xg24h/pexels-asadphoto-3601440.jpg"}
-            alt="ocean view"
-            style={{ width: '100%', height:isMobile ? '92.5vh' :  '100vh' }}
-          />
-        </div>
-        <div>
-          <img
-            src={ isMobile? 'https://i.postimg.cc/ZK4ZhNXS/Untitled-design-4.png':"https://i.postimg.cc/NfqxcS6C/ray-954355-1280.jpg"}
-            alt="diving"
-            style={{ width: '100%', height:isMobile ? '92.5vh' :  '100vh' }}
-          />
-        </div>
-        <div>
-          <img
-            src={isMobile? 'https://i.postimg.cc/66dwScjc/Untitled-design-5.png' : "https://i.postimg.cc/2jhtt2mg/Untitled-design.jpg"}
-            alt="Luxury hotel"
-            style={{ width: '100%', height:isMobile ? '92.5vh' :  '100vh' }}
-          />
-        </div>
-      </Slider>
-
-      <div
-        style={{
-          alignContent: "center",
-          textAlign: 'center' ,
-          position: "absolute",
-          bottom: isMobile? '6%' : "35%",
-          left: isMobile? '50%' : isTablet? '50%' : "50%",
-          transform: "translateX(-50%)",
-          width: isMobile? '90%' : isTablet? '80%' : '65%',
-        }}
-      >
-        <AnimatedText>
-          <Typography
-            variant="h1"
-            component="div"
-            style={{
-              fontFamily: "Playfair Display",
-              color: "white",
-              fontWeight: "bolder",
-              fontSize: isMobile? '30px' : "50px",
-              textShadow: isMobile? 'none' : "0 8px 15px rgba(0, 0, 50, 0.8)",
-              backgroundColor: isMobile? 'rgba(0, 62, 138,0)' : 'none',
-              padding: isMobile? '7px 0' : '0' ,
-              borderTop: isMobile? '1px solid white' : 'none',
-              borderBottom: isMobile? '1px solid white': 'none',
-            }}
-          >
-            Welcome to Your
-          </Typography>
-          {!isMobile && (<Typography
-            variant="h1"
-            component="div"
-            style={{
-              fontFamily: "Playfair Display",
-              color: "white",
-              fontWeight: "bolder",
-              fontSize: isTablet? '100px' : isTablet? '100px' : "110px",
-              marginTop: "-20px",
-              textShadow: "0 8px 15px rgba(0, 0, 50, 0.8)",
-            }}
-          >
-            Dream Holiday
-            </Typography>)}
-           {isMobile && (
-            <Typography
-              variant="h1"
-              component="div"
-              style={{
-                fontFamily: "Playfair Display",
-                color: "white",
-                fontWeight: "bolder",
-                fontSize:  '3.3rem' ,
-                marginTop: "0px",
-                textShadow: 'none',
-              }}
-            >
-              Dream Holiday
-            </Typography>)}
-          <button
-            style={{
-              marginTop: "30px",
-              padding: isMobile? "10px 15px" : "5px 10px",
-              width: isMobile? '95vw' : '240px',
-              fontSize: "20px",
-              fontFamily: "Playfair Display, serif",
-              color: "#fff",
-              backgroundColor: "rgba(0, 62, 138,1)",
-              borderRadius:  "10px",
-              cursor: "pointer",
-              boxShadow: "0 8px 15px rgba(0, 0, 0, 0.2)",
-              transition: "all 0.3s ease",
-              position: "relative",
-              top: isMobile? "-1vh" : isTablet? '-3vh' : "-5vh",
-              left: isMobile? "-2.2vw" : isTablet? '0%' : "0%",
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.transform = "scale(1.05)";
-              e.target.style.boxShadow = "0 12px 20px rgba(0, 0, 0, 0.3)";
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.transform = "scale(1)";
-              e.target.style.boxShadow = "0 8px 15px rgba(0, 0, 0, 0.2)";
-            }}
-            onClick={handleExploreToures}
-          >
-            Explore Packages
-          </button>
-          <button
-            style={{
-              marginTop: isMobile? '10px': "30px",
-              padding: isMobile? "10px 15px" : "5px 10px",
-              width: isMobile? '95vw' : '240px',
-              fontSize: "20px",
-              fontFamily: "Playfair Display, serif",
-              color: "#fff",
-              backgroundColor: "rgba(0, 37, 82,1)",
-              borderRadius:  "10px",
-              cursor: "pointer",
-              boxShadow: "0 8px 15px rgba(0, 0, 0, 0.2)",
-              transition: "all 0.3s ease",
-              position: "relative",
-              top: isMobile? "-1vh" : isTablet? '-3vh' : "-5vh",
-              left: isMobile? "-2.2vw" : isTablet? '1%' : "1%",
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.transform = "scale(1.05)";
-              e.target.style.boxShadow = "0 12px 20px rgba(0, 0, 0, 0.3)";
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.transform = "scale(1)";
-              e.target.style.boxShadow = "0 8px 15px rgba(0, 0, 0, 0.2)";
-            }}
-            onClick={handleConnectWithUs}
-          >
-            Connect with US
-          </button>
-          
-        </AnimatedText>
-      </div>
-
-    </div>
-  );
-};
-
-// ----------------------- Reusable TabContent for other pages -----------------------
-const TabContent = ({ title, backgroundImage1, backgroundImage2 }) => {
-  const { isMobile, isTablet } = useDeviceType();
-
-  const overlayStyle = {
-    background: isMobile
-      ? 'linear-gradient(to bottom, rgba(0, 0, 0, 0.0), transparent 30%, transparent 10%, rgba(0, 0, 0, 0.6))'
-      : 'linear-gradient(to bottom, rgba(0, 0, 0, 0.5), transparent 30%, transparent 70%, rgba(0, 0, 0, 0.5))',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 1,
-  };
-
-  const containerStyle = {
-    backgroundImage: isMobile? `url(${backgroundImage2})` :`url(${backgroundImage1})`,
-    backgroundRepeat: 'no-repeat',
-    backgroundSize: 'cover',
-    minHeight: isMobile? '92.5vh' : '100vh',
-    opacity: '0.9',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    color: 'black',
-    position: 'relative',
-  };
-
-  const contentStyle = {
-    position: 'relative',
-    zIndex: 2,
-  };
-
-  return (
-    <div style={containerStyle}>
-      <div style={overlayStyle}></div>
-      <div style={contentStyle}>
-        <AnimatedText>
-          <Typography
-            variant={ isMobile? "h2" : "h1"}
-            component="div"
-            style={{ textAlign: 'center' }}
-            marginTop={11}
-            fontFamily={'Playfair Display'}
-            color={'white'}
-            fontWeight={'bolder'}
-          >
-            {title}
-          </Typography>
-        </AnimatedText>
-      </div>
-    </div>
-  );
-};
-
-// ----------------------- Other Pages/Tab contents -----------------------
-export const ToursTabContent = () => (
-  <TabContent
-    title="Explore Packages"
-    backgroundImage1= "https://i.postimg.cc/Wb5WNvG7/pexels-asadphoto-1483053.jpg"
-    backgroundImage2= "https://i.postimg.cc/L5Db3GNy/Untitled-design-6.png"
-  />
-);
-
-export const FacilitiesTabContent = () => (
-  <TabContent
-    title="Facilities we offer"
-    backgroundImage1="https://firebasestorage.googleapis.com/v0/b/hotel-booking-system-35f4a.appspot.com/o/Public%20Folder%2FSwimming.png?alt=media&token=a8b2c994-cf8e-429c-b874-fd01b633a44e"
-    backgroundImage2='https://i.postimg.cc/BbbxRyJ7/Untitled-design-10.png'
-  />
-);
-
-export const ContactTabContent = () => (
-  <TabContent
-    title="Contact us"
-    backgroundImage1="https://i.postimg.cc/Wb5WNvG7/pexels-asadphoto-1483053.jpg"
-    backgroundImage2='https://i.postimg.cc/QMgk716m/Untitled-design-7.png'
-  />
-);
-
-export const LoginTabContent = () => (
-  <TabContent
-    title="Login with us"
-    backgroundImage1="https://firebasestorage.googleapis.com/v0/b/hotel-booking-system-35f4a.appspot.com/o/Public%20Folder%2Flogin.jpg?alt=media&token=a810ff0a-6305-4be3-8a40-d0abbb0b8875"
-    backgroundImage2='https://i.postimg.cc/mDb3ykJs/Untitled-design-8.png'
-  />
-);
-
-export const RegisterTabContent = () => (
-  <TabContent
-    title="Register with us"
-    backgroundImage1="https://firebasestorage.googleapis.com/v0/b/hotel-booking-system-35f4a.appspot.com/o/Public%20Folder%2Flogin.jpg?alt=media&token=a810ff0a-6305-4be3-8a40-d0abbb0b8875"
-    backgroundImage2='https://i.postimg.cc/4dB6LZRh/Untitled-design-9.png'
-  />
-);
-
-export const AccountTabContent = () => {
-  const [user, setUser] = useState();
-
-  useEffect(() => {
-      const token = localStorage.getItem('token');
-      try{
-        if (token) {
-          const decodedToken = jwtDecode(token);
-          if (decodedToken.exp < Date.now() / 1000) {
-            setUser(false) ;
-          }
-          else {
-            setUser(true);
-          }
-        }
-        else {
-          setUser(false);
-        }
-      } catch (error) { 
-        setUser(false);
-      }
-  }, []);
-
-  return (
-      <TabContent
-        title={user ? "Admin Dashboard" : "My Account"}
-        backgroundImage1= 'https://i.postimg.cc/jSMNZsyY/Untitled-design-1.png'
-        backgroundImage2= 'https://i.postimg.cc/jSMNZsyY/Untitled-design-1.png'
-      />
-  );
-};
-
-// ----------------------- Main Navigation Component -----------------------
-const Navigation = () => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [value, setValue] = useState(0);
-  const [user, setUser] = useState();
   const location = useLocation();
-  const navigate = useNavigate();
-  const [currency, setCurrency] = useState(localStorage.getItem('selectedCurrency') || "USD");
 
-  // Drawer open state
-  const [drawerOpen, setDrawerOpen] = useState(false);
-
-  // For controlling the background color of the navbar on scroll
-  const [scrollPosition, setScrollPosition] = useState(0);
-
-  const { isMobile, isTablet } = useDeviceType();
+  const popularDestinations = [
+    { name: 'Luxury', count: 2, image: '/api/placeholder/180/120' },
+    { name: 'Adventure', count: 2, image: '/api/placeholder/180/120' },
+    { name: 'Family', count: 1, image: '/api/placeholder/180/120' },
+    { name: 'Wellness', count: 1, image: '/api/placeholder/180/120' },
+  ];
 
   useEffect(() => {
-      const token = localStorage.getItem('token');
-      try{
-        if (token) {
-          const decodedToken = jwtDecode(token);
-          if (decodedToken.exp < Date.now() / 1000) {
-            setUser(false) ;
-          }
-          else {
-            setUser(true);
-          }
+    // Check authentication status
+    const token = localStorage.getItem('token');
+    try {
+      if (token) {
+        const decodedToken = jwtDecode(token);
+        if (decodedToken.exp > Date.now() / 1000) {
+          setIsAuthenticated(true);
+        } else {
+          setIsAuthenticated(false);
+          localStorage.removeItem('token');
         }
-        else {
-          setUser(false);
-        }
-      } catch (error) { 
-        setUser(false);
+      } else {
+        setIsAuthenticated(false);
       }
-    }, []);
+    } catch (error) {
+      setIsAuthenticated(false);
+      localStorage.removeItem('token');
+    }
 
-  useEffect(() => {
-    // Highlight the correct tab depending on route
+    // Set activeTab based on current pathname
     if (location.pathname.startsWith('/tours')) {
-      setValue(1);
-    } else if (location.pathname === '/contact') {
-      setValue(2);
-    } else if (location.pathname === '/login') {
-      setValue(3);
-    } else if (location.pathname === '/register') {
-      setValue(4);
-    } else if (location.pathname === '/account') {
-      setValue(5);
-    } else if (location.pathname === '/facilities') {
-      setValue(6);
+      setActiveTab('/tours');
+    } else {
+      setActiveTab(location.pathname || '/');
     }
-    else if (location.pathname === '/admin') {
-      setValue(8);
-    }
-    else {
-      setValue(0);
-    }
-  }, [location]);
 
-  const handleCurrencyChange = (event) => {
-    setCurrency(event.target.value);
-    localStorage.setItem('selectedCurrency', event.target.value);
-    window.location.reload(); // Reload to apply currency change
-  };
-
-  useEffect(() => {
     const handleScroll = () => {
-      setScrollPosition(window.scrollY);
+      if (headerRef.current) {
+        if (window.scrollY > 50) {
+          headerRef.current.style.background = 'rgba(1, 30, 65, 0.95)';
+          headerRef.current.style.padding = '0.1rem 0';
+        } else {
+          headerRef.current.style.background = 'transparent';
+          headerRef.current.style.padding = '1rem 0';
+        }
+      }
     };
+
+    handleScroll();
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [location.pathname]);
 
-  const handleSearchChange = (event) => {
-    setSearchTerm(event.target.value);
+  const handleSearchToggle = () => {
+    setIsSearchOpen(!isSearchOpen);
   };
 
-  const handleSearchSubmit = (event) => {
-    event.preventDefault();
-    navigate('/tours', { state: { searchTerm } });
-    setSearchTerm("");
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
   };
 
-  const handleChange = (event, newValue) => {
-    setValue(newValue);
+  const handleTabClick = (path) => {
+    setActiveTab(path);
+  };
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    setActiveTab('/tours');
+    const queryParams = new URLSearchParams();
+    if (searchQuery) {
+      queryParams.append('search', searchQuery);
+    }
+    if (selectedFilters.categories.length > 0) {
+      queryParams.append('categories', selectedFilters.categories.join(','));
+    }
+    if (selectedFilters.priceRange.length > 0) {
+      queryParams.append('priceRange', selectedFilters.priceRange.join(','));
+    }
+    if (selectedFilters.duration.length > 0) {
+      queryParams.append('duration', selectedFilters.duration.join(','));
+    }
+    navigate(`/tours?${queryParams.toString()}`);
+    setIsSearchOpen(false);
+  };
+
+  const clearAllFilters = () => {
+    setSelectedFilters({
+      priceRange: [],
+      duration: [],
+      categories: [],
+    });
+    setSearchQuery('');
+  };
+
+  const removeFilter = (category, value) => {
+    setSelectedFilters((prev) => ({
+      ...prev,
+      [category]: prev[category].filter((item) => item !== value),
+    }));
+  };
+
+  const activeFilters = [
+    ...selectedFilters.categories.map((cat) => ({ type: 'categories', value: cat })),
+    ...selectedFilters.priceRange.map((price) => ({ type: 'priceRange', value: price })),
+    ...selectedFilters.duration.map((dur) => ({ type: 'duration', value: dur })),
+  ];
+
+  const toggleFilter = (category, value) => {
+    setSelectedFilters((prev) => {
+      const currentFilters = [...prev[category]];
+      const index = currentFilters.indexOf(value);
+
+      if (index === -1) {
+        currentFilters.push(value);
+      } else {
+        currentFilters.splice(index, 1);
+      }
+
+      return {
+        ...prev,
+        [category]: currentFilters,
+      };
+    });
   };
 
   const handleLogout = () => {
     localStorage.removeItem('token');
-    window.location.href = '/';
+    setIsAuthenticated(false);
+    navigate('/login');
   };
-  // Calculate dynamic background color based on scroll
-  const opacity = Math.min(1, scrollPosition / 400);
-  const backgroundColor = `rgba(0, 62, 138, ${opacity})`;
-
-  const currencyOptions = [
-    { value: "USD", label: "USD", flag: "🇺🇸" },
-    { value: "EUR", label: "EUR", flag: "🇪🇺" },
-    { value: "GBP", label: "GBP", flag: "🇬🇧" },
-    { value: "JPY", label: "JPY", flag: "🇯🇵" },
-    { value: "AUD", label: "AUD", flag: "🇦🇺" },
-    { value: "INR", label: "INR", flag: "🇮🇳" },
-  ];
-
-  // Toggle the Drawer
-  const toggleDrawer = () => {
-    setDrawerOpen(!drawerOpen);
-  };
-
-  // ------------------- Drawer Content for Mobile -------------------
-  const drawerContent = (
-    <div
-      style={{
-        width: '250px',
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100%'
-      }}
-    >
-      {/* NAV LIST */}
-      <List style={{ flex: 1 }}>
-        <ListItemButton component={Link} to="/" onClick={() => setDrawerOpen(false)}>
-          <ListItemText primary="Home" />
-        </ListItemButton>
-        <Divider />
-
-        <ListItemButton component={Link} to="/tours" onClick={() => setDrawerOpen(false)}>
-          <ListItemText primary="Packages" />
-        </ListItemButton>
-        <Divider />
-
-        <ListItemButton component={Link} to="/contact" onClick={() => setDrawerOpen(false)}>
-          <ListItemText primary="Contact" />
-        </ListItemButton>
-        <Divider />
-
-        {user && (
-          <>
-            <ListItemButton component={Link} to="/admin" onClick={() => setDrawerOpen(false)}>
-              <ListItemText primary="Admin Panel" />
-            </ListItemButton>
-            <Divider />
-          </>
-        )}
-
-        {user && (
-          <>
-            <ListItemButton onClick={handleLogout}>
-              <ListItemText primary="Logout" />
-            </ListItemButton>
-            <Divider />
-          </>
-        )}
-
-        {/* SEARCH BAR (for mobile) */}
-        <ListItemButton style={{ marginTop: '20px' }}>
-          <form
-            onSubmit={handleSearchSubmit}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              borderRadius: '50px',
-              border: "1.5px solid rgba(0,0,0,0.2)",
-              padding: '0px 10px',
-              width: '100%'
-            }}
-          >
-            <InputBase
-              placeholder="Search..."
-              value={searchTerm}
-              onChange={handleSearchChange}
-              style={{
-                width: '100%',
-                outline: 'none',
-              }}
-            />
-            <IconButton type="submit" size="small">
-              <SearchIcon />
-            </IconButton>
-          </form>
-        </ListItemButton>
-      </List>
-
-      {/* COMPANY IMAGE at the bottom */}
-      <div
-        style={{
-          padding: '3vh 15vw',
-          borderTop: '1px solid #ccc',
-          textAlign: 'center'
-        }}
-      >
-        <img
-          src="https://i.postimg.cc/6Q1tcM0S/HL1.png"
-          alt="Holiday Life Logo"
-          style={{
-            width: '120px',
-            objectFit: 'contain',
-            marginTop: '10px'
-          }}
-        />
-      </div>
-    </div>
-  );
 
   return (
-    <div>
-      <AppBar
-        position="fixed"
-        left= "0"
-        style={{
-          backgroundColor: isMobile? 'rgba(0, 62, 138,1) ': backgroundColor,
-          transition: 'background-color 0.3s ease-in-out',
-          boxShadow: 'none',
-          height: isMobile? '7.5vh': isTablet? '6.5vh' : '10vh',
-          backdropFilter: 'blur(10px)',
-        }}
-      >
-        <Toolbar>  
-          {isMobile ? (
+    <header
+      ref={headerRef}
+      className="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-opacity-10 bg-blue-950"
+    >
+      <div className="container mx-auto px-4 md:px-8 flex items-center justify-between py-4">
+        <div className="flex items-center">
+          <div className="text-white font-bold text-2xl">
+            <span className="text-cyan-300">Travel</span> Paradise
+          </div>
+        </div>
+
+        {/* Desktop Navigation */}
+        <nav className="hidden md:flex items-center space-x-10">
+          <a
+            href="/"
+            onClick={() => handleTabClick('/')}
+            className={`text-white hover:text-cyan-300 transition-colors text-medium font-medium py-2 px-4 border-b-2 ${
+              activeTab === '/' ? 'border-cyan-300 text-cyan-300' : 'border-transparent'
+            }`}
+          >
+            Home
+          </a>
+          <a
+            href="/tours"
+            onClick={() => handleTabClick('/tours')}
+            className={`text-white hover:text-cyan-300 transition-colors text-medium font-medium py-2 px-4 border-b-2 ${
+              activeTab === '/tours' ? 'border-cyan-300 text-cyan-300' : 'border-transparent'
+            }`}
+          >
+            Tours
+          </a>
+          <a
+            href="/contact"
+            onClick={() => handleTabClick('/contact')}
+            className={`text-white hover:text-cyan-300 transition-colors text-medium font-medium py-2 px-4 border-b-2 ${
+              activeTab === '/contact' ? 'border-cyan-300 text-cyan-300' : 'border-transparent'
+            }`}
+          >
+            Contact
+          </a>
+          {isAuthenticated && (
             <>
-              <img
-                  src="https://i.postimg.cc/6Q1tcM0S/HL1.png"
-                  alt="Holiday Life Logo"
-                  style={{ height: '60px', objectFit: 'contain', padding: '10px 5px' }}
-                />
-            </>
-          ) : (
-            <>
-              {/* Desktop Tabs */}
-              <Tabs
-                value={value}
-                onChange={handleChange}
-                TabIndicatorProps={{ style: { backgroundColor: "rgba(255,255,255,0.9)", height: "2px", marginBottom: "0px" } }}
-                textColor="inherit"
-                style={{ marginLeft: isTablet? '0vw' : '6vw' }}
+              <a
+                href="/admin"
+                onClick={() => handleTabClick('/admin')}
+                className={`text-white hover:text-cyan-300 transition-colors text-medium font-medium py-2 px-4 border-b-2 ${
+                  activeTab === '/admin' ? 'border-cyan-300 text-cyan-300' : 'border-transparent'
+                }`}
               >
-                <Tab
-                  label="Home"
-                  component={Link}
-                  to="/"
-                  value={0}
-                  style={{ color: 'rgba(255,255,255,0.9)', marginLeft: '0vw', padding: isTablet? '0px 0px' : '0px 10px' }}
-                />
-                <Tab
-                  label="Packages"
-                  component={Link}
-                  to="/tours"
-                  value={1}
-                  style={{ color: 'rgba(255,255,255,0.9)', marginLeft: isTablet? '0vw' : '2vw', padding: isTablet? '0px 0px' : '0px 10px' }}
-                />
-                <Tab
-                  label="Contact"
-                  component={Link}
-                  to="/contact"
-                  value={2}
-                  style={{ color: 'rgba(255,255,255,0.9)',marginLeft: isTablet? '0vw' : '2vw', padding: isTablet? '0px 0px' : '0px 10px' }}
-                />
-              </Tabs>
-
-              <div style={{ margin: isTablet? '0 0vw' : '0 8vw', padding: isTablet? '0 2vw' :'0vh 4vw' }}>
-                <img
-                  src="https://i.postimg.cc/6Q1tcM0S/HL1.png"
-                  alt="Holiday Life Logo"
-                  style={{ height: isTablet? '60px' : '72px', objectFit: 'contain' }}
-                  onClick={() => navigate('/')}
-                  cursor="pointer"
-                />
-              </div>
-
-              {/* Search bar for desktop */}
-              {!user && (
-                <div style={{ marginRight: '1vw', flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                  <form
-                    onSubmit={handleSearchSubmit}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      backgroundColor: 'transparent',
-                      borderRadius: '50px',
-                      border: "1.5px solid rgba(255,255,255,0.7)",
-                      padding: '0px 10px',
-                      boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
-                      transition: 'all 0.3s ease-in-out', 
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)';
-                      e.currentTarget.style.borderColor = 'rgba(255,255,255,1)';
-                      e.currentTarget.style.boxShadow = '0px 6px 8px rgba(0, 0, 0, 0.2)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = 'transparent';
-                      e.currentTarget.style.borderColor = 'rgba(255,255,255,0.7)';
-                      e.currentTarget.style.boxShadow = '0px 4px 6px rgba(0, 0, 0, 0.1)';
-                    }}
-                  >
-                    <InputBase
-                      placeholder="Search Packages ....."
-                      value={searchTerm}
-                      onChange={handleSearchChange}
-                      style={{
-                        backgroundColor: 'transparent',
-                        borderRadius: '25px',
-                        padding: '0px 10px',
-                        width: '13vw',
-                        color: 'white',
-                        outline: 'none',
-                      }}
-                    />
-                    <IconButton type="submit">
-                      <SearchIcon style={{ color: 'rgba(255,255,255,0.7)', background: 'transparent', borderRadius: '25px', padding: '0px' }} />
-                    </IconButton>
-                  </form>
-                </div>
-              )}
-              {!user && (
-                <div style={{ marginRight: '', display: 'flex', alignItems: 'center', backgroundColor: 'transparent', padding: '0px 10px' }}>
-                  <Select
-                    value={currency}
-                    onChange={handleCurrencyChange}
-                    style={{
-                      backgroundColor: 'transparent',
-                      fontSize: '1rem',
-                      fontWeight: 'bold',
-                      color: 'rgba(255,255,255,0.9)',
-                      padding: '0px 10px',
-                      borderRadius: '25px',
-                      border: '1.5px solid rgba(255,255,255,0.7)',
-                      height: '45px',
-                    }}
-                    disableUnderline
-                  >
-                    {currencyOptions.map((option) => (
-                      <MenuItem key={option.value} value={option.value} style={{ display: 'flex', alignItems: 'center', paddingTop: '0px' }}>
-                        <span style={{ marginRight: '8px', padding: '-10px 0px' }}>{option.flag}</span> {option.label}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </div>
-              )}
-
-              {/* Additional Tabs (Login, Account, etc.) on Desktop */}
-              <Tabs
-                value={false} // so it doesn't highlight extra tab
-                textColor="inherit"
-                TabIndicatorProps={{ style: { display: 'none' } }}
+                Admin
+              </a>
+              <button
+                onClick={handleLogout}
+                className="text-white hover:text-cyan-300 transition-colors text-medium font-medium py-2 px-4"
               >
-                {user && (
-                  <Tab
-                    label="Admin Panel"
-                    component={Link}
-                    to="/admin"
-                    style={{ fontWeight: 'bold', marginLeft: '2vw' }}
-                  />
-                )}
-                {user && (
-                  <Tab
-                    label="Logout"
-                    onClick={handleLogout}
-                    style={{ fontWeight: 'bold' }}
-                  />
-                )}
-              </Tabs>
+                Logout
+              </button>
             </>
           )}
+        </nav>
 
-          {/* Currency Converter for mobile (optional if you want it in the same place) */}
-          {isMobile && (
-            <div style={{ marginLeft: 'auto' }}>
-              <Select
-                value={currency}
-                onChange={handleCurrencyChange}
-                style={{
-                  backgroundColor: 'transparent',
-                  fontSize: '1rem',
-                  fontWeight: 'bold',
-                  color: 'rgba(255,255,255,0.9)',
-                  padding: '0px 5px',
-                  borderRadius: '25px',
-                  border: '1.5px solid rgba(255,255,255,0.7)',
-                  height: '40px',
-                }}
-                disableUnderline
-              >
-                {currencyOptions.map((option) => (
-                  <MenuItem
-                    key={option.value}
-                    value={option.value}
-                    style={{ display: 'flex', alignItems: 'center' }}
-                  >
-                    <span style={{ marginRight: '8px' }}>{option.flag}</span>
-                    {option.label}
-                  </MenuItem>
-                ))}
-              </Select>
-              {isMobile && (
-                  <IconButton
-                    edge="start"
-                    color="inherit"
-                    aria-label="menu"
-                    onClick={toggleDrawer}
-                    style={{ marginLeft: '5vw' }}
-                  >
-                    <MenuIcon />
-                  </IconButton>
-                )}
-            </div>
-          )}
-        </Toolbar>
-      </AppBar>
+        <div className="hidden md:flex items-center space-x-4">
+          <button onClick={handleSearchToggle} className="text-white p-2 rounded-full hover:bg-blue-800 transition">
+            <Search size={20} />
+          </button>
+          <button
+            onClick={() => (window.location.href = '/tours')}
+            className="bg-blue-8 00 hover:bg-cyan-700 text-white px-6 py-3 rounded-full transition duration-300 flex items-center"
+          >
+            Book Now
+            <ArrowRight size={16} className="ml-2" />
+          </button>
+        </div>
 
-      {/* -------------- Side Drawer for mobile -------------- */}
-      <Drawer
-        anchor="left"
-        open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-      >
-        {drawerContent}
-      </Drawer>
-
-      {/* Content area below the nav bar */}
-      <div style={{ position: 'relative', height: isMobile? '94vh': '98vh', marginTop: isMobile ? '7.5vh' : '0' }}>
-        {value === 0 && <HomeTabContent />}
-        {value === 1 && <ToursTabContent />}
-        {value === 2 && <ContactTabContent />}
-        {value === 3 && <LoginTabContent />}
-        {value === 4 && <RegisterTabContent />}
-        {value === 5 && <AccountTabContent />}
-        {value === 6 && <FacilitiesTabContent />}
-        {value === 8 && <AccountTabContent />}
+        {/* Mobile Navigation Toggle */}
+        <div className="md:hidden flex items-center">
+          <button onClick={handleSearchToggle} className="text-white mr-2">
+            <Search size={20} />
+          </button>
+          <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="text-white p-2">
+            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
       </div>
-    </div>
-  );
-};
 
-export default Navigation;
+      {/* Mobile Navigation Menu */}
+      {isMenuOpen && (
+        <div className="md:hidden bg-blue-900 p-4">
+          <nav className="flex flex-col space-y-3">
+            <a
+              href="/"
+              className={`text-lg py-3 px-4 rounded-medium transition-colors ${
+                activeTab === '/' ? 'bg-blue-800 text-cyan-300 font-medium' : 'text-white hover:bg-blue-800'
+              }`}
+              onClick={() => {
+                handleTabClick('/');
+                setIsMenuOpen(false);
+              }}
+            >
+              Home
+            </a>
+            <a
+              href="/tours"
+              className={`text-lg py-3 px-4 rounded-medium transition-colors ${
+                activeTab === '/tours' ? 'bg-blue-800 text-cyan-300 font-medium' : 'text-white hover:bg-blue-800'
+              }`}
+              onClick={() => {
+                handleTabClick('/tours');
+                setIsMenuOpen(false);
+              }}
+            >
+              Tours
+            </a>
+            <a
+              href="/contact"
+              className={`text-lg py-3 px-4 rounded-medium transition-colors ${
+                activeTab === '/contact' ? 'bg-blue-800 text-cyan-300 font-medium' : 'text-white hover:bg-blue-800'
+              }`}
+              onClick={() => {
+                handleTabClick('/contact');
+                setIsMenuOpen(false);
+              }}
+            >
+              Contact
+            </a>
+            {isAuthenticated && (
+              <>
+                <a
+                  href="/admin"
+                  className={`text-lg py-3 px-4 rounded-medium transition-colors ${
+                    activeTab === '/admin' ? 'bg-blue-800 text-cyan-300 font-medium' : 'text-white hover:bg-blue-800'
+                  }`}
+                  onClick={() => {
+                    handleTabClick('/admin');
+                    setIsMenuOpen(false);
+                  }}
+                >
+                  Admin
+                </a>
+                <button
+                  onClick={() => {
+                    handleLogout();
+                    setIsMenuOpen(false);
+                  }}
+                  className="text-lg py-3 px-4 rounded-medium text-white hover:bg-blue-800 text-left"
+                >
+                  Logout
+                </button>
+              </>
+            )}
+            <button
+              onClick={() => {
+                window.location.href = '/tours';
+                setIsMenuOpen(false);
+              }}
+              className="bg-cyan-500 hover:bg-cyan-600 text-white px-4 py-3 rounded-full transition duration-300 flex items-center w-full justify-center text-lg"
+            >
+              Book Now
+              <ArrowRight size={16} className="ml-2" />
+            </button>
+          </nav>
+        </div>
+      )}
+
+      {/* Search Overlay */}
+      {isSearchOpen && (
+        <div className="absolute top-full left-0 right-0 bg-white shadow-lg z-50">
+          <div className="container mx-auto px-4 py-6">
+            <form onSubmit={handleSearch}>
+              <div className="flex flex-col md:flex-row gap-4 items-stretch">
+                <div className="flex-1 relative">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-800" size={20} />
+                  <input
+                    type="text"
+                    placeholder="Search for tours, activities, destinations..."
+                    value={searchQuery}
+                    onChange={handleSearchChange}
+                    className="w-full py-4 pl-12 pr-4 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsFilterOpen(!isFilterOpen)}
+                  className={`py-4 px-4 md:px-6 rounded-xl border font-medium transition flex items-center justify-center gap-2 ${
+                    isFilterOpen
+                      ? 'bg-blue-50 border-blue-200 text-blue-700'
+                      : 'border-gray-200 hover:border-blue-300 text-gray-700 hover:bg-blue-50'
+                  }`}
+                >
+                  <Filter size={18} />
+                  <span className="hidden md:inline">Filters</span>
+                </button>
+                <div className="flex gap-3">
+                  <button
+                    type="submit"
+                    className="py-4 px-6 md:px-8 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white font-medium rounded-xl shadow-md hover:shadow-lg transition flex items-center justify-center whitespace-nowrap"
+                  >
+                    Find Tours
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSearchToggle}
+                    className="py-4 px-4 rounded-xl border border-gray-200 text-gray-700 hover:bg-blue-50 hover:border-blue-300 font-medium transition flex items-center justify-center"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+              </div>
+            </form>
+            {(activeFilters.length > 0 || searchQuery) && (
+              <div className="mt-4 flex flex-col gap-2">
+                <div className="flex flex-wrap gap-2 items-center">
+                  {searchQuery && (
+                    <span className="inline-flex items-center px-3 py-1 rounded-full bg-blue-100 text-blue-800 text-sm font-medium">
+                      Search: {searchQuery}
+                      <button onClick={() => setSearchQuery('')} className="ml-2 focus:outline-none">
+                        <X size={14} />
+                      </button>
+                    </span>
+                  )}
+                  {activeFilters.map((filter, index) => (
+                    <span
+                      key={index}
+                      className="inline-flex items-center px-3 py-1 rounded-full bg-blue-100 text-blue-800 text-sm font-medium"
+                    >
+                      {filter.value}
+                      <button
+                        onClick={() => removeFilter(filter.type, filter.value)}
+                        className="ml-2 focus:outline-none"
+                      >
+                        <X size={14} />
+                      </button>
+                    </span>
+                  ))}
+                  {(activeFilters.length > 0 || searchQuery) && (
+                    <button
+                      onClick={clearAllFilters}
+                      className="text-medium text-red-600 hover:text-red-800 font-medium"
+                    >
+                      Clear All
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+            {isFilterOpen && (
+              <div className="mt-6 border-t border-gray-100 pt-6">
+                <div className="flex gap-2 mb-6 overflow-x-auto pb-2 scrollbar-hide">
+                  {['categories', 'duration', 'price'].map((tab) => (
+                    <button
+                      key={tab}
+                      onClick={() => setActiveFilterTab(tab)}
+                      className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium transition ${
+                        activeFilterTab === tab
+                          ? 'bg-blue-100 text-blue-700'
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      }`}
+                    >
+                      {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                    </button>
+                  ))}
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {activeFilterTab === 'categories' && (
+                    <div className="col-span-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+                      {popularDestinations.map((dest, index) => (
+                        <div
+                          key={index}
+                          className={`cursor-pointer rounded-xl overflow-hidden relative transition group ${
+                            selectedFilters.categories.includes(dest.name) ? 'ring-2 ring-blue-500' : ''
+                          }`}
+                          onClick={() => toggleFilter('categories', dest.name)}
+                        >
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-black/20 z-10"></div>
+                          <img
+                            src={dest.image}
+                            alt={dest.name}
+                            className="w-full h-32 object-cover group-hover:scale-110 transition duration-300"
+                          />
+                          <div className="absolute bottom-0 left-0 p-3 text-white z-10">
+                            <p className="font-medium text-sm">{dest.name}</p>
+                            <p className="text-xs text-gray-300">{dest.count} tours</p>
+                          </div>
+                          {selectedFilters.categories.includes(dest.name) && (
+                            <div className="absolute top-2 right-2 z-20 bg-blue-500 rounded-full p-1">
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="3"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="text-white"
+                              >
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                              </svg>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {activeFilterTab === 'duration' && (
+                    <div className="col-span-3 grid grid-cols-2 sm:grid-cols-4 gap-4">
+                      {['1-3 Days', '4-7 Days', '8-14 Days', '15+ Days'].map((duration, index) => (
+                        <div
+                          key={index}
+                          className={`cursor-pointer p-4 rounded-lg border transition ${
+                            selectedFilters.duration.includes(duration)
+                              ? 'border-blue-500 bg-blue-50/50'
+                              : 'border-gray-200 hover:border-blue-200 hover:bg-blue-50/30'
+                          }`}
+                          onClick={() => toggleFilter('duration', duration)}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium">{duration}</span>
+                            {selectedFilters.duration.includes(duration) && (
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="3"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="text-blue-500"
+                              >
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                              </svg>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {activeFilterTab === 'price' && (
+                    <div className="col-span-3 grid grid-cols-2 sm:grid-cols-4 gap-4">
+                      {['$0 - $1000', '$1000 - $2000', '$2000 - $3000', '$3000+'].map((price, index) => (
+                        <div
+                          key={index}
+                          className={`cursor-pointer p-4 rounded-lg border transition ${
+                            selectedFilters.priceRange.includes(price)
+                              ? 'border-blue-500 bg-blue-50/50'
+                              : 'border-gray-200 hover:border-blue-200 hover:bg-blue-50/30'
+                          }`}
+                          onClick={() => toggleFilter('priceRange', price)}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium">{price}</span>
+                            {selectedFilters.priceRange.includes(price) && (
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="3"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="text-blue-500"
+                              >
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                              </svg>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <div className="mt-6 pt-4 border-t border-gray-100 flex justify-end items-center gap-4">
+                  <button
+                    className="px-4 py-2 text-gray-600 hover:text-gray-900 text-sm font-medium"
+                    onClick={clearAllFilters}
+                  >
+                    Clear All
+                  </button>
+                  <button
+                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium"
+                    onClick={() => setIsFilterOpen(false)}
+                  >
+                    Apply Filters
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </header>
+  );
+}
