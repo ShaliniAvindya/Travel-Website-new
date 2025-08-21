@@ -32,7 +32,6 @@ const ContactInquiries = () => {
   const [replyMessage, setReplyMessage] = useState('');
   const [subject, setSubject] = useState('');
 
-  // We get device information from the custom hook
   const { isMobile, isTablet } = useDeviceType();
   const isDesktop = !isMobile && !isTablet;
 
@@ -40,18 +39,25 @@ const ContactInquiries = () => {
     fetchInquiries();
   }, []);
 
-  // Fetch inquiries from the backend
   const fetchInquiries = async () => {
     setLoading(true);
     try {
-      const response = await axios.get('/contact/inquiries');
-      if (!response || !response.data) throw new Error('Failed to fetch inquiries.');
+      const response = await axios.get('/api/contact/inquiries');
+      if (!response || !response.data) throw new Error('No data received from server.');
       const data = response.data;
-      data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      data.sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt));
       setInquiries(data);
     } catch (error) {
       console.error('Error fetching inquiries:', error);
-      message.error(error.message || 'Failed to fetch inquiries.');
+      let errorMessage = 'Failed to fetch inquiries.';
+      if (error.response) {
+        if (error.response.status === 404) {
+          errorMessage = 'Inquiries endpoint not found.';
+        } else if (error.response.status === 500) {
+          errorMessage = 'Server error while fetching inquiries.';
+        }
+      }
+      message.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -62,8 +68,11 @@ const ContactInquiries = () => {
     if (!confirmed) return;
 
     try {
-      const response = await fetch(`/contact/inquiries/${id}`, { method: 'DELETE' });
-      if (!response.ok) throw new Error('Failed to delete inquiry.');
+      const response = await fetch(`/api/contact/inquiries/${id}`, { method: 'DELETE' });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to delete inquiry.');
+      }
       message.success('Inquiry deleted successfully.');
       fetchInquiries();
     } catch (error) {
@@ -72,7 +81,6 @@ const ContactInquiries = () => {
     }
   };
 
-  // Send reply to an inquiry
   const handleSendReply = async () => {
     if (!currentInquiry || !replyMessage) {
       message.error('Reply message cannot be empty.');
@@ -80,7 +88,7 @@ const ContactInquiries = () => {
     }
 
     try {
-      const response = await fetch('/contact/reply', {
+      const response = await fetch('/api/contact/reply', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -91,7 +99,10 @@ const ContactInquiries = () => {
         }),
       });
 
-      if (!response.ok) throw new Error('Failed to send reply.');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to send reply.');
+      }
       message.success('Reply sent successfully.');
       setReplyModalVisible(false);
       setReplyMessage('');
@@ -103,7 +114,6 @@ const ContactInquiries = () => {
     }
   };
 
-  // View reply details
   const handleViewReply = (record) => {
     if (!record.reply) {
       message.info('No reply has been sent for this inquiry.');
@@ -111,7 +121,14 @@ const ContactInquiries = () => {
     }
 
     const sentAt = record.reply.sentAt ? new Date(record.reply.sentAt) : null;
-    const formattedDate = sentAt && !isNaN(sentAt) ? sentAt.toLocaleString() : 'Invalid Date';
+    const formattedDate = sentAt && !isNaN(sentAt) ? sentAt.toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+    }) : 'Invalid Date';
 
     Modal.info({
       title: `Reply to ${record.name}`,
@@ -125,7 +142,6 @@ const ContactInquiries = () => {
     });
   };
 
-  // Table columns
   const columns = [
     {
       title: 'Name',
@@ -140,6 +156,20 @@ const ContactInquiries = () => {
       align: 'center',
     },
     {
+      title: 'Phone',
+      dataIndex: 'phone',
+      key: 'phone',
+      align: 'center',
+      render: (phone) => phone || 'N/A',
+    },
+    {
+      title: 'Subject',
+      dataIndex: 'subject',
+      key: 'subject',
+      align: 'center',
+      render: (subject) => subject || 'N/A',
+    },
+    {
       title: 'Message',
       dataIndex: 'message',
       key: 'message',
@@ -150,14 +180,11 @@ const ContactInquiries = () => {
       key: 'actions',
       align: 'center',
       render: (_, record) => {
-        // If there's no reply, highlight the Reply button.
         const replyButtonStyle = !record.reply
-          ? { backgroundColor: 'blue', color: '#fff' }
+          ? { backgroundColor: '#1890ff', color: '#fff' }
           : {};
-
-        // If there's a reply, highlight the View Reply button.
         const viewReplyButtonStyle = record.reply
-          ? { backgroundColor: 'blue', color: '#fff' }
+          ? { backgroundColor: '#1890ff', color: '#fff' }
           : {};
 
         return (
@@ -190,17 +217,15 @@ const ContactInquiries = () => {
     },
   ];
 
-  // Render for mobile as cards
   const renderMobileCards = () => {
     return (
       <>
         {inquiries.map((inquiry) => {
-          // Determine any style for the "Reply" or "View Reply" button.
           const replyButtonStyle = !inquiry.reply
-            ? { backgroundColor: 'blue', color: '#fff' }
+            ? { backgroundColor: '#1890ff', color: '#fff' }
             : {};
           const viewReplyButtonStyle = inquiry.reply
-            ? { backgroundColor: 'blue', color: '#fff' }
+            ? { backgroundColor: '#1890ff', color: '#fff' }
             : {};
 
           return (
@@ -212,13 +237,15 @@ const ContactInquiries = () => {
                 <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                   <span><strong>Name:</strong> {inquiry.name}</span>
                   <span><strong>Email:</strong> {inquiry.email}</span>
+                  <span><strong>Phone:</strong> {inquiry.phone || 'N/A'}</span>
+                  <span><strong>Subject:</strong> {inquiry.subject || 'N/A'}</span>
                 </div>
               )}
             >
-              <Divider style={{margin: '12px 0'}}></Divider>
+              <Divider style={{ margin: '12px 0' }} />
               <p><strong>Message:</strong> {inquiry.message}</p>
-              <Divider></Divider>
-              <Space style={{ padding: '0 15%' }}>
+              <Divider />
+              <Space style={{ padding: '0 15%', width: '100%', justifyContent: 'center' }}>
                 <Button
                   type="primary"
                   style={replyButtonStyle}
@@ -261,8 +288,8 @@ const ContactInquiries = () => {
         {loading ? 'Reloading...' : 'Reload Inquiries'}
       </Button>
 
-      {isDesktop ? (
         /* DESKTOP VIEW: Show Table */
+      {isDesktop ? (
         <Table
           dataSource={inquiries}
           columns={columns}
@@ -271,13 +298,12 @@ const ContactInquiries = () => {
           pagination={{ pageSize: 6 }}
         />
       ) : (
-        /* MOBILE VIEW: Show Card layout */
         renderMobileCards()
       )}
 
       <Modal
         title={`Reply to ${currentInquiry?.name}`}
-        visible={replyModalVisible}
+        open={replyModalVisible}
         onCancel={() => setReplyModalVisible(false)}
         onOk={handleSendReply}
         okText="Send Reply"

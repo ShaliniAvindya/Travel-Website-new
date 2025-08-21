@@ -1,10 +1,37 @@
+
 import { MapPin, Phone, Mail, Facebook, Instagram, Twitter } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useCallback } from 'react';
 
 export default function Footer() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const scrollToSection = useCallback((id) => {
+    setTimeout(() => {
+      const el = document.getElementById(id);
+      if (el) {
+        const yOffset = -80; 
+        const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+      }
+    }, 100);
+  }, []);
+
+  const handleNav = (e, sectionId) => {
+    e.preventDefault();
+    if (location.pathname !== '/') {
+      navigate('/', { replace: false });
+      setTimeout(() => scrollToSection(sectionId), 300);
+    } else {
+      scrollToSection(sectionId);
+    }
+  };
+
   return (
-    <footer className="bg-blue-950 text-white pt-16 pb-8 w-full">
+    <footer className="bg-blue-950 text-white pt-8 pb-8 w-full">
       <div className="max-w-7xl mx-auto px-4 md:px-8 lg:px-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-8">
           <div className="md:col-span-1">
             <div className="text-2xl font-bold mb-6">
               <span className="text-cyan-300">Travel</span> Paradise
@@ -30,8 +57,8 @@ export default function Footer() {
             <ul className="space-y-3">
               <li><a href="/" className="text-cyan-100 hover:text-white transition">Home</a></li>
               <li><a href="/tours" className="text-cyan-100 hover:text-white transition">Tours</a></li>
-              <li><a href="#about" className="text-cyan-100 hover:text-white transition">About Us</a></li>
-              <li><a href="#testimonials" className="text-cyan-100 hover:text-white transition">Testimonials</a></li>
+              <li><a href="/#about" className="text-cyan-100 hover:text-white transition" onClick={e => handleNav(e, 'about')}>About Us</a></li>
+              <li><a href="/#testimonials" className="text-cyan-100 hover:text-white transition" onClick={e => handleNav(e, 'testimonials')}>Testimonials</a></li>
               <li><a href="/contact" className="text-cyan-100 hover:text-white transition">Contact</a></li>
             </ul>
           </div>

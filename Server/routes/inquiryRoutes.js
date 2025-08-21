@@ -1,6 +1,6 @@
 const express = require('express');
 const nodemailer = require('nodemailer');
-const Inquiry = require('../models/inquirySubmission'); // Path to your Inquiry model
+const Inquiry = require('../models/inquirySubmission');
 const router = express.Router();
 require('dotenv').config();
 
@@ -8,7 +8,7 @@ require('dotenv').config();
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
   port: process.env.SMTP_PORT,
-  secure: process.env.SMTP_PORT == '465', // true if port is 465
+  secure: process.env.SMTP_PORT == '465',
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
@@ -16,26 +16,119 @@ const transporter = nodemailer.createTransport({
 });
 
 // Helper function to send inquiry email to Admin
-const sendInquiryEmail = async ({ name, email, phone_number, travel_date, traveller_count, message, tour, final_price, currency, selected_nights_key, selected_nights_option, selected_food_category }) => {
+const sendInquiryEmail = async ({
+  name,
+  email,
+  phone_number,
+  travel_date,
+  traveller_count,
+  message,
+  tour,
+  final_price,
+  currency,
+  selected_nights_key,
+  selected_nights_option,
+  selected_food_category,
+}) => {
   const htmlContent = `
-      <h2>New Travel Inquiry</h2>
-      <p><strong>Name:</strong> ${name}</p>
-      <p><strong>Email:</strong> ${email}</p>
-      <p><strong>Phone:</strong> ${phone_number}</p>
-      <p><strong>Travel Date:</strong> ${travel_date}</p>
-      <p><strong>Traveller Count:</strong> ${traveller_count}</p>
-      ${tour ? `<p><strong>Tour ID:</strong> ${tour}</p>` : ''}
-      ${final_price ? `<p><strong>Final Price:</strong> ${final_price}</p>` : ''}
-      ${currency ? `<p><strong>Currency:</strong> ${currency}</p>` : ''}
-      ${selected_nights_key ? `<p><strong>Selected Nights Key:</strong> ${selected_nights_key}</p>` : ''}
-      ${selected_nights_option ? `<p><strong>Selected Nights Option:</strong> ${selected_nights_option}</p>` : ''}
-      ${selected_food_category ? `<p><strong>Selected Food Category:</strong> ${selected_food_category}</p>` : ''}
-      <p><strong>Message:</strong></p>
-      <p>${message}</p>
-    `;
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f7fa; color: #1f2937;">
+      <table align="center" width="100%" style="max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+        <!-- Header -->
+        <tr>
+          <td style="background: linear-gradient(to right, #0891b2, #06b6d4); padding: 20px; text-align: center; border-top-left-radius: 8px; border-top-right-radius: 8px;">
+            <h1 style="color: #ffffff; font-size: 24px; margin: 0;">New Travel Inquiry</h1>
+          </td>
+        </tr>
+        <!-- Body -->
+        <tr>
+          <td style="padding: 20px;">
+            <table width="100%" style="font-size: 16px; line-height: 1.5;">
+              <tr>
+                <td style="padding: 10px 0;">
+                  <strong style="color: #1f2937;">Name:</strong> ${name}
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 10px 0;">
+                  <strong style="color: #1f2937;">Email:</strong> <a href="mailto:${email}" style="color: #0891b2; text-decoration: none;">${email}</a>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 10px 0;">
+                  <strong style="color: #1f2937;">Phone:</strong> ${phone_number}
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 10px 0;">
+                  <strong style="color: #1f2937;">Travel Date:</strong> ${new Date(travel_date).toLocaleDateString()}
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 10px 0;">
+                  <strong style="color: #1f2937;">Traveller Count:</strong> ${traveller_count}
+                </td>
+              </tr>
+              ${tour ? `
+              <tr>
+                <td style="padding: 10px 0;">
+                  <strong style="color: #1f2937;">Tour:</strong> ${tour}
+                </td>
+              </tr>` : ''}
+              ${final_price ? `
+              <tr>
+                <td style="padding: 10px 0;">
+                  <strong style="color: #1f2937;">Final Price:</strong> ${currency} ${final_price}
+                </td>
+              </tr>` : ''}
+              ${selected_nights_key ? `
+              <tr>
+                <td style="padding: 10px 0;">
+                  <strong style="color: #1f2937;">Selected Nights:</strong> ${selected_nights_key}
+                </td>
+              </tr>` : ''}
+              ${selected_nights_option ? `
+              <tr>
+                <td style="padding: 10px 0;">
+                  <strong style="color: #1f2937;">Nights Option:</strong> ${selected_nights_option}
+                </td>
+              </tr>` : ''}
+              ${selected_food_category ? `
+              <tr>
+                <td style="padding: 10px 0;">
+                  <strong style="color: #1f2937;">Food Category:</strong> ${selected_food_category}
+                </td>
+              </tr>` : ''}
+              <tr>
+                <td style="padding: 10px 0;">
+                  <strong style="color: #1f2937;">Message:</strong>
+                  <p style="margin: 0; color: #4b5563;">${message || 'No message provided'}</p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        <!-- Footer -->
+        <tr>
+          <td style="background-color: #f1f5f9; padding: 15px; text-align: center; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;">
+            <p style="color: #6b7280; font-size: 14px; margin: 0;">
+              Sent from Maldives Paradise<br>
+              <a href="mailto:info@maldivesparadise.com" style="color: #0891b2; text-decoration: none;">info@maldivesparadise.com</a> | +960 345 6789
+            </p>
+          </td>
+        </tr>
+      </table>
+    </body>
+    </html>
+  `;
   const mailOptions = {
-    from: `"${name}" <${email}>`, // "John Doe" <john@gmail.com>
-    to: process.env.SMTP_USER,    // admin email from your .env or another email
+    from: `"${name}" <${process.env.SMTP_USER}>`,
+    to: process.env.SMTP_USER,
     subject: `New Inquiry from ${name}`,
     html: htmlContent,
   };
@@ -44,9 +137,7 @@ const sendInquiryEmail = async ({ name, email, phone_number, travel_date, travel
 };
 
 // POST /api/inquiries
-// Create a new inquiry + send email
 router.post('/', async (req, res) => {
-  // Destructure all the fields from the request body, including the add-on fields
   const {
     name,
     email,
@@ -75,7 +166,6 @@ router.post('/', async (req, res) => {
       traveller_count,
       message,
       tour,
-      // Additional fields
       final_price,
       currency,
       selected_nights_key,
@@ -85,7 +175,20 @@ router.post('/', async (req, res) => {
 
     await newInquiry.save();
 
-    await sendInquiryEmail({ name, email, phone_number, travel_date, traveller_count,tour, selected_food_category, selected_nights_key, selected_nights_option, message });
+    await sendInquiryEmail({
+      name,
+      email,
+      phone_number,
+      travel_date,
+      traveller_count,
+      message,
+      tour,
+      final_price,
+      currency,
+      selected_nights_key,
+      selected_nights_option,
+      selected_food_category,
+    });
 
     res.status(201).json({ message: 'Inquiry submitted successfully!', inquiry: newInquiry });
   } catch (error) {
@@ -110,8 +213,8 @@ router.delete('/:id', async (req, res) => {
     const removed = await Inquiry.findByIdAndDelete(req.params.id);
     if (!removed) return res.status(404).json({ message: 'Not found.' });
     res.json({ message: 'Deleted successfully.' });
-  } catch (err) {
-    res.status(500).json({ message: 'Error deleting inquiry.' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting inquiry.', error: error.message });
   }
 });
 
@@ -128,6 +231,49 @@ router.post('/reply', async (req, res) => {
     to: email,
     subject,
     text: replyMessage,
+    html: `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f7fa; color: #1f2937;">
+        <table align="center" width="100%" style="max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          <!-- Header -->
+          <tr>
+            <td style="background: linear-gradient(to right, #0891b2, #06b6d4); padding: 20px; text-align: center; border-top-left-radius: 8px; border-top-right-radius: 8px;">
+              <h1 style="color: #ffffff; font-size: 24px; margin: 0;">Response from Maldives Paradise</h1>
+            </td>
+          </tr>
+          <!-- Body -->
+          <tr>
+            <td style="padding: 20px;">
+              <p style="font-size: 16px; line-height: 1.5; color: #4b5563; margin: 0 0 10px;">
+                Dear ${email.split('@')[0]},
+              </p>
+              <p style="font-size: 16px; line-height: 1.5; color: #4b5563; margin: 0 0 10px;">
+                Thank you for your inquiry. Below is our response:
+              </p>
+              <p style="font-size: 16px; line-height: 1.5; color: #1f2937; background-color: #f1f5f9; padding: 15px; border-radius: 6px; margin: 0;">
+                ${replyMessage}
+              </p>
+            </td>
+          </tr>
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #f1f5f9; padding: 15px; text-align: center; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;">
+              <p style="color: #6b7280; font-size: 14px; margin: 0;">
+                Best regards,<br>
+                Maldives Paradise Team<br>
+                <a href="mailto:info@maldivesparadise.com" style="color: #0891b2; text-decoration: none;">info@maldivesparadise.com</a> | +960 345 6789
+              </p>
+            </td>
+          </tr>
+        </table>
+      </body>
+      </html>
+    `,
   };
 
   try {

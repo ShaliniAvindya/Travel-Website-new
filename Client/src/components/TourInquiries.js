@@ -40,10 +40,8 @@ const TourInquiries = () => {
   const [currentInquiry, setCurrentInquiry] = useState(null);
   const [replyMessage, setReplyMessage] = useState('');
   const [subject, setSubject] = useState('');
-
   const { isMobile, isTablet } = useDeviceType();
   const isDesktop = !isMobile && !isTablet;
-
   const [exchangeRates, setExchangeRates] = useState({});
 
   const fetchExchangeRates = async () => {
@@ -52,6 +50,7 @@ const TourInquiries = () => {
       setExchangeRates(response.data.rates);
     } catch (error) {
       console.error('Error fetching exchange rates:', error);
+      message.error('Failed to fetch exchange rates.');
     }
   };
 
@@ -63,20 +62,23 @@ const TourInquiries = () => {
   const fetchInquiries = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/inquiries');
-      if (!response.ok) throw new Error('Failed to fetch inquiries.');
-      const data = await response.json();
+      // Use axios to fetch inquiries from the correct endpoint
+      const response = await axios.get('/api/inquiries');
+      const data = response.data;
 
+      // Transform the data to ensure _id is a string and dates are properly handled
       const transformed = data.map((item) => ({
         ...item,
-        _id: item._id?.$oid || item._id,
+        _id: item._id?.$oid || item._id || null, // Handle both object and string _id
         travel_date: item.travel_date ? new Date(item.travel_date) : null,
-      }))
-      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        createdAt: item.createdAt ? new Date(item.createdAt) : null,
+        updatedAt: item.updatedAt ? new Date(item.updatedAt) : null,
+      })).sort((a, b) => b.createdAt - a.createdAt); // Sort by createdAt descending
+
       setInquiries(transformed);
     } catch (error) {
       console.error('Error fetching inquiries:', error);
-      message.error(error.message || 'Failed to fetch inquiries.');
+      message.error(error.response?.data?.message || 'Failed to fetch inquiries.');
     } finally {
       setLoading(false);
     }
@@ -87,13 +89,12 @@ const TourInquiries = () => {
     if (!confirmed) return;
 
     try {
-      const response = await fetch(`/inquiries/${id}`, { method: 'DELETE' });
-      if (!response.ok) throw new Error('Failed to delete inquiry.');
+      await axios.delete(`/api/inquiries/${id}`);
       message.success('Inquiry deleted successfully.');
       fetchInquiries();
     } catch (error) {
       console.error('Error deleting inquiry:', error);
-      message.error(error.message || 'Failed to delete inquiry.');
+      message.error(error.response?.data?.message || 'Failed to delete inquiry.');
     }
   };
 
@@ -104,17 +105,12 @@ const TourInquiries = () => {
     }
 
     try {
-      const response = await fetch('/inquiries/reply', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          inquiryId: currentInquiry._id,
-          email: currentInquiry.email,
-          subject: subject || `Reply to: ${currentInquiry.name}`,
-          replyMessage,
-        }),
+      await axios.post('/api/inquiries/reply', {
+        inquiryId: currentInquiry._id,
+        email: currentInquiry.email,
+        subject: subject || `Reply to: ${currentInquiry.name}`,
+        replyMessage,
       });
-      if (!response.ok) throw new Error('Failed to send reply.');
       message.success('Reply sent successfully.');
       setReplyModalVisible(false);
       setReplyMessage('');
@@ -122,7 +118,7 @@ const TourInquiries = () => {
       fetchInquiries();
     } catch (error) {
       console.error('Error sending reply:', error);
-      message.error(error.message || 'Failed to send reply.');
+      message.error(error.response?.data?.message || 'Failed to send reply.');
     }
   };
 

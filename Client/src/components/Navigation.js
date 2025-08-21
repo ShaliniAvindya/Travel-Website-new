@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Search, Menu, X, ArrowRight, Filter } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { jwtDecode } from 'jwt-decode';
+import axios from 'axios';
 
 export default function Header({ scrollToBooking }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -14,38 +14,46 @@ export default function Header({ scrollToBooking }) {
     duration: [],
     categories: [],
   });
+  const [categories, setCategories] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('/');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const headerRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
 
-  const popularDestinations = [
-    { name: 'Luxury', count: 2, image: '/api/placeholder/180/120' },
-    { name: 'Adventure', count: 2, image: '/api/placeholder/180/120' },
-    { name: 'Family', count: 1, image: '/api/placeholder/180/120' },
-    { name: 'Wellness', count: 1, image: '/api/placeholder/180/120' },
-  ];
+  // Fetch categories
+  useEffect(() => {
+    const fetchCategories = async () => {
+      setIsLoading(true);
+      try {
+        const response = await axios.get('/api/tours/stats');
+        setCategories(response.data);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching categories:', err);
+        setError('Failed to load categories. Please try again later.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   useEffect(() => {
     // Check authentication status
-    const token = localStorage.getItem('token');
-    try {
-      if (token) {
-        const decodedToken = jwtDecode(token);
-        if (decodedToken.exp > Date.now() / 1000) {
-          setIsAuthenticated(true);
-        } else {
-          setIsAuthenticated(false);
-          localStorage.removeItem('token');
-        }
-      } else {
+    const checkAuth = async () => {
+      try {
+        const response = await axios.get('/api/users/check-auth', { withCredentials: true });
+        setIsAuthenticated(response.data.isAuthenticated);
+      } catch (error) {
         setIsAuthenticated(false);
       }
-    } catch (error) {
-      setIsAuthenticated(false);
-      localStorage.removeItem('token');
-    }
+    };
+
+    checkAuth();
 
     // Set activeTab based on current pathname
     if (location.pathname.startsWith('/tours')) {
@@ -54,18 +62,25 @@ export default function Header({ scrollToBooking }) {
       setActiveTab(location.pathname || '/');
     }
 
+    if (headerRef.current) {
+      if (location.pathname.startsWith('/admin')) {
+        headerRef.current.style.background = '#224272ff';
+      } else {
+        headerRef.current.style.background = 'transparent';
+      }
+    }
     const handleScroll = () => {
       if (headerRef.current) {
         if (window.scrollY > 50) {
           headerRef.current.style.background = 'rgba(1, 30, 65, 0.95)';
-          headerRef.current.style.padding = '0.1rem 0';
+        } else if (location.pathname.startsWith('/admin')) {
+          headerRef.current.style.background = '#224272ff';
         } else {
           headerRef.current.style.background = 'transparent';
-          headerRef.current.style.padding = '1rem 0';
         }
+        headerRef.current.style.padding = '0.1rem 0';
       }
     };
-
     handleScroll();
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
@@ -143,18 +158,24 @@ export default function Header({ scrollToBooking }) {
     });
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    setIsAuthenticated(false);
-    navigate('/login');
+  const handleLogout = async () => {
+    try {
+      await axios.post('/api/users/logout', {}, { withCredentials: true });
+      setIsAuthenticated(false);
+      localStorage.removeItem('token');
+      navigate('/');
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
   };
 
   return (
     <header
       ref={headerRef}
       className="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-opacity-10 bg-blue-950"
+      style={{ background: 'transparent', padding: '0.1rem 0', transition: 'all 0.3s cubic-bezier(.4,0,.2,1)' }}
     >
-      <div className="container mx-auto px-4 md:px-8 flex items-center justify-between py-4">
+      <div className="container mx-auto px-4 md:px-8 flex items-center justify-between py-2">
         <div className="flex items-center">
           <div className="text-white font-bold text-2xl">
             <span className="text-cyan-300">Travel</span> Paradise
@@ -166,7 +187,7 @@ export default function Header({ scrollToBooking }) {
           <a
             href="/"
             onClick={() => handleTabClick('/')}
-            className={`text-white hover:text-cyan-300 transition-colors text-medium font-medium py-2 px-4 border-b-2 ${
+            className={`text-white hover:text-cyan-300 transition-colors text-lg font-medium py-2 px-4 border-b-2 ${
               activeTab === '/' ? 'border-cyan-300 text-cyan-300' : 'border-transparent'
             }`}
           >
@@ -175,7 +196,7 @@ export default function Header({ scrollToBooking }) {
           <a
             href="/tours"
             onClick={() => handleTabClick('/tours')}
-            className={`text-white hover:text-cyan-300 transition-colors text-medium font-medium py-2 px-4 border-b-2 ${
+            className={`text-white hover:text-cyan-300 transition-colors text-lg font-medium py-2 px-4 border-b-2 ${
               activeTab === '/tours' ? 'border-cyan-300 text-cyan-300' : 'border-transparent'
             }`}
           >
@@ -184,7 +205,7 @@ export default function Header({ scrollToBooking }) {
           <a
             href="/contact"
             onClick={() => handleTabClick('/contact')}
-            className={`text-white hover:text-cyan-300 transition-colors text-medium font-medium py-2 px-4 border-b-2 ${
+            className={`text-white hover:text-cyan-300 transition-colors text-lg font-medium py-2 px-4 border-b-2 ${
               activeTab === '/contact' ? 'border-cyan-300 text-cyan-300' : 'border-transparent'
             }`}
           >
@@ -194,7 +215,15 @@ export default function Header({ scrollToBooking }) {
             <>
               <a
                 href="/admin"
-                onClick={() => handleTabClick('/admin')}
+                onClick={e => {
+                  e.preventDefault();
+                  handleTabClick('/admin');
+                  if (isAuthenticated) {
+                    navigate('/admin');
+                  } else {
+                    navigate('/login');
+                  }
+                }}
                 className={`text-white hover:text-cyan-300 transition-colors text-medium font-medium py-2 px-4 border-b-2 ${
                   activeTab === '/admin' ? 'border-cyan-300 text-cyan-300' : 'border-transparent'
                 }`}
@@ -217,7 +246,7 @@ export default function Header({ scrollToBooking }) {
           </button>
           <button
             onClick={() => (window.location.href = '/tours')}
-            className="bg-blue-8 00 hover:bg-cyan-700 text-white px-6 py-3 rounded-full transition duration-300 flex items-center"
+            className="bg-cyan-700 hover:bg-blue-900 text-white px-6 py-3 rounded-full transition duration-300 flex items-center"
           >
             Book Now
             <ArrowRight size={16} className="ml-2" />
@@ -282,9 +311,15 @@ export default function Header({ scrollToBooking }) {
                   className={`text-lg py-3 px-4 rounded-medium transition-colors ${
                     activeTab === '/admin' ? 'bg-blue-800 text-cyan-300 font-medium' : 'text-white hover:bg-blue-800'
                   }`}
-                  onClick={() => {
+                  onClick={e => {
+                    e.preventDefault();
                     handleTabClick('/admin');
                     setIsMenuOpen(false);
+                    if (isAuthenticated) {
+                      navigate('/admin');
+                    } else {
+                      navigate('/login');
+                    }
                   }}
                 >
                   Admin
@@ -415,44 +450,52 @@ export default function Header({ scrollToBooking }) {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {activeFilterTab === 'categories' && (
                     <div className="col-span-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
-                      {popularDestinations.map((dest, index) => (
-                        <div
-                          key={index}
-                          className={`cursor-pointer rounded-xl overflow-hidden relative transition group ${
-                            selectedFilters.categories.includes(dest.name) ? 'ring-2 ring-blue-500' : ''
-                          }`}
-                          onClick={() => toggleFilter('categories', dest.name)}
-                        >
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-black/20 z-10"></div>
-                          <img
-                            src={dest.image}
-                            alt={dest.name}
-                            className="w-full h-32 object-cover group-hover:scale-110 transition duration-300"
-                          />
-                          <div className="absolute bottom-0 left-0 p-3 text-white z-10">
-                            <p className="font-medium text-sm">{dest.name}</p>
-                            <p className="text-xs text-gray-300">{dest.count} tours</p>
-                          </div>
-                          {selectedFilters.categories.includes(dest.name) && (
-                            <div className="absolute top-2 right-2 z-20 bg-blue-500 rounded-full p-1">
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="16"
-                                height="16"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="3"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                className="text-white"
-                              >
-                                <polyline points="20 6 9 17 4 12"></polyline>
-                              </svg>
+                      {isLoading ? (
+                        <div className="col-span-full text-center text-gray-600">Loading categories...</div>
+                      ) : error ? (
+                        <div className="col-span-full text-center text-red-600">{error}</div>
+                      ) : categories.length === 0 ? (
+                        <div className="col-span-full text-center text-gray-600">No categories available</div>
+                      ) : (
+                        categories.map((dest, index) => (
+                          <div
+                            key={index}
+                            className={`cursor-pointer rounded-xl overflow-hidden relative transition group ${
+                              selectedFilters.categories.includes(dest.name) ? 'ring-2 ring-blue-500' : ''
+                            }`}
+                            onClick={() => toggleFilter('categories', dest.name)}
+                          >
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-black/20 z-10"></div>
+                            <img
+                              src={dest.image || 'https://via.placeholder.com/150'}
+                              alt={dest.name}
+                              className="w-full h-32 object-cover group-hover:scale-110 transition duration-300"
+                            />
+                            <div className="absolute bottom-0 left-0 p-3 text-white z-10">
+                              <p className="font-medium text-sm">{dest.name}</p>
+                              <p className="text-xs text-gray-300">{dest.count} tours</p>
                             </div>
-                          )}
-                        </div>
-                      ))}
+                            {selectedFilters.categories.includes(dest.name) && (
+                              <div className="absolute top-2 right-2 z-20 bg-blue-500 rounded-full p-1">
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  width="16"
+                                  height="16"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="3"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  className="text-white"
+                                >
+                                  <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                              </div>
+                            )}
+                          </div>
+                        ))
+                      )}
                     </div>
                   )}
                   {activeFilterTab === 'duration' && (

@@ -73,21 +73,21 @@ export default function MaldivesParadiseTravels() {
   const heroSlides = [
     {
       id: 1,
-      image: "https://i.postimg.cc/0y44dvk6/wmremove-transformed.jpg",
+      image: "https://i.postimg.cc/76pCMfrN/pexels-asadphoto-2245290.jpg",
       title: "Experience Paradise in the Maldives",
       subtitle: "Discover crystal waters and pristine beaches"
     },
     {
       id: 2,
-      image: "https://i.postimg.cc/76pCMfrN/pexels-asadphoto-2245290.jpg",
-      title: "Exclusive Luxury Island Retreats",
-      subtitle: "Explore vibrant coral reefs and marine life"
-    },
-    {
-      id: 3,
       image: "https://i.postimg.cc/k4MRXkFx/maldives-3793871_1280.jpg",
       title: "Luxury Resorts & Private Villas",
       subtitle: "Indulge in unparalleled comfort and opulence"
+    },
+    {
+      id: 3,
+      image: "https://i.postimg.cc/D00bh5pQ/photo-1743657106173-65fc69fa0923.avif",
+      title: "Exclusive Luxury Island Retreats",
+      subtitle: "Explore vibrant coral reefs and marine life"
     }
   ];
 
@@ -186,7 +186,7 @@ export default function MaldivesParadiseTravels() {
   return (
     <div className="relative font-sans">
       {/* Hero Section */}
-      <section id="home" className="relative h-screen overflow-hidden pt-16">
+  <section id="home" className="relative h-[60vh] min-h-[720px] overflow-hidden pt-16">
         <div className="absolute inset-0">
           {heroSlides.map((slide, index) => (
             <div
@@ -285,7 +285,7 @@ export default function MaldivesParadiseTravels() {
       </section>
       
       <section>
-        <ImageGallery />
+        <ImageGallery limit={6} />
       </section>
 
       {/* About Section with Animated Counters */}

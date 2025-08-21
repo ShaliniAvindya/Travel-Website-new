@@ -1,5 +1,5 @@
-import React from 'react';
-import Navigation from './components/Navigation'; // Adjust path as needed
+import React, { useEffect, useState } from 'react';
+import Navigation from './components/Navigation';
 import { Route, Routes, Navigate, useLocation } from 'react-router-dom';
 import HomeScreen from './screens/HomeScreen';
 import Tours from './screens/Tours';
@@ -18,47 +18,105 @@ axios.defaults.baseURL = 'http://localhost:8000';
 
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('token');
-  let isAuthenticated = false;
+  const location = useLocation();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  try {
-    if (token) {
-      const decodedToken = jwtDecode(token);
-      if (decodedToken.exp > Date.now() / 1000) {
-        isAuthenticated = true;
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const response = await axios.get('/api/users/check-auth', { withCredentials: true });
+        if (response.data.isAuthenticated && response.data.isAdmin) {
+          setIsAuthenticated(true);
+          setIsAdmin(true);
+        } else {
+          setIsAuthenticated(false);
+          setIsAdmin(false);
+        }
+      } catch (error) {
+        setIsAuthenticated(false);
+        setIsAdmin(false);
+      } finally {
+        setIsLoading(false);
       }
+    };
+
+    if (token) {
+      try {
+        const decodedToken = jwtDecode(token);
+        if (decodedToken.exp > Date.now() / 1000) {
+          checkAuth();
+        } else {
+          setIsLoading(false);
+        }
+      } catch (error) {
+        setIsLoading(false);
+      }
+    } else {
+      checkAuth();
     }
-  } catch (error) {
-    isAuthenticated = false;
+  }, [token]);
+
+  if (isLoading) {
+    return null;
   }
 
-  return isAuthenticated ? children : <Navigate to="/login" state={{ from: '/admin' }} />;
+  if (!isAuthenticated || !isAdmin) {
+    return <Navigate to="/login" state={{ from: location.pathname }} replace />;
+  }
+
+  return children;
 };
 
 const LoginRoute = ({ children }) => {
   const location = useLocation();
   const token = localStorage.getItem('token');
-  let isAuthenticated = false;
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  try {
-    if (token) {
-      const decodedToken = jwtDecode(token);
-      if (decodedToken.exp > Date.now() / 1000) {
-        isAuthenticated = true;
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const response = await axios.get('/api/users/check-auth', { withCredentials: true });
+        setIsAuthenticated(response.data.isAuthenticated);
+      } catch (error) {
+        setIsAuthenticated(false);
+      } finally {
+        setIsLoading(false);
       }
+    };
+
+    if (token) {
+      try {
+        const decodedToken = jwtDecode(token);
+        if (decodedToken.exp > Date.now() / 1000) {
+          checkAuth();
+        } else {
+          setIsLoading(false);
+        }
+      } catch (error) {
+        setIsLoading(false);
+      }
+    } else {
+      checkAuth();
     }
-  } catch (error) {
-    isAuthenticated = false;
+  }, [token]);
+
+  if (isLoading) {
+    return null;
   }
 
-  if (isAuthenticated) {
-    return <Navigate to="/" />;
+  if (location.pathname === '/login' && !location.state?.from) {
+    return <Navigate to="/" replace />;
   }
 
+  // Allow login page only /admin
   if (location.state?.from === '/admin') {
     return children;
   }
 
-  return <Navigate to="/" />;
+  return <Navigate to="/" replace />;
 };
 
 const App = () => {
@@ -76,6 +134,7 @@ const App = () => {
             <Route path="/admin" element={<ProtectedRoute><AdminPanel /></ProtectedRoute>} />
             <Route path="/tours/:id" element={<TourDetails />} />
             <Route path="/itinerary/:id" element={<Itinerary />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>
         <Footer />

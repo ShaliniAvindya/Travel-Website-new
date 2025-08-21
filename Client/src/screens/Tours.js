@@ -1,17 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
-import { Search, Filter, X, ChevronDown, MapPin, Sun, Waves, Calendar, Users } from 'lucide-react';
+import { Search, Filter, X, ChevronDown, MapPin, Sun, Waves, Users } from 'lucide-react';
 import ImageGallery from '../components/Home/ImageGallery';
 import { useLocation } from 'react-router-dom';
+import axios from 'axios';
 
 const MALDIVES_IMAGES = {
   hero: "https://i.postimg.cc/50CFBvJT/abdulla-faiz-0-DGZu-Jxta3k-unsplash.jpg",
   ctaBackground: "https://i.postimg.cc/50CFBvJT/abdulla-faiz-0-DGZu-Jxta3k-unsplash.jpg",
-  categories: {
-    luxury: "https://i.postimg.cc/YqvgFBcR/pexels-asadphoto-3319704.jpg",
-    adventure: "https://i.postimg.cc/yxV0xTmn/Screenshot-2025-05-14-132943.png",
-    family: "https://i.postimg.cc/gk2HWbJS/photo-1590523741831-ab7e8b8f9c7f.avif",
-    wellness: "https://i.postimg.cc/c1gKyPVK/pexels-savindu-senevirathne-2100872112-30942047.jpg"
-  }
 };
 
 const Tours = () => {
@@ -25,6 +20,9 @@ const Tours = () => {
     duration: [],
     categories: []
   });
+  const [categories, setCategories] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
   const heroRef = useRef(null);
   const toursRef = useRef(null);
   const statsRef = useRef(null);
@@ -39,23 +37,34 @@ const Tours = () => {
     travelers: 0
   });
   
-  const targetStats = {
+  const [targetStats, setTargetStats] = useState({
     islands: 20,
     resorts: 50,
-    tours: 100,
+    tours: 6,
     travelers: 1000
-  };
+  });
   
   const animationDuration = 1500;
-  
   const [hasAnimated, setHasAnimated] = useState(false);
 
-  const popularDestinations = [
-    { name: "Luxury", count: 2, image: MALDIVES_IMAGES.categories.luxury },
-    { name: "Adventure", count: 2, image: MALDIVES_IMAGES.categories.adventure },
-    { name: "Family", count: 1, image: MALDIVES_IMAGES.categories.family },
-    { name: "Wellness", count: 1, image: MALDIVES_IMAGES.categories.wellness }
-  ];
+  // Fetch categories 
+  useEffect(() => {
+    const fetchCategories = async () => {
+      setIsLoading(true);
+      try {
+        const response = await axios.get('/api/tours/stats'); 
+        setCategories(response.data);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching categories:', err);
+        setError('Failed to load categories. Please try again later.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
@@ -79,18 +88,16 @@ const Tours = () => {
     }
   }, [location.search]);
 
+  // Handle scroll
   useEffect(() => {
     const handleScroll = () => {
       setScrollY(window.scrollY);
-      
-      // Check if stats section is in viewport
       if (statsRef.current && !hasAnimated) {
         const rect = statsRef.current.getBoundingClientRect();
         const isInViewport = rect.top <= window.innerHeight && rect.bottom >= 0;
-        
         if (isInViewport) {
           animateStats();
-          setHasAnimated(true); 
+          setHasAnimated(true);
         }
       }
     };
@@ -103,7 +110,6 @@ const Tours = () => {
     if (statsRef.current) {
       const rect = statsRef.current.getBoundingClientRect();
       const isInViewport = rect.top <= window.innerHeight && rect.bottom >= 0;
-      
       if (isInViewport && !hasAnimated) {
         animateStats();
         setHasAnimated(true);
@@ -113,17 +119,11 @@ const Tours = () => {
   
   const animateStats = () => {
     const startTime = Date.now();
-    
-    // Animation interval
     const interval = setInterval(() => {
       const elapsedTime = Date.now() - startTime;
       const progress = Math.min(elapsedTime / animationDuration, 1);
-      
-      const springProgress = progress === 1 
-        ? 1 
-        : 1 - Math.cos((progress * Math.PI) / 2);
-      
-      // Update the stats based on progress
+      const springProgress = progress === 1 ? 1 : 1 - Math.cos((progress * Math.PI) / 2);
+
       setAnimatedStats({
         islands: Math.floor(springProgress * targetStats.islands),
         resorts: Math.floor(springProgress * targetStats.resorts),
@@ -134,8 +134,7 @@ const Tours = () => {
       if (progress >= 1) {
         clearInterval(interval);
       }
-    }, 16); 
-    
+    }, 16);
     return () => clearInterval(interval);
   };
 
@@ -178,31 +177,25 @@ const Tours = () => {
       } else {
         currentFilters.splice(index, 1);
       }
-      
-      return {
-        ...prev,
-        [category]: currentFilters
-      };
+      return { ...prev, [category]: currentFilters };
     });
   };
+
+  if (error) {
+    return <div className="text-center py-16 text-red-600">{error}</div>;
+  }
 
   return (
     <div className="tours-page bg-gray-50">
       {/* Hero Section */}
-      <section 
-        ref={heroRef}
-        className="relative h-screen max-h-[640px] overflow-hidden"
-      >
+      <section ref={heroRef} className="relative h-screen max-h-[640px] overflow-hidden">
         <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-900/80 to-cyan-900/70 z-10"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-black/80 to-cyan-900/70 z-10"></div>
           <img
             src={MALDIVES_IMAGES.hero}
             alt="Maldives Paradise"
             className="w-full h-full object-cover"
-            style={{ 
-              transform: `translateY(${scrollY * 0.4}px)`, 
-              transition: 'transform 0.05s linear'
-            }}
+            style={{ transform: `translateY(${scrollY * 0.4}px)`, transition: 'transform 0.05s linear' }}
           />
         </div>
         
@@ -218,7 +211,6 @@ const Tours = () => {
               <p className="text-lg text-cyan-50 mb-8 max-w-lg">
                 Discover crystal-clear waters, pristine beaches, and luxury accommodations curated for the perfect getaway.
               </p>
-              
               <div className="flex flex-wrap gap-4">
                 <button
                   onClick={() => {
@@ -252,14 +244,14 @@ const Tours = () => {
                     className="w-full py-4 pl-12 pr-4 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition"
                   />
                 </div>
-                   <button
-                    type="button"
-                    onClick={() => setIsFilterOpen(!isFilterOpen)}
-                    className={`py-4 px-4 md:px-6 rounded-xl border font-medium transition flex items-center justify-center gap-2 ${isFilterOpen ? 'bg-blue-50 border-blue-200 text-blue-700' : 'border-gray-200 hover:border-blue-300 text-gray-700 hover:bg-blue-50'}`}
-                  >
-                    <Filter size={18} />
-                    <span className="hidden md:inline">Filters</span>
-                  </button>
+                <button
+                  type="button"
+                  onClick={() => setIsFilterOpen(!isFilterOpen)}
+                  className={`py-4 px-4 md:px-6 rounded-xl border font-medium transition flex items-center justify-center gap-2 ${isFilterOpen ? 'bg-blue-50 border-blue-200 text-blue-700' : 'border-gray-200 hover:border-blue-300 text-gray-700 hover:bg-blue-50'}`}
+                >
+                  <Filter size={18} />
+                  <span className="hidden md:inline">Filters</span>
+                </button>
                 <div className="flex gap-3">
                   <button
                     type="submit"
@@ -278,10 +270,7 @@ const Tours = () => {
                   {searchTerm && (
                     <span className="inline-flex items-center px-3 py-1 rounded-full bg-blue-100 text-blue-800 text-sm font-medium">
                       Search: {searchTerm}
-                      <button
-                        onClick={() => setSearchTerm('')}
-                        className="ml-2 focus:outline-none"
-                      >
+                      <button onClick={() => setSearchTerm('')} className="ml-2 focus:outline-none">
                         <X size={14} />
                       </button>
                     </span>
@@ -305,7 +294,7 @@ const Tours = () => {
                       onClick={clearAllFilters}
                       className="text-medium text-red-600 hover:text-red-800 font-medium"
                     >
-                      Clear All
+                      Clear monocytes
                     </button>
                   )}
                 </div>
@@ -323,53 +312,70 @@ const Tours = () => {
                       key={tab}
                       onClick={() => setActiveFilterTab(tab)}
                       className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium transition ${
-                        activeFilterTab === tab 
-                          ? 'bg-blue-100 text-blue-700' 
-                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        activeFilterTab === tab ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                       }`}
                     >
                       {tab.charAt(0).toUpperCase() + tab.slice(1)}
                     </button>
                   ))}
                 </div>
-                
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {activeFilterTab === 'categories' && (
                     <div className="col-span-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
-                      {popularDestinations.map((dest, index) => (
-                        <div 
-                          key={index} 
-                          className={`cursor-pointer rounded-xl overflow-hidden relative transition group ${
-                            selectedFilters.categories.includes(dest.name) ? 'ring-2 ring-blue-500' : ''
-                          }`}
-                          onClick={() => toggleFilter('categories', dest.name)}
-                        >
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-black/20 z-10"></div>
-                          <img src={dest.image} alt={dest.name} className="w-full h-32 object-cover group-hover:scale-110 transition duration-300" />
-                          <div className="absolute bottom-0 left-0 p-3 text-white z-10">
-                            <p className="font-medium text-sm">{dest.name}</p>
-                            <p className="text-xs text-gray-300">{dest.count} tours</p>
-                          </div>
-                          {selectedFilters.categories.includes(dest.name) && (
-                            <div className="absolute top-2 right-2 z-20 bg-blue-500 rounded-full p-1">
-                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-white">
-                                <polyline points="20 6 9 17 4 12"></polyline>
-                              </svg>
+                      {isLoading ? (
+                        <div className="col-span-full text-center text-gray-600">Loading categories...</div>
+                      ) : categories.length === 0 ? (
+                        <div className="col-span-full text-center text-gray-600">No categories available</div>
+                      ) : (
+                        categories.map((dest, index) => (
+                          <div
+                            key={index}
+                            className={`cursor-pointer rounded-xl overflow-hidden relative transition group ${
+                              selectedFilters.categories.includes(dest.name) ? 'ring-2 ring-blue-500' : ''
+                            }`}
+                            onClick={() => toggleFilter('categories', dest.name)}
+                          >
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-black/20 z-10"></div>
+                            <img
+                              src={dest.image || 'https://via.placeholder.com/150'}
+                              alt={dest.name}
+                              className="w-full h-32 object-cover group-hover:scale-110 transition duration-300"
+                            />
+                            <div className="absolute bottom-0 left-0 p-3 text-white z-10">
+                              <p className="font-medium text-sm">{dest.name}</p>
+                              <p className="text-xs text-gray-300">{dest.count} tours</p>
                             </div>
-                          )}
-                        </div>
-                      ))}
+                            {selectedFilters.categories.includes(dest.name) && (
+                              <div className="absolute top-2 right-2 z-20 bg-blue-500 rounded-full p-1">
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  width="16"
+                                  height="16"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="3"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  className="text-white"
+                                >
+                                  <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                              </div>
+                            )}
+                          </div>
+                        ))
+                      )}
                     </div>
                   )}
-                  
                   {activeFilterTab === 'duration' && (
                     <div className="col-span-3 grid grid-cols-2 sm:grid-cols-4 gap-4">
                       {['1-3 Days', '4-7 Days', '8-14 Days', '15+ Days'].map((duration, index) => (
-                        <div 
-                          key={index} 
+                        <div
+                          key={index}
                           className={`cursor-pointer p-4 rounded-lg border transition ${
-                            selectedFilters.duration.includes(duration) 
-                              ? 'border-blue-500 bg-blue-50/50' 
+                            selectedFilters.duration.includes(duration)
+                              ? 'border-blue-500 bg-blue-50/50'
                               : 'border-gray-200 hover:border-blue-200 hover:bg-blue-50/30'
                           }`}
                           onClick={() => toggleFilter('duration', duration)}
@@ -377,7 +383,18 @@ const Tours = () => {
                           <div className="flex items-center justify-between">
                             <span className="text-sm font-medium">{duration}</span>
                             {selectedFilters.duration.includes(duration) && (
-                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-blue-500">
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="3"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="text-blue-500"
+                              >
                                 <polyline points="20 6 9 17 4 12"></polyline>
                               </svg>
                             )}
@@ -386,15 +403,14 @@ const Tours = () => {
                       ))}
                     </div>
                   )}
-                  
                   {activeFilterTab === 'price' && (
                     <div className="col-span-3 grid grid-cols-2 sm:grid-cols-4 gap-4">
                       {['$0 - $1000', '$1000 - $2000', '$2000 - $3000', '$3000+'].map((price, index) => (
-                        <div 
-                          key={index} 
+                        <div
+                          key={index}
                           className={`cursor-pointer p-4 rounded-lg border transition ${
-                            selectedFilters.priceRange.includes(price) 
-                              ? 'border-blue-500 bg-blue-50/50' 
+                            selectedFilters.priceRange.includes(price)
+                              ? 'border-blue-500 bg-blue-50/50'
                               : 'border-gray-200 hover:border-blue-200 hover:bg-blue-50/30'
                           }`}
                           onClick={() => toggleFilter('priceRange', price)}
@@ -402,7 +418,18 @@ const Tours = () => {
                           <div className="flex items-center justify-between">
                             <span className="text-sm font-medium">{price}</span>
                             {selectedFilters.priceRange.includes(price) && (
-                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-blue-500">
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="3"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="text-blue-500"
+                              >
                                 <polyline points="20 6 9 17 4 12"></polyline>
                               </svg>
                             )}
@@ -412,15 +439,14 @@ const Tours = () => {
                     </div>
                   )}
                 </div>
-                
                 <div className="mt-6 pt-4 border-t border-gray-100 flex justify-end items-center gap-4">
-                  <button 
+                  <button
                     className="px-4 py-2 text-gray-600 hover:text-gray-900 text-sm font-medium"
                     onClick={clearAllFilters}
                   >
                     Clear All
                   </button>
-                  <button 
+                  <button
                     className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium"
                     onClick={() => setIsFilterOpen(false)}
                   >
@@ -438,54 +464,25 @@ const Tours = () => {
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
             {[
-              { 
-                icon: <MapPin size={24} />, 
-                count: animatedStats.islands,
-                suffix: "+", 
-                label: "Islands",
-                target: targetStats.islands
-              },
-              { 
-                icon: <Sun size={24} />, 
-                count: animatedStats.resorts,
-                suffix: "+", 
-                label: "Luxury Resorts",
-                target: targetStats.resorts
-              },
-              { 
-                icon: <Waves size={24} />, 
-                count: animatedStats.tours,
-                suffix: "+", 
-                label: "Tour Packages",
-                target: targetStats.tours
-              },
-              { 
-                icon: <Users size={24} />, 
-                count: animatedStats.travelers,
-                suffix: "+", 
-                label: "Happy Travelers",
-                target: targetStats.travelers
-              },
+              { icon: <MapPin size={24} />, count: animatedStats.islands, suffix: '+', label: 'Islands', target: targetStats.islands },
+              { icon: <Sun size={24} />, count: animatedStats.resorts, suffix: '+', label: 'Luxury Resorts', target: targetStats.resorts },
+              { icon: <Waves size={24} />, count: animatedStats.tours, suffix: '+', label: 'Tour Packages', target: targetStats.tours },
+              { icon: <Users size={24} />, count: animatedStats.travelers, suffix: '+', label: 'Happy Travelers', target: targetStats.travelers },
             ].map((stat, index) => (
-              <div 
-                key={index} 
+              <div
+                key={index}
                 className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition flex flex-col items-center text-center"
               >
-                <div className="rounded-full bg-blue-50 p-3 mb-3 text-blue-500">
-                  {stat.icon}
-                </div>
+                <div className="rounded-full bg-blue-50 p-3 mb-3 text-blue-500">{stat.icon}</div>
                 <div className="relative h-12 flex items-center justify-center">
                   <h3 className="text-2xl md:text-3xl font-bold text-blue-900 mb-1">
                     {stat.count}{stat.suffix}
                   </h3>
-                  {/* Show glowing effect during animation */}
                   {stat.count < stat.target && (
                     <span className="absolute inset-0 animate-pulse bg-blue-300/20 rounded-full" />
                   )}
                 </div>
-                <p className="text-gray-600 text-sm">
-                  {stat.label}
-                </p>
+                <p className="text-gray-600 text-sm">{stat.label}</p>
               </div>
             ))}
           </div>
@@ -495,8 +492,8 @@ const Tours = () => {
       {/* Main Image Gallery */}
       <section className="px-4" ref={toursRef}>
         <div className="max-w-8xl mx-auto">
-          <ImageGallery 
-            searchQuery={searchTerm} 
+          <ImageGallery
+            searchQuery={searchTerm}
             selectedFilters={selectedFilters}
             setAvailableToursCount={setAvailableToursCount}
           />
@@ -507,26 +504,21 @@ const Tours = () => {
       <section className="py-16 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-blue-900 to-cyan-800 opacity-95 z-0"></div>
         <div className="absolute inset-0 z-0">
-          <img
-            src={MALDIVES_IMAGES.ctaBackground}
-            alt="Maldives beach"
-            className="w-full h-full object-cover opacity-20"
-          />
+          <img src={MALDIVES_IMAGES.ctaBackground} alt="Maldives beach" className="w-full h-full object-cover opacity-20" />
         </div>
-        
         <div className="max-w-4xl mx-auto px-4 relative z-10 text-center">
           <span className="inline-block px-4 py-1 rounded-full bg-cyan-400/30 text-cyan-50 text-sm font-medium mb-4">
             Personalized Experience
           </span>
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            Can't find what you're looking for?
-          </h2>
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Can't find what you're looking for?</h2>
           <p className="text-cyan-100 md:text-lg mb-8 max-w-2xl mx-auto">
             Let our travel experts create a personalized itinerary based on your preferences and budget. We'll handle all the details so you can focus on enjoying your dream vacation.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button onClick={() => window.location.href = '/contact'}
-             className="px-8 py-3 bg-transparent border border-white/40 text-white rounded-lg font-medium hover:bg-white/10 transition">
+            <button
+              onClick={() => window.location.href = '/contact'}
+              className="px-8 py-3 bg-transparent border border-white/40 text-white rounded-lg font-medium hover:bg-white/10 transition"
+            >
               Contact Our Team
             </button>
           </div>

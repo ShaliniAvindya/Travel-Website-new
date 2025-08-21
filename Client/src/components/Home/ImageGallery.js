@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Calendar, Heart, Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { tourGallery } from './imageGalleryData';
+import axios from 'axios';
 
 function useDeviceType() {
   const [deviceType, setDeviceType] = useState({
@@ -26,25 +26,47 @@ function useDeviceType() {
 const ImageGallery = ({ searchQuery = '', selectedFilters = { categories: [], priceRange: [], duration: [] }, setAvailableToursCount = () => {} }) => {
   const { isMobile } = useDeviceType();
   const [activeTab, setActiveTab] = useState('all');
+  const [tours, setTours] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
+
+  // Fetch tours 
+  useEffect(() => {
+    const fetchTours = async () => {
+      try {
+        setIsLoading(true);
+        const response = await axios.get('http://localhost:8000/api/tours');
+        setTours(response.data);
+        const uniqueCategories = [...new Set(response.data.map(tour => tour.category))];
+        setCategories(uniqueCategories);
+      } catch (error) {
+        console.error('Error fetching tours:', error);
+        setError('Failed to load tours. Please try again later.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchTours();
+  }, []);
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
   };
 
   const handleClick = (id) => {
-    navigate(`/tours/${id.$oid}`);
+    navigate(`/tours/${id}`);
   };
 
-  // Filter tours based on searchQuery, selectedFilters, and activeTab
   const filteredTours = (() => {
-    let results = tourGallery;
+    let results = tours;
 
     if (searchQuery && searchQuery.trim() !== '') {
       const term = searchQuery.toLowerCase();
-      results = results.filter(tour => 
-        tour.title.toLowerCase().includes(term) || 
-        tour.sum.toLowerCase().includes(term) ||
+      results = results.filter(tour =>
+        tour.title.toLowerCase().includes(term) ||
+        tour.tour_summary.toLowerCase().includes(term) ||
         tour.category.toLowerCase().includes(term)
       );
     }
@@ -88,6 +110,14 @@ const ImageGallery = ({ searchQuery = '', selectedFilters = { categories: [], pr
     setAvailableToursCount(filteredTours.length);
   }, [filteredTours, setAvailableToursCount]);
 
+  if (isLoading) {
+    return <div className="text-center py-16">Loading tours...</div>;
+  }
+
+  if (error) {
+    return <div className="text-center py-16 text-red-600">{error}</div>;
+  }
+
   return (
     <section id="tours" className="py-16">
       <div className="container mx-auto px-4 md:px-8">
@@ -99,7 +129,7 @@ const ImageGallery = ({ searchQuery = '', selectedFilters = { categories: [], pr
         </div>
 
         <div className="flex flex-wrap justify-center mb-8 gap-2">
-          <button 
+          <button
             onClick={() => handleTabChange('all')}
             className={`px-4 py-2 rounded-full transition ${
               activeTab === 'all' ? 'bg-blue-900 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
@@ -107,47 +137,29 @@ const ImageGallery = ({ searchQuery = '', selectedFilters = { categories: [], pr
           >
             All Tours
           </button>
-          <button 
-            onClick={() => handleTabChange('Luxury')}
-            className={`px-4 py-2 rounded-full transition ${
-              activeTab === 'Luxury' ? 'bg-blue-900 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-            }`}
-          >
-            Luxury
-          </button>
-          <button 
-            onClick={() => handleTabChange('Adventure')}
-            className={`px-4 py-2 rounded-full transition ${
-              activeTab === 'Adventure' ? 'bg-blue-900 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-            }`}
-          >
-            Adventure
-          </button>
-          <button 
-            onClick={() => handleTabChange('Family')}
-            className={`px-4 py-2 rounded-full transition ${
-              activeTab === 'Family' ? 'bg-blue-900 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-            }`}
-          >
-            Family
-          </button>
-          <button 
-            onClick={() => handleTabChange('Wellness')}
-            className={`px-4 py-2 rounded-full transition ${
-              activeTab === 'Wellness' ? 'bg-blue-900 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-            }`}
-          >
-            Wellness
-          </button>
+          {categories.map(category => (
+            <button
+              key={category}
+              onClick={() => handleTabChange(category)}
+              className={`px-4 py-2 rounded-full transition ${
+                activeTab === category ? 'bg-blue-900 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              {category}
+            </button>
+          ))}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredTours.map((tour) => (
-            <div key={tour._id.$oid} className="bg-white rounded-xl overflow-hidden shadow-lg transition-transform duration-300 hover:shadow-2xl hover:translate-y-1">
+            <div
+              key={tour._id}
+              className="bg-white rounded-xl overflow-hidden shadow-lg transition-transform duration-300 hover:shadow-2xl hover:translate-y-1"
+            >
               <div className="relative">
-                <img 
-                  src={tour.images[0]} 
-                  alt={tour.title} 
+                <img
+                  src={tour.tour_image}
+                  alt={tour.title}
                   className="w-full h-64 object-cover"
                   onClick={() => handleClick(tour._id)}
                 />
@@ -171,7 +183,7 @@ const ImageGallery = ({ searchQuery = '', selectedFilters = { categories: [], pr
                   </div>
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 mb-2">{tour.title}</h3>
-                <p className="text-gray-600 mb-4 line-clamp-2">{tour.sum}</p>
+                <p className="text-gray-600 mb-4 line-clamp-2">{tour.tour_summary}</p>
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center text-gray-700">
                     <Calendar size={16} className="mr-1" />
@@ -182,7 +194,7 @@ const ImageGallery = ({ searchQuery = '', selectedFilters = { categories: [], pr
                     <span className="text-gray-500 font-normal text-sm">/person</span>
                   </div>
                 </div>
-                <button 
+                <button
                   onClick={() => handleClick(tour._id)}
                   className="w-full bg-blue-900 hover:bg-blue-800 text-white py-2 rounded-lg transition duration-300"
                 >

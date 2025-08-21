@@ -26,7 +26,7 @@ const Itinerary = ({ tourData, selectedNightsKey }) => {
   const [imageIndices, setImageIndices] = useState([]);
   const { isMobile } = useDeviceType();
 
-  const nights = parseInt(selectedNightsKey, 10) || 0;
+  const nights = parseInt(selectedNightsKey, 10) || (tourData ? tourData.days - 1 : 0);
   const totalDays = nights + 1;
   const middleDaysNeeded = totalDays - 2;
 
@@ -37,8 +37,8 @@ const Itinerary = ({ tourData, selectedNightsKey }) => {
         day: 1,
         title: tourData.itinerary_titles?.first_day || "Arrival Day",
         details: typeof tourData.itinerary.first_day === "string"
-          ? tourData.itinerary.first_day.split("\n")
-          : tourData.itinerary.first_day || [],
+          ? tourData.itinerary.first_day.split("\n").filter(detail => detail.trim())
+          : Array.isArray(tourData.itinerary.first_day) ? tourData.itinerary.first_day : [],
         images: tourData.itinerary_images?.first_day || [],
       });
     }
@@ -57,8 +57,8 @@ const Itinerary = ({ tourData, selectedNightsKey }) => {
           day: dayNumber,
           title: tourData.itinerary_titles?.middle_days?.[key] || `Day ${dayNumber}`,
           details: typeof tourData.itinerary.middle_days[key] === "string"
-            ? tourData.itinerary.middle_days[key].split("\n")
-            : tourData.itinerary.middle_days[key] || [],
+            ? tourData.itinerary.middle_days[key].split("\n").filter(detail => detail.trim())
+            : Array.isArray(tourData.itinerary.middle_days[key]) ? tourData.itinerary.middle_days[key] : [],
           images: tourData.itinerary_images?.middle_days?.[key] || [],
         });
       });
@@ -70,8 +70,8 @@ const Itinerary = ({ tourData, selectedNightsKey }) => {
         day: dayNumber,
         title: tourData.itinerary_titles?.last_day || "Departure Day",
         details: typeof tourData.itinerary.last_day === "string"
-          ? tourData.itinerary.last_day.split("\n")
-          : tourData.itinerary.last_day || [],
+          ? tourData.itinerary.last_day.split("\n").filter(detail => detail.trim())
+          : Array.isArray(tourData.itinerary.last_day) ? tourData.itinerary.last_day : [],
         images: tourData.itinerary_images?.last_day || [],
       });
     }
@@ -174,6 +174,7 @@ const Itinerary = ({ tourData, selectedNightsKey }) => {
                             objectFit: 'cover',
                           }}
                           className="transition-all duration-1000 ease-in-out"
+                          loading="lazy"
                         />
                         <div
                           className="absolute left-2 top-1/2 transform -translate-y-1/2 text-lg font-bold cursor-pointer z-10 select-none text-white"
@@ -229,6 +230,7 @@ const Itinerary = ({ tourData, selectedNightsKey }) => {
                     src={tourData.tour_image}
                     alt="Tour Summary"
                     className="w-full h-full object-cover"
+                    loading="lazy"
                   />
                 </div>
               )}
@@ -238,6 +240,7 @@ const Itinerary = ({ tourData, selectedNightsKey }) => {
                     src={tourData.tour_image}
                     alt="Tour Summary"
                     className="w-full h-full object-cover"
+                    loading="lazy"
                   />
                 </div>
               )}

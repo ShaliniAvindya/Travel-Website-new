@@ -4,11 +4,8 @@ import AllTours from '../components/AllTours';
 import AddTour from '../components/AddTour';
 import ContactInquiries from '../components/ContactInquiries';
 import TourInquiries from '../components/TourInquiries';
-import Footer from '../components/Footer';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { jwtDecode } from 'jwt-decode';
-
 
 function useDeviceType() {
   const [deviceType, setDeviceType] = useState({
@@ -38,33 +35,17 @@ const AdminPanel = () => {
   const { isMobile, isTablet } = useDeviceType();
 
   useEffect(() => {
-    let token = localStorage.getItem('token');
-
-    const checkTokenExpiration = () => {
-      token = localStorage.getItem('token');
-      if (!token) {
-        navigate('/login');
-        return;
-      }
+    const checkAuth = async () => {
       try {
-        const decodedToken = jwtDecode(token);
-        // Check if token is expired
-        if (decodedToken.exp < Date.now() / 1000) {
+        const response = await axios.get('/api/users/check-auth', { withCredentials: true });
+        if (!response.data.isAuthenticated || !response.data.isAdmin) {
           navigate('/login');
         }
       } catch (error) {
         navigate('/login');
       }
     };
-
-    // Initial check on mount
-    checkTokenExpiration();
-
-    // Set an interval to check token expiration every second
-    const intervalId = setInterval(checkTokenExpiration, 1000);
-
-    // Clear the interval when component unmounts
-    return () => clearInterval(intervalId);
+    checkAuth();
   }, [navigate]);
 
   const handleTabChange = (key) => {
@@ -72,71 +53,76 @@ const AdminPanel = () => {
   };
 
   return (
-    <div>
-      <div
-      style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        width: '100vw',
-        background: 'white',
-        fontFamily: 'Arial, sans-serif',
-      }}
-    >
-      <div
-        style={{
-          width: '100%',
-          marginTop:'3vh',
-          marginBottom:'50px',
-          maxWidth: isMobile? '100vw': isTablet? '90%': '80vw',
-          background: '#fff',
-          boxShadow: '0 8px 20px rgba(0, 0, 0, 0.15)',
-          overflow: 'hidden',
-          
-        }}
-      >
-        <Tabs
-          activeKey={activeTab}
-          onChange={handleTabChange}
-          tabBarStyle={{
-            background: '#e8f0fc',
-            fontWeight: 'bold',
-            fontSize: '20px',
-            padding:isMobile? '0 2vw': isTablet? '0 20vw': '0 22vw',
-            height: '7vh',
-            margin: '0',
-
-          }}
-          style={{
-            width: '100%',
-          }}
-        >
-          <TabPane tab="Tours" key="1">
-            <div style={{ padding:'30px' }}>
-              <AllTours />
-            </div>
-          </TabPane>
-          <TabPane tab="Add Tour" key="2">
-            <div style={{ padding: '30px' }}>
-              <AddTour />
-            </div>
-          </TabPane>
-          <TabPane tab="Contact Inquiries" key="3">
-            <div style={{ padding:  '30px' }}>
-              <ContactInquiries />
-            </div>
-          </TabPane>
-          <TabPane tab="Tour Inquiries" key='4'>
-            <div style={{ padding:'30px' }}>
-              <TourInquiries />
-            </div>
-          </TabPane>
-        </Tabs>
+    <div className="min-h-screen bg-slate-300 pt-24">
+      <div className="flex justify-center items-center w-full font-sans">
+        <div className={`max-w-7xl w-full mx-4 my-8 bg-[#1e3a8a] rounded-xl shadow-2xl overflow-hidden ${isMobile ? 'mx-2' : 'mx-6'}`}>
+          <Tabs
+            activeKey={activeTab}
+            onChange={handleTabChange}
+            className="w-full"
+            renderTabBar={(props, DefaultTabBar) => (
+              <div className="flex justify-center">
+                <DefaultTabBar {...props} className="flex w-full max-w-3xl justify-between" />
+              </div>
+            )}
+            tabBarStyle={{
+              background: '#1e3a8a',
+              padding: '0 1rem',
+              borderBottom: '2px solid #3b82f6',
+            }}
+          >
+            <TabPane
+              tab={
+                <span className="text-white text-lg md:text-xl font-semibold px-4 py-2">
+                  Tours
+                </span>
+              }
+              key="1"
+            >
+              <div className="p-6 bg-white">
+                <AllTours />
+              </div>
+            </TabPane>
+            <TabPane
+              tab={
+                <span className="text-white text-lg md:text-xl font-semibold px-4 py-2">
+                  Add Tour
+                </span>
+              }
+              key="2"
+            >
+              <div className="p-6 bg-white">
+                <AddTour />
+              </div>
+            </TabPane>
+            <TabPane
+              tab={
+                <span className="text-white text-lg md:text-xl font-semibold px-4 py-2">
+                  Contact Inquiries
+                </span>
+              }
+              key="3"
+            >
+              <div className="p-6 bg-white">
+                <ContactInquiries />
+              </div>
+            </TabPane>
+            <TabPane
+              tab={
+                <span className="text-white text-lg md:text-xl font-semibold px-4 py-2">
+                  Tour Inquiries
+                </span>
+              }
+              key="4"
+            >
+              <div className="p-6 bg-white">
+                <TourInquiries />
+              </div>
+            </TabPane>
+          </Tabs>
+        </div>
       </div>
     </div>
-      <Footer />
-    </div>
-    
   );
 };
 

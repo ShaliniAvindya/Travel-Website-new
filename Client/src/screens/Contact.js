@@ -1,16 +1,17 @@
 import { useState, useRef, useEffect } from 'react';
-import { Mail, Phone, MapPin, Send, User, MessageSquare, Clock, ArrowRight, Info, CheckCircle, X } from 'lucide-react';
+import { Mail, Phone, MapPin, Send, User, MessageSquare, Clock, Info, CheckCircle, X } from 'lucide-react';
 import FAQAccordion from './FAQAccordion';
+import axios from 'axios'; 
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    subject: "",
-    message: ""
+    name: '',
+    email: '',
+    phone: '',
+    subject: '',
+    message: '',
   });
-  
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
   const [notificationType, setNotificationType] = useState('');
@@ -40,20 +41,20 @@ export default function ContactPage() {
     setIsSubmitting(true);
     
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const response = await axios.post('http://localhost:8000/api/contact', formData);
       setNotificationType('success');
-      setNotificationMessage('Your message has been sent successfully! We will contact you soon.');
+      setNotificationMessage(response.data.message || 'Your message has been sent successfully! We will contact you soon.');
       setShowNotification(true);
       setFormData({
-        name: "",
-        email: "",
-        phone: "",
-        subject: "",
-        message: ""
+        name: '',
+        email: '',
+        phone: '',
+        subject: '',
+        message: '',
       });
     } catch (error) {
       setNotificationType('error');
-      setNotificationMessage('Something went wrong. Please try again later.');
+      setNotificationMessage(error.response?.data?.message || 'Something went wrong. Please try again later.');
       setShowNotification(true);
     } finally {
       setIsSubmitting(false);
@@ -68,26 +69,25 @@ export default function ContactPage() {
       {/* Hero Section */}
       <section className="relative h-[60vh] sm:h-[76vh] overflow-hidden">
         <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-900/85 to-cyan-900/75 z-10"></div>      
+          <div className="absolute inset-0 bg-gradient-to-r from-black/80 to-cyan-800/75 z-10"></div>
           <img
             src="https://i.postimg.cc/7hs76b6B/beautiful-shot-cute-dolphins-hanging-out-underwater-bimini-bahamas.jpg"
             alt="Maldives aerial view"
             className="w-full h-full object-cover"
-            style={{ 
-              transform: `translateY(${scrollY * 0.4}px)`, 
+            style={{
+              transform: `translateY(${scrollY * 0.4}px)`,
               willChange: 'transform',
-              transition: 'transform 0.05s linear'
+              transition: 'transform 0.05s linear',
             }}
           />
         </div>
-        
+
         <div className="absolute inset-0 z-20 flex items-center justify-center">
           <div className="text-center text-white px-4 max-w-4xl">
             <h1 className="text-4xl sm:text-6xl font-bold mb-4 animate-fade-in">Get In Touch</h1>
             <div className="w-20 h-1 bg-cyan-400 mx-auto mb-6"></div>
             <p className="text-lg sm:text-xl text-cyan-50 max-w-2xl mx-auto leading-relaxed">
-              We're here to help plan your perfect Maldives getaway. 
-              Reach out to our travel experts today.
+              We're here to help plan your perfect Maldives getaway. Reach out to our travel experts today.
             </p>
           </div>
         </div>
@@ -102,7 +102,9 @@ export default function ContactPage() {
             </div>
             <h3 className="text-xl font-semibold text-blue-900 mb-2">Call Us</h3>
             <p className="text-gray-600 text-sm mb-2">Available 24/7</p>
-            <a href="tel:+9603456789" className="text-blue-600 hover:text-blue-800 font-medium text-base transition-colors">+960 345 6789</a>
+            <a href="tel:+9603456789" className="text-blue-600 hover:text-blue-800 font-medium text-base transition-colors">
+              +960 345 6789
+            </a>
           </div>
           
           <div className="bg-white rounded-xl shadow-xl p-6 text-center transform transition duration-300 hover:-translate-y-2 hover:shadow-2xl border-t-4 border-blue-600">
@@ -111,7 +113,9 @@ export default function ContactPage() {
             </div>
             <h3 className="text-xl font-semibold text-blue-900 mb-2">Email Us</h3>
             <p className="text-gray-600 text-sm mb-2">Reply within 24 hours</p>
-            <a href="mailto:info@maldivesparadise.com" className="text-blue-600 hover:text-blue-800 font-medium text-base transition-colors">info@maldivesparadise.com</a>
+            <a href="mailto:info@maldivesparadise.com" className="text-blue-600 hover:text-blue-800 font-medium text-base transition-colors">
+              info@maldivesparadise.com
+            </a>
           </div>
           
           <div className="bg-white rounded-xl shadow-xl p-6 text-center transform transition duration-300 hover:-translate-y-2 hover:shadow-2xl border-t-4 border-cyan-400">
@@ -135,15 +139,16 @@ export default function ContactPage() {
                 <h2 className="text-3xl font-bold text-blue-900 mb-3 tracking-tight">Send Us a Message</h2>
                 <div className="w-20 h-1 bg-gradient-to-r from-cyan-500 to-blue-500 mb-4 rounded-full"></div>
                 <p className="text-gray-600 text-base leading-relaxed">
-                  Questions about Maldives packages or trip planning? 
-                  Our travel specialists are here to assist.
+                  Questions about Maldives packages or trip planning? Our travel specialists are here to assist.
                 </p>
               </div>
               
               <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                    <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                      Full Name
+                    </label>
                     <div className="relative group">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-hover:text-blue-500 transition-colors">
                         <User className="h-4 w-4" />
@@ -162,7 +167,9 @@ export default function ContactPage() {
                   </div>
                   
                   <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                      Email Address
+                    </label>
                     <div className="relative group">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-hover:text-blue-500 transition-colors">
                         <Mail className="h-4 w-4" />
@@ -183,7 +190,9 @@ export default function ContactPage() {
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                    <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+                      Phone Number
+                    </label>
                     <div className="relative group">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-hover:text-blue-500 transition-colors">
                         <Phone className="h-4 w-4" />
@@ -201,7 +210,9 @@ export default function ContactPage() {
                   </div>
                   
                   <div>
-                    <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+                    <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-1">
+                      Subject
+                    </label>
                     <div className="relative group">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-hover:text-blue-500 transition-colors">
                         <Info className="h-4 w-4" />
@@ -231,7 +242,9 @@ export default function ContactPage() {
                 </div>
                 
                 <div>
-                  <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">Your Message</label>
+                  <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">
+                    Your Message
+                  </label>
                   <div className="relative group">
                     <div className="absolute top-3 left-3 flex items-start pointer-events-none text-gray-400 group-hover:text-blue-500 transition-colors">
                       <MessageSquare className="h-4 w-4" />
@@ -266,8 +279,8 @@ export default function ContactPage() {
                     type="submit"
                     disabled={isSubmitting}
                     className={`w-full py-3 px-6 flex justify-center items-center rounded-lg text-white font-medium transition-all shadow-md text-base
-                      ${isSubmitting 
-                        ? 'bg-blue-400 cursor-not-allowed' 
+                      ${isSubmitting
+                        ? 'bg-blue-400 cursor-not-allowed'
                         : 'bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 hover:shadow-lg'}`}
                   >
                     {isSubmitting ? (
@@ -336,29 +349,18 @@ export default function ContactPage() {
                   </div>
                 </div>
               </div>
-              
-              <div className="rounded-2xl overflow-hidden shadow-xl h-64 relative">
-                <div className="w-full h-full bg-blue-100 flex items-center justify-center">
-          
-                  <div className="absolute inset-0 bg-gradient-to-tr from-blue-900/60 to-transparent flex items-center justify-center">
-                    <div className="bg-white rounded-full p-4 shadow-lg">
-                      <MapPin className="h-10 w-10 text-blue-600" />
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>
       </section>
-      
-      <FAQAccordion/>
-      
+      <FAQAccordion />
       {/* Notification */}
       {showNotification && (
-        <div className={`fixed bottom-6 right-6 p-4 rounded-lg shadow-lg z-50 text-white flex items-center max-w-md transition-all transform translate-y-0 ${
-          notificationType === 'success' ? 'bg-green-600' : 'bg-red-600'
-        }`}>
+        <div
+          className={`fixed bottom-6 right-6 p-4 rounded-lg shadow-lg z-50 text-white flex items-center max-w-md transition-all transform translate-y-0 ${
+            notificationType === 'success' ? 'bg-green-600' : 'bg-red-600'
+          }`}
+        >
           <div className="flex-shrink-0 mr-3">
             {notificationType === 'success' ? (
               <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
