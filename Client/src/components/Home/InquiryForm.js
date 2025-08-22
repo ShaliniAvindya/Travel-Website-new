@@ -193,7 +193,7 @@ const InquiryForm = ({
         selected_food_category: foodCategoryLabel,
       };
 
-      await axios.post('http://localhost:8000/api/inquiries', payload);
+      await axios.post('https://travel-website-new-dp4q-backend.vercel.app/api/inquiries', payload);
       Swal.fire('Success!', 'Your inquiry has been submitted successfully.', 'success');
       handleClose();
     } catch (error) {
