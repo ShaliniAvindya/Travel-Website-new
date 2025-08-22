@@ -37,7 +37,7 @@ const AdminPanel = () => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await axios.get('/api/users/check-auth', { withCredentials: true });
+        const response = await axios.get('https://travel-website-new-dp4q-backend.vercel.app/api/users/check-auth', { withCredentials: true });
         if (!response.data.isAuthenticated || !response.data.isAdmin) {
           navigate('/login');
         }
@@ -127,3 +127,4 @@ const AdminPanel = () => {
 };
 
 export default AdminPanel;
+
