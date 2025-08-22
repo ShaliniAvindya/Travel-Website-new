@@ -10,7 +10,7 @@ export default function Header({ scrollToBooking }) {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [activeFilterTab, setActiveFilterTab] = useState('categories');
   const [selectedFilters, setSelectedFilters] = useState({
-    priceRange: [], 
+    priceRange: [],
     duration: [],
     categories: [],
   });
@@ -38,21 +38,15 @@ export default function Header({ scrollToBooking }) {
         setIsLoading(false);
       }
     };
+
     fetchCategories();
   }, []);
 
   useEffect(() => {
     // Check authentication status
     const checkAuth = async () => {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        setIsAuthenticated(false);
-        return;
-      }
       try {
-        const response = await axios.get('https://travel-website-new-dp4q-backend.vercel.app/api/users/check-auth', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const response = await axios.get('https://travel-website-new-dp4q-backend.vercel.app/api/users/check-auth', { withCredentials: true });
         setIsAuthenticated(response.data.isAuthenticated);
       } catch (error) {
         setIsAuthenticated(false);
@@ -61,7 +55,7 @@ export default function Header({ scrollToBooking }) {
 
     checkAuth();
 
-    // Set activeTab based on pathname
+    // Set activeTab based on current pathname
     if (location.pathname.startsWith('/tours')) {
       setActiveTab('/tours');
     } else {
@@ -69,9 +63,12 @@ export default function Header({ scrollToBooking }) {
     }
 
     if (headerRef.current) {
-      headerRef.current.style.background = location.pathname.startsWith('/admin') ? '#224272ff' : 'transparent';
+      if (location.pathname.startsWith('/admin')) {
+        headerRef.current.style.background = '#224272ff';
+      } else {
+        headerRef.current.style.background = 'transparent';
+      }
     }
-
     const handleScroll = () => {
       if (headerRef.current) {
         if (window.scrollY > 50) {
@@ -89,24 +86,44 @@ export default function Header({ scrollToBooking }) {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [location.pathname]);
 
-  const handleSearchToggle = () => setIsSearchOpen(!isSearchOpen);
-  const handleSearchChange = (e) => setSearchQuery(e.target.value);
-  const handleTabClick = (path) => setActiveTab(path);
+  const handleSearchToggle = () => {
+    setIsSearchOpen(!isSearchOpen);
+  };
+
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+  };
+
+  const handleTabClick = (path) => {
+    setActiveTab(path);
+  };
 
   const handleSearch = (e) => {
     e.preventDefault();
     setActiveTab('/tours');
     const queryParams = new URLSearchParams();
-    if (searchQuery) queryParams.append('search', searchQuery);
-    if (selectedFilters.categories.length > 0) queryParams.append('categories', selectedFilters.categories.join(','));
-    if (selectedFilters.priceRange.length > 0) queryParams.append('priceRange', selectedFilters.priceRange.join(','));
-    if (selectedFilters.duration.length > 0) queryParams.append('duration', selectedFilters.duration.join(','));
+    if (searchQuery) {
+      queryParams.append('search', searchQuery);
+    }
+    if (selectedFilters.categories.length > 0) {
+      queryParams.append('categories', selectedFilters.categories.join(','));
+    }
+    if (selectedFilters.priceRange.length > 0) {
+      queryParams.append('priceRange', selectedFilters.priceRange.join(','));
+    }
+    if (selectedFilters.duration.length > 0) {
+      queryParams.append('duration', selectedFilters.duration.join(','));
+    }
     navigate(`/tours?${queryParams.toString()}`);
     setIsSearchOpen(false);
   };
 
   const clearAllFilters = () => {
-    setSelectedFilters({ priceRange: [], duration: [], categories: [] });
+    setSelectedFilters({
+      priceRange: [],
+      duration: [],
+      categories: [],
+    });
     setSearchQuery('');
   };
 
@@ -117,27 +134,40 @@ export default function Header({ scrollToBooking }) {
     }));
   };
 
-  const toggleFilter = (category, value) => {
-    setSelectedFilters((prev) => {
-      const currentFilters = [...prev[category]];
-      const index = currentFilters.indexOf(value);
-      if (index === -1) currentFilters.push(value);
-      else currentFilters.splice(index, 1);
-      return { ...prev, [category]: currentFilters };
-    });
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    setIsAuthenticated(false);
-    navigate('/');
-  };
-
   const activeFilters = [
     ...selectedFilters.categories.map((cat) => ({ type: 'categories', value: cat })),
     ...selectedFilters.priceRange.map((price) => ({ type: 'priceRange', value: price })),
     ...selectedFilters.duration.map((dur) => ({ type: 'duration', value: dur })),
   ];
+
+  const toggleFilter = (category, value) => {
+    setSelectedFilters((prev) => {
+      const currentFilters = [...prev[category]];
+      const index = currentFilters.indexOf(value);
+
+      if (index === -1) {
+        currentFilters.push(value);
+      } else {
+        currentFilters.splice(index, 1);
+      }
+
+      return {
+        ...prev,
+        [category]: currentFilters,
+      };
+    });
+  };
+
+  const handleLogout = async () => {
+    try {
+      await axios.post('https://travel-website-new-dp4q-backend.vercel.app/api/users/logout', {}, { withCredentials: true });
+      setIsAuthenticated(false);
+      localStorage.removeItem('token');
+      navigate('/');
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
+  };
 
   return (
     <header
@@ -561,6 +591,3 @@ export default function Header({ scrollToBooking }) {
     </header>
   );
 }
-
-
-
