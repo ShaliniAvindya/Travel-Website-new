@@ -17,29 +17,29 @@ app.use(cookieParser());
 
 app.use(cors({
   origin: process.env.CLIENT_URL || "http://localhost:3000",
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  methods: ["GET","POST","PUT","DELETE"],
+  allowedHeaders: ["Content-Type","Authorization"],
   credentials: true
 }));
 
 app.use(express.json());
 
-// Enable session for passport
+// Sessions
 app.use(session({
   secret: process.env.SESSION_SECRET || 'your_session_secret',
   resave: false,
   saveUninitialized: false,
 }));
 
-// Initialize Passport
+// Passport
 app.use(passport.initialize());
 app.use(passport.session());
 
 app.options("*", cors());
 
-// ✅ Test route (to check if server is alive)
-app.get("/", (req, res) => {
-  res.send("🚀 API backend is running! Use /api/... routes.");
+// ✅ Test route
+app.get("/api/test", (req,res) => {
+  res.json({ message: "🚀 API backend is running!" });
 });
 
 // Routes
@@ -48,10 +48,12 @@ app.use('/api/inquiries', inquireRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/contact', contactRoutes);
 
-// MongoDB connection
+// MongoDB
+if (!process.env.MONGO_URI) {
+  console.error("❌ MONGO_URI is not defined!");
+}
 mongoose.connect(process.env.MONGO_URI, {})
-  .then(() => console.log('DB connect successful'))
-  .catch((err) => console.error('DB connection error:', err));
+  .then(()=>console.log("DB connect successful"))
+  .catch(err=>console.error("DB connection error:", err));
 
-// ✅ Export for Vercel (no app.listen here!)
 module.exports = app;
