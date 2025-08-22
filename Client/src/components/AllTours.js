@@ -73,7 +73,7 @@ const AllTours = () => {
     const fetchTours = async () => {
       try {
         setLoading(true);
-        const response = await axios.get("/api/tours");
+        const response = await axios.get("https://travel-website-new-dp4q-backend.vercel.app/api/tours");
         setTours(response.data);
         setError(null);
       } catch (error) {
@@ -595,7 +595,7 @@ const AllTours = () => {
         category: formData.category,
       };
 
-      const response = await axios.put(`/api/tours/${editTour._id}`, payload);
+      const response = await axios.put(`https://travel-website-new-dp4q-backend.vercel.app/api/tours/${editTour._id}`, payload);
       setTours((prevTours) =>
         prevTours.map((t) => (t._id === editTour._id ? response.data : t))
       );
@@ -619,7 +619,7 @@ const AllTours = () => {
         confirmButtonText: "Yes, delete it!",
       });
       if (result.isConfirmed) {
-        await axios.delete(`/api/tours/${id}`);
+        await axios.delete(`https://travel-website-new-dp4q-backend.vercel.app/api/tours/${id}`);
         setTours(tours.filter((tour) => tour._id !== id));
         Swal.fire("Deleted!", "Tour has been deleted.", "success");
       }
@@ -632,7 +632,7 @@ const AllTours = () => {
   const handleDuplicate = async (tour) => {
     try {
       const { _id, createdAt, updatedAt, __v, ...duplicateData } = tour;
-      const response = await axios.post("/api/tours", duplicateData);
+      const response = await axios.post("https://travel-website-new-dp4q-backend.vercel.app/api/tours", duplicateData);
       setTours([...tours, response.data]);
       Swal.fire("Success!", "Tour duplicated successfully.", "success");
     } catch (error) {
@@ -1429,3 +1429,4 @@ const AllTours = () => {
 };
 
 export default AllTours;
+
