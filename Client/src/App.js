@@ -14,7 +14,7 @@ import Footer from './components/Footer';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 
-axios.defaults.baseURL = 'http://localhost:8000';
+axios.defaults.baseURL = 'https://travel-website-new-dp4q-backend.vercel.app';
 
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('token');
@@ -144,3 +144,4 @@ const App = () => {
 };
 
 export default App;
+
