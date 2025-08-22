@@ -17,7 +17,7 @@ export default function LoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('/api/users/login', { email, password, rememberMe }, { withCredentials: true });
+      const response = await axios.post('https://travel-website-new-dp4q-backend.vercel.app/api/users/login', { email, password, rememberMe }, { withCredentials: true });
       if (response.status === 200) {
         if (response.data.token) {
           localStorage.setItem('token', response.data.token);
