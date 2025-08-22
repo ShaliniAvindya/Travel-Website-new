@@ -63,7 +63,7 @@ const TourInquiries = () => {
     setLoading(true);
     try {
       // Use axios to fetch inquiries from the correct endpoint
-      const response = await axios.get('/api/inquiries');
+      const response = await axios.get('https://travel-website-new-dp4q-backend.vercel.app/api/inquiries');
       const data = response.data;
 
       // Transform the data to ensure _id is a string and dates are properly handled
@@ -89,7 +89,7 @@ const TourInquiries = () => {
     if (!confirmed) return;
 
     try {
-      await axios.delete(`/api/inquiries/${id}`);
+      await axios.delete(`https://travel-website-new-dp4q-backend.vercel.app/api/inquiries/${id}`);
       message.success('Inquiry deleted successfully.');
       fetchInquiries();
     } catch (error) {
@@ -105,7 +105,7 @@ const TourInquiries = () => {
     }
 
     try {
-      await axios.post('/api/inquiries/reply', {
+      await axios.post('https://travel-website-new-dp4q-backend.vercel.app/api/inquiries/reply', {
         inquiryId: currentInquiry._id,
         email: currentInquiry.email,
         subject: subject || `Reply to: ${currentInquiry.name}`,
