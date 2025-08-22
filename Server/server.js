@@ -37,6 +37,11 @@ app.use(passport.session());
 
 app.options("*", cors());
 
+// ✅ Test route (to check if server is alive)
+app.get("/", (req, res) => {
+  res.send("🚀 API backend is running! Use /api/... routes.");
+});
+
 // Routes
 app.use('/api/tours', tourRoutes);
 app.use('/api/inquiries', inquireRoutes);
@@ -48,5 +53,5 @@ mongoose.connect(process.env.MONGO_URI, {})
   .then(() => console.log('DB connect successful'))
   .catch((err) => console.error('DB connection error:', err));
 
+// ✅ Export for Vercel (no app.listen here!)
 module.exports = app;
-
