@@ -86,7 +86,7 @@ export default function RegisterPage() {
       return;
     }
     try {
-      const response = await axios.post('/api/users/register', { firstName, lastName, email, password }, { withCredentials: true });
+      const response = await axios.post('https://travel-website-new-dp4q-backend.vercel.app/api/users/register', { firstName, lastName, email, password }, { withCredentials: true });
       if (response.status === 201) {
         Swal.fire({
           title: 'Registration Successful!',
@@ -306,3 +306,4 @@ export default function RegisterPage() {
     </div>
   );
 }
+
