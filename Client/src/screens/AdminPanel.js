@@ -34,21 +34,34 @@ const AdminPanel = () => {
   const navigate = useNavigate();
   const { isMobile, isTablet } = useDeviceType();
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const response = await axios.get('https://travel-website-new-dp4q-backend.vercel.app/api/users/check-auth', { withCredentials: true });
-        if (!response.data.isAuthenticated || !response.data.isAdmin) {
-          navigate('/login');
+ useEffect(() => {
+  const checkAuth = async () => {
+    const token = localStorage.getItem('token'); // read from localStorage
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+
+    try {
+      const response = await axios.get(
+        'https://travel-website-new-dp4q-backend.vercel.app/api/users/check-auth',
+        {
+          headers: { Authorization: `Bearer ${token}` }, // send token
         }
-      } catch (error) {
+      );
+
+      if (!response.data.isAuthenticated || !response.data.isAdmin) {
         navigate('/login');
       }
-    };
-    checkAuth();
-  }, [navigate]);
+    } catch (error) {
+      navigate('/login');
+    }
+  };
 
-  const handleTabChange = (key) => {
+  checkAuth();
+}, [navigate]);
+
+   const handleTabChange = (key) => {
     setActiveTab(key);
   };
 
@@ -127,4 +140,5 @@ const AdminPanel = () => {
 };
 
 export default AdminPanel;
+
 
