@@ -28,7 +28,7 @@ export default function Header({ scrollToBooking }) {
     const fetchCategories = async () => {
       setIsLoading(true);
       try {
-        const response = await axios.get('/api/tours/stats');
+        const response = await axios.get('https://travel-website-new-dp4q-backend.vercel.app/api/tours/stats');
         setCategories(response.data);
         setError(null);
       } catch (err) {
@@ -46,7 +46,7 @@ export default function Header({ scrollToBooking }) {
     // Check authentication status
     const checkAuth = async () => {
       try {
-        const response = await axios.get('/api/users/check-auth', { withCredentials: true });
+        const response = await axios.get('https://travel-website-new-dp4q-backend.vercel.app/api/users/check-auth', { withCredentials: true });
         setIsAuthenticated(response.data.isAuthenticated);
       } catch (error) {
         setIsAuthenticated(false);
@@ -160,7 +160,7 @@ export default function Header({ scrollToBooking }) {
 
   const handleLogout = async () => {
     try {
-      await axios.post('/api/users/logout', {}, { withCredentials: true });
+      await axios.post('https://travel-website-new-dp4q-backend.vercel.app/api/users/logout', {}, { withCredentials: true });
       setIsAuthenticated(false);
       localStorage.removeItem('token');
       navigate('/');
@@ -591,3 +591,4 @@ export default function Header({ scrollToBooking }) {
     </header>
   );
 }
+
