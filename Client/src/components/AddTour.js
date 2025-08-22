@@ -486,7 +486,7 @@ const TourForm = () => {
         category: formData.category,
       };
 
-      const response = await axios.post("/api/tours", payload);
+      const response = await axios.post("https://travel-website-new-dp4q-backend.vercel.app/api/tours", payload);
       Swal.fire("Success!", "Tour has been created successfully.", "success");
       handleReset();
     } catch (error) {
@@ -1234,5 +1234,6 @@ const TourForm = () => {
     </div>
   );
 };
+
 
 export default TourForm;
