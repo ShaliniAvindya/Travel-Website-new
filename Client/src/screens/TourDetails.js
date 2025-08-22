@@ -245,7 +245,7 @@ const TourDetails = () => {
   useEffect(() => {
     const fetchTourDetails = async () => {
       try {
-        const response = await axios.get(`http://localhost:8000/api/tours/${id}`);
+        const response = await axios.get(`https://travel-website-new-dp4q-backend.vercel.app/api/tours/${id}`);
         setTour(response.data);
       } catch (error) {
         console.error('Error fetching tour details:', error);
@@ -751,5 +751,6 @@ const TourDetails = () => {
     </div>
   );
 };
+
 
 export default TourDetails;
