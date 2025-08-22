@@ -37,7 +37,7 @@ const ImageGallery = ({ searchQuery = '', selectedFilters = { categories: [], pr
     const fetchTours = async () => {
       try {
         setIsLoading(true);
-        const response = await axios.get('http://localhost:8000/api/tours');
+        const response = await axios.get('https://travel-website-new-dp4q-backend.vercel.app/api/tours');
         setTours(response.data);
         const uniqueCategories = [...new Set(response.data.map(tour => tour.category))];
         setCategories(uniqueCategories);
@@ -216,3 +216,4 @@ const ImageGallery = ({ searchQuery = '', selectedFilters = { categories: [], pr
 };
 
 export default ImageGallery;
+
