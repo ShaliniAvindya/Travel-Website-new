@@ -41,7 +41,7 @@ export default function ContactPage() {
     setIsSubmitting(true);
     
     try {
-      const response = await axios.post('http://localhost:8000/api/contact', formData);
+      const response = await axios.post('https://travel-website-new-dp4q-backend.vercel.app/api/contact', formData);
       setNotificationType('success');
       setNotificationMessage(response.data.message || 'Your message has been sent successfully! We will contact you soon.');
       setShowNotification(true);
@@ -386,3 +386,4 @@ export default function ContactPage() {
     </div>
   );
 }
+
