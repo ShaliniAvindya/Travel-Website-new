@@ -16,7 +16,7 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 
 app.use(cors({
-  origin: process.env.CLIENT_URL || "http://localhost:3000",
+  origin: process.env.CLIENT_URL || "https://travel-website-new.vercel.app",
   methods: ["GET","POST","PUT","DELETE"],
   allowedHeaders: ["Content-Type","Authorization"],
   credentials: true
@@ -49,11 +49,12 @@ app.use('/api/users', userRoutes);
 app.use('/api/contact', contactRoutes);
 
 // MongoDB
-if (!process.env.MONGO_URI) {
-  console.error("❌ MONGO_URI is not defined!");
+if (!process.env.MONGODB_URI) {
+  console.error("❌ MONGODB_URI is not defined!");
 }
-mongoose.connect(process.env.MONGO_URI, {})
+mongoose.connect(process.env.MONGODB_URI, {})
   .then(()=>console.log("DB connect successful"))
   .catch(err=>console.error("DB connection error:", err));
 
 module.exports = app;
+
