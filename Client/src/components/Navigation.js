@@ -10,7 +10,7 @@ export default function Header({ scrollToBooking }) {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [activeFilterTab, setActiveFilterTab] = useState('categories');
   const [selectedFilters, setSelectedFilters] = useState({
-    priceRange: [],
+    priceRange: [], 
     duration: [],
     categories: [],
   });
@@ -561,5 +561,6 @@ export default function Header({ scrollToBooking }) {
     </header>
   );
 }
+
 
 
