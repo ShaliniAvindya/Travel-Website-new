@@ -42,7 +42,7 @@ const ContactInquiries = () => {
   const fetchInquiries = async () => {
     setLoading(true);
     try {
-      const response = await axios.get('/api/contact/inquiries');
+      const response = await axios.get('https://travel-website-new-dp4q-backend.vercel.app/api/contact/inquiries');
       if (!response || !response.data) throw new Error('No data received from server.');
       const data = response.data;
       data.sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt));
@@ -68,7 +68,7 @@ const ContactInquiries = () => {
     if (!confirmed) return;
 
     try {
-      const response = await fetch(`/api/contact/inquiries/${id}`, { method: 'DELETE' });
+      const response = await fetch(`https://travel-website-new-dp4q-backend.vercel.app/api/contact/inquiries/${id}`, { method: 'DELETE' });
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to delete inquiry.');
@@ -88,7 +88,7 @@ const ContactInquiries = () => {
     }
 
     try {
-      const response = await fetch('/api/contact/reply', {
+      const response = await fetch('https://travel-website-new-dp4q-backend.vercel.app/api/contact/reply', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -331,3 +331,4 @@ const ContactInquiries = () => {
 };
 
 export default ContactInquiries;
+
