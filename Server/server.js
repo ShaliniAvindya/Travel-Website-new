@@ -43,10 +43,10 @@ app.get("/api/test", (req,res) => {
 });
 
 // Routes
-app.use('/api/tours', tourRoutes);
-app.use('/api/inquiries', inquireRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/contact', contactRoutes);
+app.use('https://travel-website-new-dp4q-backend.vercel.app/api/tours', tourRoutes);
+app.use('https://travel-website-new-dp4q-backend.vercel.app/api/inquiries', inquireRoutes);
+app.use('https://travel-website-new-dp4q-backend.vercel.app/api/users', userRoutes);
+app.use('https://travel-website-new-dp4q-backend.vercel.app/api/contact', contactRoutes);
 
 // MongoDB
 if (!process.env.MONGODB_URI) {
@@ -57,4 +57,5 @@ mongoose.connect(process.env.MONGODB_URI, {})
   .catch(err=>console.error("DB connection error:", err));
 
 module.exports = app;
+
 
