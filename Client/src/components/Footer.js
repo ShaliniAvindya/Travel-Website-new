@@ -1,111 +1,100 @@
-import React from 'react';
-import { AppBar, Toolbar, Typography, Container, Grid, Button, IconButton } from '@mui/material';
-import { Facebook, Twitter, Instagram, LinkedIn } from '@mui/icons-material';
-import { Link } from 'react-router-dom';
-import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 
-const mapContainerStyle = {
-  width: '100%',
-  height: '300px',
-};
+import { MapPin, Phone, Mail, Facebook, Instagram, Twitter } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useCallback } from 'react';
 
-// Coordinates for your hotel's location
-const center = {
-  lat: 6.9271,  // Latitude of your hotel
-  lng: 79.8612, // Longitude of your hotel
-};
+export default function Footer() {
+  const navigate = useNavigate();
+  const location = useLocation();
 
-const Footer = () => {
+  const scrollToSection = useCallback((id) => {
+    setTimeout(() => {
+      const el = document.getElementById(id);
+      if (el) {
+        const yOffset = -80; 
+        const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+      }
+    }, 100);
+  }, []);
 
-  const handleNavigation = (destination) => {
-    console.log(`Navigating to ${destination}`);
+  const handleNav = (e, sectionId) => {
+    e.preventDefault();
+    if (location.pathname !== '/') {
+      navigate('/', { replace: false });
+      setTimeout(() => scrollToSection(sectionId), 300);
+    } else {
+      scrollToSection(sectionId);
+    }
   };
 
   return (
-    <AppBar position="static" style={{ backgroundColor: '#023e8a', height: '85vh' }}>
-      <Container>
-        <Toolbar>
-          <Grid container spacing={6} alignItems="center" marginTop="20px">
-            <Grid item>
-              <div>
-                <Typography variant="h3" gutterBottom style={{ color: '#fff' }}>
-                  The LUXURY Hotel
-                </Typography>
-                <Typography variant="h6" gutterBottom style={{ color: '#fff' }}>
-                  123 Main Street, Colombo, Sri Lanka
-                </Typography>
-                <Typography variant="h6" gutterBottom style={{ color: '#fff' }}>
-                  Phone: +94 91 565 8956
-                </Typography>
-                <Typography variant="h6" gutterBottom style={{ color: '#fff' }}>
-                  Email: example@example.com
-                </Typography>
-              </div>
-            </Grid>
-
-            <Grid item xs={12} sm={6} md={3} style={{ display: 'flex', justifyContent: 'center' }}>
-              <Grid container direction="column" alignItems="center">
-                <Button variant="text" component={Link} to="/" style={{ color: '#fff', marginTop: '0px' }} onClick={() => handleNavigation('Home')}>
-                  Home
-                </Button><br></br>
-                <Button variant="text" component={Link} to="/rooms" style={{ color: '#fff', marginTop: '10px' }} onClick={() => handleNavigation('Rooms')}>
-                  Rooms
-                </Button><br></br>
-                <Button variant="text" component={Link} to="/facilities" style={{ color: '#fff', marginTop: '10px' }} onClick={() => handleNavigation('Services')}>
-                  Services
-                </Button><br></br>
-                <Button variant="text" component={Link} to="/contact" style={{ color: '#fff', marginTop: '10px' }} onClick={() => handleNavigation('Contact Us')}>
-                  Contact Us
-                </Button><br></br>
-                <Button variant="text" component={Link} to="/login" style={{ color: '#fff', marginTop: '10px' }} onClick={() => handleNavigation('Contact Us')}>
-                  Login
-                </Button><br></br>
-                <Button variant="text" component={Link} to="/register" style={{ color: '#fff', marginTop: '10px' }} onClick={() => handleNavigation('Contact Us')}>
-                  Register
-                </Button><br></br><br></br>
-              </Grid>
-            </Grid>
-
-            <Grid item xs={15} sm={6} md={4} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-              <Typography variant="h5" gutterBottom style={{ color: '#fff', textAlign: 'center' }}>
-                Find Us Here
-              </Typography>
-
-              <LoadScript googleMapsApiKey="AIzaSyBhJYhA-bRJgkniJETT1BY6I1C4fEexfdc">
-                <GoogleMap
-                  mapContainerStyle={mapContainerStyle}
-                  center={center}
-                  zoom={14}
-                >
-                  <Marker position={center} />
-                </GoogleMap>
-              </LoadScript><br></br>
-
-              <div style={{ marginTop: '20px', textAlign: 'center' }}>
-                <Typography variant="h5" gutterBottom style={{ color: '#fff' }}>
-                  Connect With Us
-                </Typography>
-                <div>
-                  <IconButton style={{ color: '#fff', marginRight: '50px' }} aria-label="facebook">
-                    <Facebook />
-                  </IconButton>
-                  <IconButton style={{ color: '#fff', marginRight: '50px' }} aria-label="twitter">
-                    <Twitter />
-                  </IconButton>
-                  <IconButton style={{ color: '#fff', marginRight: '50px' }} aria-label="instagram">
-                    <Instagram />
-                  </IconButton>
-                  <IconButton style={{ color: '#fff' }} aria-label="linkedin">
-                    <LinkedIn />
-                  </IconButton>
-                </div>
-              </div>
-            </Grid>
-          </Grid>
-        </Toolbar>
-      </Container>
-    </AppBar>
+    <footer className="bg-blue-950 text-white pt-8 pb-8 w-full">
+      <div className="max-w-7xl mx-auto px-4 md:px-8 lg:px-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-8">
+          <div className="md:col-span-1">
+            <div className="text-2xl font-bold mb-6">
+              <span className="text-cyan-300">Travel</span> Paradise
+            </div>
+            <p className="text-cyan-100 mb-6">
+              Your gateway to unforgettable experiences in the breathtaking Maldives islands.
+            </p>
+            <div className="flex space-x-4">
+              <a href="#" className="bg-blue-900 p-2 rounded-full hover:bg-blue-800 transition-colors hover:text-cyan-300">
+                <Facebook size={20} />
+              </a>
+              <a href="#" className="bg-blue-900 p-2 rounded-full hover:bg-blue-800 transition-colors hover:text-cyan-300">
+                <Instagram size={20} />
+              </a>
+              <a href="#" className="bg-blue-900 p-2 rounded-full hover:bg-blue-800 transition-colors hover:text-cyan-300">
+                <Twitter size={20} />
+              </a>
+            </div>
+          </div>
+          
+          <div className="md:col-span-1">
+            <h4 className="text-lg font-semibold mb-6">Quick Links</h4>
+            <ul className="space-y-3">
+              <li><a href="/" className="text-cyan-100 hover:text-white transition">Home</a></li>
+              <li><a href="/tours" className="text-cyan-100 hover:text-white transition">Tours</a></li>
+              <li><a href="/#about" className="text-cyan-100 hover:text-white transition" onClick={e => handleNav(e, 'about')}>About Us</a></li>
+              <li><a href="/#testimonials" className="text-cyan-100 hover:text-white transition" onClick={e => handleNav(e, 'testimonials')}>Testimonials</a></li>
+              <li><a href="/contact" className="text-cyan-100 hover:text-white transition">Contact</a></li>
+            </ul>
+          </div>
+          
+          <div className="md:col-span-1">
+            <h4 className="text-lg font-semibold mb-6">Contact Info</h4>
+            <ul className="space-y-4">
+              <li className="flex items-start">
+                <MapPin size={20} className="mr-3 mt-1 flex-shrink-0 text-cyan-300" />
+                <span className="text-cyan-100">123 Paradise Avenue, Malé, Maldives</span>
+              </li>
+              <li className="flex items-center">
+                <Phone size={20} className="mr-3 flex-shrink-0 text-cyan-300" />
+                <a href="tel:+1234567890" className="text-cyan-100 hover:text-white transition">+1 (234) 567-890</a>
+              </li>
+              <li className="flex items-center">
+                <Mail size={20} className="mr-3 flex-shrink-0 text-cyan-300" />
+                <a href="mailto:info@maldivesparadise.com" className="text-cyan-100 hover:text-white transition">info@maldivesparadise.com</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+        
+        <div className="border-t border-blue-800 pt-8">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <p className="text-cyan-200 text-sm mb-4 md:mb-0">
+              &copy; {new Date().getFullYear()} Maldives Paradise Travels. All rights reserved.
+            </p>
+            <div className="flex space-x-3">
+              <a href="#" className="text-cyan-200 hover:text-white text-sm transition">Privacy Policy</a>
+              <a href="#" className="text-cyan-200 hover:text-white text-sm transition">Terms & Conditions</a>
+              <a href="#" className="text-cyan-200 hover:text-white text-sm transition">Cookie Policy</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
   );
-};
-
-export default Footer;
+}

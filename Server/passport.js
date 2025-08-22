@@ -2,13 +2,7 @@ const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const FacebookStrategy = require('passport-facebook').Strategy;
 const User = require('./models/user'); 
-require('dotenv').config(); // Load environment variables
-
-// Log environment variables for debugging
-console.log('GOOGLE_CLIENT_ID:', process.env.GOOGLE_CLIENT_ID);
-console.log('GOOGLE_CLIENT_SECRET:', process.env.GOOGLE_CLIENT_SECRET);
-console.log('FACEBOOK_APP_ID:', process.env.FACEBOOK_APP_ID);
-console.log('FACEBOOK_APP_SECRET:', process.env.FACEBOOK_APP_SECRET);
+require('dotenv').config(); 
 
 // Google Strategy
 passport.use(
@@ -16,7 +10,7 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: '/api/users/auth/google/callback',
+      callbackURL: '/users/auth/google/callback',
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
@@ -49,7 +43,7 @@ passport.use(
     {
       clientID: process.env.FACEBOOK_APP_ID,
       clientSecret: process.env.FACEBOOK_APP_SECRET,
-      callbackURL: '/api/users/auth/facebook/callback',
+      callbackURL: '/users/auth/facebook/callback',
       profileFields: ['id', 'displayName', 'emails'],
     },
     async (accessToken, refreshToken, profile, done) => {

@@ -1,34 +1,58 @@
-import { useState, useRef, useEffect } from 'react';
-import { Search, Menu, X, ArrowRight, Filter } from 'lucide-react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { Search, Filter, X, ChevronDown, MapPin, Sun, Waves, Users } from 'lucide-react';
+import ImageGallery from '../components/Home/ImageGallery';
+import { useLocation } from 'react-router-dom';
 import axios from 'axios';
 
-export default function Header({ scrollToBooking }) {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+const MALDIVES_IMAGES = {
+  hero: "https://i.postimg.cc/50CFBvJT/abdulla-faiz-0-DGZu-Jxta3k-unsplash.jpg",
+  ctaBackground: "https://i.postimg.cc/50CFBvJT/abdulla-faiz-0-DGZu-Jxta3k-unsplash.jpg",
+};
+
+const Tours = () => {
+  const [searchTerm, setSearchTerm] = useState('');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [scrollY, setScrollY] = useState(0);
+  const [availableToursCount, setAvailableToursCount] = useState(0);
   const [activeFilterTab, setActiveFilterTab] = useState('categories');
   const [selectedFilters, setSelectedFilters] = useState({
     priceRange: [],
     duration: [],
-    categories: [],
+    categories: []
   });
   const [categories, setCategories] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState('/');
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const headerRef = useRef(null);
-  const navigate = useNavigate();
+  const heroRef = useRef(null);
+  const toursRef = useRef(null);
+  const statsRef = useRef(null);
   const location = useLocation();
+  const isInitialMount = useRef(true);
+  
+  // Stats counters state with initial values
+  const [animatedStats, setAnimatedStats] = useState({
+    islands: 0,
+    resorts: 0,
+    tours: 0,
+    travelers: 0
+  });
+  
+  const [targetStats, setTargetStats] = useState({
+    islands: 20,
+    resorts: 50,
+    tours: 6,
+    travelers: 1000
+  });
+  
+  const animationDuration = 1500;
+  const [hasAnimated, setHasAnimated] = useState(false);
 
-  // Fetch categories
+  // Fetch categories 
   useEffect(() => {
     const fetchCategories = async () => {
       setIsLoading(true);
       try {
-        const response = await axios.get('/api/tours/stats');
+        const response = await axios.get('/api/tours/stats'); 
         setCategories(response.data);
         setError(null);
       } catch (err) {
@@ -43,316 +67,171 @@ export default function Header({ scrollToBooking }) {
   }, []);
 
   useEffect(() => {
-    // Check authentication status
-    const checkAuth = async () => {
-      try {
-        const response = await axios.get('/api/users/check-auth', { withCredentials: true });
-        setIsAuthenticated(response.data.isAuthenticated);
-      } catch (error) {
-        setIsAuthenticated(false);
+    const queryParams = new URLSearchParams(location.search);
+    const search = queryParams.get('search') || '';
+    const categories = queryParams.get('categories')?.split(',').filter(Boolean) || [];
+    const priceRange = queryParams.get('priceRange')?.split(',').filter(Boolean) || [];
+    const duration = queryParams.get('duration')?.split(',').filter(Boolean) || [];
+
+    setSearchTerm(search);
+    setSelectedFilters({
+      categories,
+      priceRange,
+      duration
+    });
+
+    if (queryParams.toString() && isInitialMount.current) {
+      if (toursRef.current) {
+        toursRef.current.scrollIntoView({ behavior: 'smooth' });
       }
-    };
-
-    checkAuth();
-
-    // Set activeTab based on current pathname
-    if (location.pathname.startsWith('/tours')) {
-      setActiveTab('/tours');
-    } else {
-      setActiveTab(location.pathname || '/');
+      isInitialMount.current = false;
     }
+  }, [location.search]);
 
-    if (headerRef.current) {
-      if (location.pathname.startsWith('/admin')) {
-        headerRef.current.style.background = '#224272ff';
-      } else {
-        headerRef.current.style.background = 'transparent';
-      }
-    }
+  // Handle scroll
+  useEffect(() => {
     const handleScroll = () => {
-      if (headerRef.current) {
-        if (window.scrollY > 50) {
-          headerRef.current.style.background = 'rgba(1, 30, 65, 0.95)';
-        } else if (location.pathname.startsWith('/admin')) {
-          headerRef.current.style.background = '#224272ff';
-        } else {
-          headerRef.current.style.background = 'transparent';
+      setScrollY(window.scrollY);
+      if (statsRef.current && !hasAnimated) {
+        const rect = statsRef.current.getBoundingClientRect();
+        const isInViewport = rect.top <= window.innerHeight && rect.bottom >= 0;
+        if (isInViewport) {
+          animateStats();
+          setHasAnimated(true);
         }
-        headerRef.current.style.padding = '0.1rem 0';
       }
     };
-    handleScroll();
+    
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [location.pathname]);
+  }, [hasAnimated]);
+  
+  useEffect(() => {
+    if (statsRef.current) {
+      const rect = statsRef.current.getBoundingClientRect();
+      const isInViewport = rect.top <= window.innerHeight && rect.bottom >= 0;
+      if (isInViewport && !hasAnimated) {
+        animateStats();
+        setHasAnimated(true);
+      }
+    }
+  }, [hasAnimated]);
+  
+  const animateStats = () => {
+    const startTime = Date.now();
+    const interval = setInterval(() => {
+      const elapsedTime = Date.now() - startTime;
+      const progress = Math.min(elapsedTime / animationDuration, 1);
+      const springProgress = progress === 1 ? 1 : 1 - Math.cos((progress * Math.PI) / 2);
 
-  const handleSearchToggle = () => {
-    setIsSearchOpen(!isSearchOpen);
-  };
-
-  const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
-  };
-
-  const handleTabClick = (path) => {
-    setActiveTab(path);
+      setAnimatedStats({
+        islands: Math.floor(springProgress * targetStats.islands),
+        resorts: Math.floor(springProgress * targetStats.resorts),
+        tours: Math.floor(springProgress * targetStats.tours),
+        travelers: Math.floor(springProgress * targetStats.travelers)
+      });
+      
+      if (progress >= 1) {
+        clearInterval(interval);
+      }
+    }, 16);
+    return () => clearInterval(interval);
   };
 
   const handleSearch = (e) => {
     e.preventDefault();
-    setActiveTab('/tours');
-    const queryParams = new URLSearchParams();
-    if (searchQuery) {
-      queryParams.append('search', searchQuery);
+    if (toursRef.current) {
+      toursRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-    if (selectedFilters.categories.length > 0) {
-      queryParams.append('categories', selectedFilters.categories.join(','));
-    }
-    if (selectedFilters.priceRange.length > 0) {
-      queryParams.append('priceRange', selectedFilters.priceRange.join(','));
-    }
-    if (selectedFilters.duration.length > 0) {
-      queryParams.append('duration', selectedFilters.duration.join(','));
-    }
-    navigate(`/tours?${queryParams.toString()}`);
-    setIsSearchOpen(false);
   };
 
   const clearAllFilters = () => {
     setSelectedFilters({
       priceRange: [],
       duration: [],
-      categories: [],
+      categories: []
     });
-    setSearchQuery('');
+    setSearchTerm('');
   };
 
   const removeFilter = (category, value) => {
-    setSelectedFilters((prev) => ({
+    setSelectedFilters(prev => ({
       ...prev,
-      [category]: prev[category].filter((item) => item !== value),
+      [category]: prev[category].filter(item => item !== value)
     }));
   };
 
   const activeFilters = [
-    ...selectedFilters.categories.map((cat) => ({ type: 'categories', value: cat })),
-    ...selectedFilters.priceRange.map((price) => ({ type: 'priceRange', value: price })),
-    ...selectedFilters.duration.map((dur) => ({ type: 'duration', value: dur })),
+    ...selectedFilters.categories.map(cat => ({ type: 'categories', value: cat })),
+    ...selectedFilters.priceRange.map(price => ({ type: 'priceRange', value: price })),
+    ...selectedFilters.duration.map(dur => ({ type: 'duration', value: dur }))
   ];
 
   const toggleFilter = (category, value) => {
-    setSelectedFilters((prev) => {
+    setSelectedFilters(prev => {
       const currentFilters = [...prev[category]];
       const index = currentFilters.indexOf(value);
-
+      
       if (index === -1) {
         currentFilters.push(value);
       } else {
         currentFilters.splice(index, 1);
       }
-
-      return {
-        ...prev,
-        [category]: currentFilters,
-      };
+      return { ...prev, [category]: currentFilters };
     });
   };
 
-  const handleLogout = async () => {
-    try {
-      await axios.post('/api/users/logout', {}, { withCredentials: true });
-      setIsAuthenticated(false);
-      localStorage.removeItem('token');
-      navigate('/');
-    } catch (error) {
-      console.error('Error logging out:', error);
-    }
-  };
+  if (error) {
+    return <div className="text-center py-16 text-red-600">{error}</div>;
+  }
 
   return (
-    <header
-      ref={headerRef}
-      className="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-opacity-10 bg-blue-950"
-      style={{ background: 'transparent', padding: '0.1rem 0', transition: 'all 0.3s cubic-bezier(.4,0,.2,1)' }}
-    >
-      <div className="container mx-auto px-4 md:px-8 flex items-center justify-between py-2">
-        <div className="flex items-center">
-          <div className="text-white font-bold text-2xl">
-            <span className="text-cyan-300">Travel</span> Paradise
-          </div>
+    <div className="tours-page bg-gray-50">
+      {/* Hero Section */}
+      <section ref={heroRef} className="relative h-screen max-h-[640px] overflow-hidden">
+        <div className="absolute inset-0">
+          <div className="absolute inset-0 bg-gradient-to-r from-black/80 to-cyan-900/70 z-10"></div>
+          <img
+            src={MALDIVES_IMAGES.hero}
+            alt="Maldives Paradise"
+            className="w-full h-full object-cover"
+            style={{ transform: `translateY(${scrollY * 0.4}px)`, transition: 'transform 0.05s linear' }}
+          />
         </div>
-
-        {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center space-x-10">
-          <a
-            href="/"
-            onClick={() => handleTabClick('/')}
-            className={`text-white hover:text-cyan-300 transition-colors text-lg font-medium py-2 px-4 border-b-2 ${
-              activeTab === '/' ? 'border-cyan-300 text-cyan-300' : 'border-transparent'
-            }`}
-          >
-            Home
-          </a>
-          <a
-            href="/tours"
-            onClick={() => handleTabClick('/tours')}
-            className={`text-white hover:text-cyan-300 transition-colors text-lg font-medium py-2 px-4 border-b-2 ${
-              activeTab === '/tours' ? 'border-cyan-300 text-cyan-300' : 'border-transparent'
-            }`}
-          >
-            Tours
-          </a>
-          <a
-            href="/contact"
-            onClick={() => handleTabClick('/contact')}
-            className={`text-white hover:text-cyan-300 transition-colors text-lg font-medium py-2 px-4 border-b-2 ${
-              activeTab === '/contact' ? 'border-cyan-300 text-cyan-300' : 'border-transparent'
-            }`}
-          >
-            Contact
-          </a>
-          {isAuthenticated && (
-            <>
-              <a
-                href="/admin"
-                onClick={e => {
-                  e.preventDefault();
-                  handleTabClick('/admin');
-                  if (isAuthenticated) {
-                    navigate('/admin');
-                  } else {
-                    navigate('/login');
-                  }
-                }}
-                className={`text-white hover:text-cyan-300 transition-colors text-medium font-medium py-2 px-4 border-b-2 ${
-                  activeTab === '/admin' ? 'border-cyan-300 text-cyan-300' : 'border-transparent'
-                }`}
-              >
-                Admin
-              </a>
-              <button
-                onClick={handleLogout}
-                className="text-white hover:text-cyan-300 transition-colors text-medium font-medium py-2 px-4"
-              >
-                Logout
-              </button>
-            </>
-          )}
-        </nav>
-
-        <div className="hidden md:flex items-center space-x-4">
-          <button onClick={handleSearchToggle} className="text-white p-2 rounded-full hover:bg-blue-800 transition">
-            <Search size={20} />
-          </button>
-          <button
-            onClick={() => (window.location.href = '/tours')}
-            className="bg-cyan-700 hover:bg-blue-900 text-white px-6 py-3 rounded-full transition duration-300 flex items-center"
-          >
-            Book Now
-            <ArrowRight size={16} className="ml-2" />
-          </button>
-        </div>
-
-        {/* Mobile Navigation Toggle */}
-        <div className="md:hidden flex items-center">
-          <button onClick={handleSearchToggle} className="text-white mr-2">
-            <Search size={20} />
-          </button>
-          <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="text-white p-2">
-            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile Navigation Menu */}
-      {isMenuOpen && (
-        <div className="md:hidden bg-blue-900 p-4">
-          <nav className="flex flex-col space-y-3">
-            <a
-              href="/"
-              className={`text-lg py-3 px-4 rounded-medium transition-colors ${
-                activeTab === '/' ? 'bg-blue-800 text-cyan-300 font-medium' : 'text-white hover:bg-blue-800'
-              }`}
-              onClick={() => {
-                handleTabClick('/');
-                setIsMenuOpen(false);
-              }}
-            >
-              Home
-            </a>
-            <a
-              href="/tours"
-              className={`text-lg py-3 px-4 rounded-medium transition-colors ${
-                activeTab === '/tours' ? 'bg-blue-800 text-cyan-300 font-medium' : 'text-white hover:bg-blue-800'
-              }`}
-              onClick={() => {
-                handleTabClick('/tours');
-                setIsMenuOpen(false);
-              }}
-            >
-              Tours
-            </a>
-            <a
-              href="/contact"
-              className={`text-lg py-3 px-4 rounded-medium transition-colors ${
-                activeTab === '/contact' ? 'bg-blue-800 text-cyan-300 font-medium' : 'text-white hover:bg-blue-800'
-              }`}
-              onClick={() => {
-                handleTabClick('/contact');
-                setIsMenuOpen(false);
-              }}
-            >
-              Contact
-            </a>
-            {isAuthenticated && (
-              <>
-                <a
-                  href="/admin"
-                  className={`text-lg py-3 px-4 rounded-medium transition-colors ${
-                    activeTab === '/admin' ? 'bg-blue-800 text-cyan-300 font-medium' : 'text-white hover:bg-blue-800'
-                  }`}
-                  onClick={e => {
-                    e.preventDefault();
-                    handleTabClick('/admin');
-                    setIsMenuOpen(false);
-                    if (isAuthenticated) {
-                      navigate('/admin');
-                    } else {
-                      navigate('/login');
-                    }
-                  }}
-                >
-                  Admin
-                </a>
+        
+        <div className="absolute inset-0 z-10 flex items-center px-4">
+          <div className="max-w-6xl mx-auto text-white">
+            <div className="max-w-2xl">
+              <span className="inline-block px-4 py-1 rounded-full bg-cyan-500/30 text-cyan-50 text-sm font-medium mb-4">
+                Experience Paradise
+              </span>
+              <h1 className="text-4xl md:text-6xl font-bold mb-4 leading-tight">
+                Unforgettable <span className="text-cyan-300">Maldives</span> Tours & Experiences
+              </h1>
+              <p className="text-lg text-cyan-50 mb-8 max-w-lg">
+                Discover crystal-clear waters, pristine beaches, and luxury accommodations curated for the perfect getaway.
+              </p>
+              <div className="flex flex-wrap gap-4">
                 <button
                   onClick={() => {
-                    handleLogout();
-                    setIsMenuOpen(false);
+                    if (toursRef.current) {
+                      toursRef.current.scrollIntoView({ behavior: 'smooth' });
+                    }
                   }}
-                  className="text-lg py-3 px-4 rounded-medium text-white hover:bg-blue-800 text-left"
+                  className="px-6 py-3 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-lg font-medium text-white hover:from-cyan-500 hover:to-blue-600 transition shadow-lg hover:shadow-xl"
                 >
-                  Logout
+                  Explore Tours
                 </button>
-              </>
-            )}
-            <button
-              onClick={() => {
-                window.location.href = '/tours';
-                setIsMenuOpen(false);
-              }}
-              className="bg-cyan-500 hover:bg-cyan-600 text-white px-4 py-3 rounded-full transition duration-300 flex items-center w-full justify-center text-lg"
-            >
-              Book Now
-              <ArrowRight size={16} className="ml-2" />
-            </button>
-          </nav>
+              </div>
+            </div>
+          </div>
         </div>
-      )}
-
-      {/* Search Overlay */}
-      {isSearchOpen && (
-        <div className="absolute top-full left-0 right-0 bg-white shadow-lg z-50">
-          <div className="container mx-auto px-4 py-6">
+      </section>
+      
+      {/* Search and Filter Section */}
+      <section className="relative -mt-20 z-20 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="bg-white rounded-2xl shadow-xl p-6 md:p-8">
             <form onSubmit={handleSearch}>
               <div className="flex flex-col md:flex-row gap-4 items-stretch">
                 <div className="flex-1 relative">
@@ -360,19 +239,15 @@ export default function Header({ scrollToBooking }) {
                   <input
                     type="text"
                     placeholder="Search for tours, activities, destinations..."
-                    value={searchQuery}
-                    onChange={handleSearchChange}
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full py-4 pl-12 pr-4 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition"
                   />
                 </div>
                 <button
                   type="button"
                   onClick={() => setIsFilterOpen(!isFilterOpen)}
-                  className={`py-4 px-4 md:px-6 rounded-xl border font-medium transition flex items-center justify-center gap-2 ${
-                    isFilterOpen
-                      ? 'bg-blue-50 border-blue-200 text-blue-700'
-                      : 'border-gray-200 hover:border-blue-300 text-gray-700 hover:bg-blue-50'
-                  }`}
+                  className={`py-4 px-4 md:px-6 rounded-xl border font-medium transition flex items-center justify-center gap-2 ${isFilterOpen ? 'bg-blue-50 border-blue-200 text-blue-700' : 'border-gray-200 hover:border-blue-300 text-gray-700 hover:bg-blue-50'}`}
                 >
                   <Filter size={18} />
                   <span className="hidden md:inline">Filters</span>
@@ -384,23 +259,18 @@ export default function Header({ scrollToBooking }) {
                   >
                     Find Tours
                   </button>
-                  <button
-                    type="button"
-                    onClick={handleSearchToggle}
-                    className="py-4 px-4 rounded-xl border border-gray-200 text-gray-700 hover:bg-blue-50 hover:border-blue-300 font-medium transition flex items-center justify-center"
-                  >
-                    <X size={18} />
-                  </button>
+                
                 </div>
               </div>
             </form>
-            {(activeFilters.length > 0 || searchQuery) && (
+            
+            {(activeFilters.length > 0 || searchTerm) && (
               <div className="mt-4 flex flex-col gap-2">
                 <div className="flex flex-wrap gap-2 items-center">
-                  {searchQuery && (
+                  {searchTerm && (
                     <span className="inline-flex items-center px-3 py-1 rounded-full bg-blue-100 text-blue-800 text-sm font-medium">
-                      Search: {searchQuery}
-                      <button onClick={() => setSearchQuery('')} className="ml-2 focus:outline-none">
+                      Search: {searchTerm}
+                      <button onClick={() => setSearchTerm('')} className="ml-2 focus:outline-none">
                         <X size={14} />
                       </button>
                     </span>
@@ -419,17 +289,21 @@ export default function Header({ scrollToBooking }) {
                       </button>
                     </span>
                   ))}
-                  {(activeFilters.length > 0 || searchQuery) && (
+                  {(activeFilters.length > 0 || searchTerm) && (
                     <button
                       onClick={clearAllFilters}
                       className="text-medium text-red-600 hover:text-red-800 font-medium"
                     >
-                      Clear All
+                      Clear monocytes
                     </button>
                   )}
                 </div>
+                <p className="text-sm text-gray-600">
+                  {availableToursCount} {availableToursCount === 1 ? 'tour' : 'tours'} available
+                </p>
               </div>
             )}
+
             {isFilterOpen && (
               <div className="mt-6 border-t border-gray-100 pt-6">
                 <div className="flex gap-2 mb-6 overflow-x-auto pb-2 scrollbar-hide">
@@ -438,9 +312,7 @@ export default function Header({ scrollToBooking }) {
                       key={tab}
                       onClick={() => setActiveFilterTab(tab)}
                       className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium transition ${
-                        activeFilterTab === tab
-                          ? 'bg-blue-100 text-blue-700'
-                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        activeFilterTab === tab ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                       }`}
                     >
                       {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -452,8 +324,6 @@ export default function Header({ scrollToBooking }) {
                     <div className="col-span-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
                       {isLoading ? (
                         <div className="col-span-full text-center text-gray-600">Loading categories...</div>
-                      ) : error ? (
-                        <div className="col-span-full text-center text-red-600">{error}</div>
                       ) : categories.length === 0 ? (
                         <div className="col-span-full text-center text-gray-600">No categories available</div>
                       ) : (
@@ -587,7 +457,75 @@ export default function Header({ scrollToBooking }) {
             )}
           </div>
         </div>
-      )}
-    </header>
+      </section>
+      
+      {/* Key Stats Section with Animation */}
+      <section className="py-12 px-4" ref={statsRef}>
+        <div className="max-w-6xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+            {[
+              { icon: <MapPin size={24} />, count: animatedStats.islands, suffix: '+', label: 'Islands', target: targetStats.islands },
+              { icon: <Sun size={24} />, count: animatedStats.resorts, suffix: '+', label: 'Luxury Resorts', target: targetStats.resorts },
+              { icon: <Waves size={24} />, count: animatedStats.tours, suffix: '+', label: 'Tour Packages', target: targetStats.tours },
+              { icon: <Users size={24} />, count: animatedStats.travelers, suffix: '+', label: 'Happy Travelers', target: targetStats.travelers },
+            ].map((stat, index) => (
+              <div
+                key={index}
+                className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition flex flex-col items-center text-center"
+              >
+                <div className="rounded-full bg-blue-50 p-3 mb-3 text-blue-500">{stat.icon}</div>
+                <div className="relative h-12 flex items-center justify-center">
+                  <h3 className="text-2xl md:text-3xl font-bold text-blue-900 mb-1">
+                    {stat.count}{stat.suffix}
+                  </h3>
+                  {stat.count < stat.target && (
+                    <span className="absolute inset-0 animate-pulse bg-blue-300/20 rounded-full" />
+                  )}
+                </div>
+                <p className="text-gray-600 text-sm">{stat.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+      
+      {/* Main Image Gallery */}
+      <section className="px-4" ref={toursRef}>
+        <div className="max-w-8xl mx-auto">
+          <ImageGallery
+            searchQuery={searchTerm}
+            selectedFilters={selectedFilters}
+            setAvailableToursCount={setAvailableToursCount}
+          />
+        </div>
+      </section>
+      
+      {/* CTA Section */}
+      <section className="py-16 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-900 to-cyan-800 opacity-95 z-0"></div>
+        <div className="absolute inset-0 z-0">
+          <img src={MALDIVES_IMAGES.ctaBackground} alt="Maldives beach" className="w-full h-full object-cover opacity-20" />
+        </div>
+        <div className="max-w-4xl mx-auto px-4 relative z-10 text-center">
+          <span className="inline-block px-4 py-1 rounded-full bg-cyan-400/30 text-cyan-50 text-sm font-medium mb-4">
+            Personalized Experience
+          </span>
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Can't find what you're looking for?</h2>
+          <p className="text-cyan-100 md:text-lg mb-8 max-w-2xl mx-auto">
+            Let our travel experts create a personalized itinerary based on your preferences and budget. We'll handle all the details so you can focus on enjoying your dream vacation.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <button
+              onClick={() => window.location.href = '/contact'}
+              className="px-8 py-3 bg-transparent border border-white/40 text-white rounded-lg font-medium hover:bg-white/10 transition"
+            >
+              Contact Our Team
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
   );
-}
+};
+
+export default Tours;

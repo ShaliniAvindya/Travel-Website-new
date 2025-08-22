@@ -1,14 +1,45 @@
 const express = require('express');
-const bcrypt = require('bcryptjs');  
+const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const passport = require('passport');
 const User = require('../models/user');
 
 const router = express.Router();
 
+const protect = async (req, res, next) => {
+  let token = req.cookies.jwt;
+  if (token) {
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'default_jwt_secret');
+      req.user = await User.findById(decoded.id).select('-password');
+      if (!req.user.isAdmin) {
+        return res.status(403).json({ message: 'Not authorized as admin' });
+      }
+      next();
+    } catch (error) {
+      return res.status(401).json({ message: 'Not authorized, invalid token' });
+    }
+  } else {
+    return res.status(401).json({ message: 'Not authorized, no token' });
+  }
+};
+
+// Check Authentication
+router.get('/check-auth', protect, async (req, res) => {
+  res.json({
+    isAuthenticated: true,
+    isAdmin: req.user.isAdmin,
+    user: {
+      id: req.user._id,
+      name: req.user.name,
+      email: req.user.email,
+    },
+  });
+});
+
 // Registration Route
 router.post('/register', async (req, res) => {
-  const { name, email, password } = req.body;
+  const { firstName, lastName, email, password } = req.body;
+  const name = `${firstName} ${lastName}`.trim();
 
   try {
     let user = await User.findOne({ email });
@@ -16,11 +47,10 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ message: 'User already exists' });
     }
   
-    // Create a new user (password will be hashed by userSchema pre-save hook)
     user = new User({
       name,
       email,
-      password, // Plain text password (will be hashed in pre-save middleware)
+      password, 
       isAdmin: false,
     });
 
@@ -36,74 +66,58 @@ router.post('/register', async (req, res) => {
 // Login Route
 
 router.post('/login', async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, rememberMe } = req.body;
 
   try {
-      const user = await User.findOne({ email });
-      if (!user) {
-          console.log('User not found with email:', email); 
-          return res.status(400).json({ message: 'Invalid email or password' });
-      }
+    const user = await User.findOne({ email });
+    if (!user || !user.isAdmin) {
+      return res.status(400).json({ message: 'Invalid email or password, or not an admin' });
+    }
 
-      console.log('User retrieved from DB:', user);
+    const isMatch = await user.matchPassword(password);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Invalid email or password' });
+    }
 
-      const isMatch = await user.matchPassword(password);
-      console.log('Password matches:', isMatch); 
-      if (!isMatch) {
-          return res.status(400).json({ message: 'Invalid email or password' });
-      }
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'default_jwt_secret', {
+      expiresIn: rememberMe ? '30d' : '1h',
+    });
 
-      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'default_jwt_secret', {
-          expiresIn: '1h',
-      });
+    const maxAge = rememberMe ? 30 * 24 * 60 * 60 * 1000 : 60 * 60 * 1000; // 30 days or 1 hour
 
-      res.json({
-          token,
-          user: {
-              id: user._id,
-              name: user.name,
-              email: user.email,
-              isAdmin: user.isAdmin,
-          },
-      });
+    res.cookie('jwt', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV !== 'development',
+      sameSite: 'strict',
+      maxAge,
+    });
+
+    res.json({
+      message: 'Logged in successfully',
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        isAdmin: user.isAdmin,
+      },
+    });
   } catch (error) {
-      console.error('Error during login:', error);
-      res.status(500).json({ message: 'Server error during login' });
+    console.error('Error during login:', error);
+    res.status(500).json({ message: 'Server error during login' });
   }
 });
 
+// Logout Route
+router.post('/logout', (req, res) => {
+  res.cookie('jwt', '', {
+    httpOnly: true,
+    expires: new Date(0),
+  });
+  res.json({ message: 'Logged out successfully' });
+});
 
-// Social Login with Google
-router.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
-
-router.get(
-  '/auth/google/callback',
-  passport.authenticate('google', { session: false }),
-  async (req, res) => {
-    try {
-      // Check if user exists
-      const { email, name } = req.user;
-      let user = await User.findOne({ email });
-
-      // If user doesn't exist, create a new user
-      if (!user) {
-        user = new User({ name, email, password: null }); // No password for social login users
-        await user.save();
-      }
-
-      // Generate JWT token
-      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-
-      // Send token and user details
-      res.redirect(`http://localhost:3000/dashboard?token=${token}`);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: 'Social login failed' });
-    }
-  }
-);
-
-router.get('/all', async (req, res) => {
+router.get('/all', protect, async (req, res) => {
   try {
     const users = await User.find(); 
     res.json(users); 
@@ -112,13 +126,25 @@ router.get('/all', async (req, res) => {
   }
 });
 
-router.delete('/:id', async (req, res) => {
+// Delete User
+router.delete('/:id', protect, async (req, res) => {
   const { id } = req.params;
   try {
     await User.findByIdAndDelete(id);
     res.status(200).json({ message: 'User deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Error deleting user', error });
+  }
+});
+
+// Get User by ID 
+router.get('/:id', protect, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const user = await User.findById(id); 
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching user', error });
   }
 });
 
