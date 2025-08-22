@@ -7,7 +7,7 @@ const passport = require('./passport');
 const tourRoutes = require('./routes/tourRoutes');
 const bodyParser = require("body-parser");
 const contactRoutes = require('./routes/contactRoutes');
-const inquireRoutes = require('./routes/inquiryRoutes');
+const inquireRoutes = require('./routes/inquiryRoutes'); 
 const userRoutes = require('./routes/userRoutes');
 const cookieParser = require('cookie-parser');
 
@@ -49,3 +49,4 @@ mongoose.connect(process.env.MONGO_URI, {})
   .catch((err) => console.error('DB connection error:', err));
 
 module.exports = app;
+
